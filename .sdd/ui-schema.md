@@ -218,3 +218,33 @@ atoms; an organism never re-describes its molecules.
 - No re-description of an existing library component — reference it by id.
 - No business logic beyond view orchestration — that lives in a `service`/`use-case`
   spec and is called by id.
+
+---
+
+## 9. Mandatory baseline library (every GUI project)
+
+For **any** project with a GUI the workflow **GUARANTEES** a default UI component
+library, so screens are composed — never hand-rolled. These baseline components are
+**not shipped as files**: the `spec-writer` **materializes** them (from
+`.sdd/templates/ui-component.template.md`) into the project's `specs/ui-components/`
+and registers them in `specs/indexes/ui-components.index.md` **before** any screen
+composes them. The baseline = layout primitives + the panel container:
+
+| id | layer | Purpose | Key props / slots |
+|----|-------|---------|-------------------|
+| `COMP-appShell` | layout | app frame: header on top, body fills the middle, footer at the bottom | slots: header, body, footer |
+| `COMP-header` | organism | application top bar | brand, nav, actions/user |
+| `COMP-body` | layout | scrollable content region between header and footer | maxWidth, padding; children slot |
+| `COMP-footer` | organism | application bottom bar | leading (copyright/links), trailing (version) |
+| `COMP-panel` | organism | card / panel container | title, variant (`default\|outlined\|elevated`); header/body/footer slots |
+| `COMP-stack` | layout | one-dimensional flex helper | direction, gap, align, justify, wrap |
+| `COMP-grid` | layout | two-dimensional grid helper | columns, gap, areas |
+| `COMP-section` | layout | titled content section | title, description; children slot |
+
+**Progressive enrichment.** Beyond the baseline, recurring widgets — Button,
+TextInput, TextArea, Select, Checkbox/Radio/Toggle, FormField, Modal, Table, Tabs,
+Toast, Badge, Avatar, Icon, Spinner, Pagination, Breadcrumb, Menu, … — are added to
+the library as patterns emerge: the `reuse-analyst` promotes one the moment a second
+screen needs it, never duplicated. Each is specified once (atomic-design layer per §7)
+and referenced by id. The `analysis-gatekeeper` blocks a GUI project whose baseline is
+missing, or whose screens inline a component instead of composing the library by id.

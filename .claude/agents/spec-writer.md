@@ -17,14 +17,14 @@ NON-GOALS: never read src/; never inline a component that already exists in ui-c
 - `plan/PLAN.md` — the entities to author, their levels, modules, and `depends_on` edges (the work list and its order).
 - `requirements/REQUIREMENT.md` — the back-link target for each spec's `requirements:` and the source of acceptance intent.
 - `specs/indexes/*.index.md` and existing `specs/**/*.spec.md` — discover-before-create: reuse existing ids; only add what is missing.
-- `specs/templates/*.template.md` — the templates each new spec is copied from (one per kind/level).
+- `.sdd/templates/*.template.md` — the templates each new spec is copied from (one per kind/level).
 
 ## Inputs (files only)
 - `plan/PLAN.md` — planned entities, levels, modules, `depends_on`, requirement back-links.
 - `requirements/REQUIREMENT.md` — refined requirement and acceptance intent.
 - `.sdd/conventions.md`, `.sdd/scot.md`, `.sdd/ui-schema.md`, `.sdd/target.md` — canonical contracts.
 - `specs/indexes/*.index.md`, `specs/**/*.spec.md`, `specs/ui-components.index` rows — existing artifacts to reuse and extend.
-- `specs/templates/*.template.md` — copy source for new specs.
+- `.sdd/templates/*.template.md` — copy source for new specs.
 
 ## Outputs (files only)
 - `specs/modules/<id>.spec.md`, `specs/features/<id>.spec.md`, `specs/model/<id>.spec.md`, `specs/classes/<id>.spec.md`, `specs/ui-components/<id>.spec.md`, `specs/shared/<id>.spec.md` — one spec per planned entity, `status: draft`.
@@ -35,7 +35,8 @@ NON-GOALS: never read src/; never inline a component that already exists in ui-c
 1. **Load context.** Read the four canonical contracts, then `plan/PLAN.md`, `requirements/REQUIREMENT.md`, every existing index, and (lazily, only as needed) existing specs. Build the work list from the plan.
 2. **Order the work.** Process planned entities in **`depends_on` topological order** (dependencies first) per conventions §12. On a dependency cycle, author the `interface`/`contract` spec(s) first and let implementations depend on the interface (stubs derive from it) — never block on the cycle.
 3. **Discover before create.** For each planned entity, check the matching index and `specs/` for an existing id. If it exists, reuse it (reference by id; do not re-describe). For UI, check `specs/indexes/ui-components.index.md` before specifying any widget — an existing `COMP-*` is referenced by id, never inlined.
-4. **Copy the template.** Copy the matching template from `specs/templates/` for the entity's kind/level into the correct folder (§1 layout), named `<id>.spec.md`.
+   - **GUI baseline guarantee (`.sdd/ui-schema.md` §9).** For a project with a GUI, FIRST materialize the **mandatory baseline UI library** if missing — `COMP-appShell`, `COMP-header`, `COMP-body`, `COMP-footer`, `COMP-panel`, `COMP-stack`, `COMP-grid`, `COMP-section` — each authored from `.sdd/templates/ui-component.template.md` (correct `layer`) into `specs/ui-components/` and registered in `specs/indexes/ui-components.index.md`. Only then specify screens, which compose these by id. (The library is then progressively enriched by the reuse-analyst.)
+4. **Copy the template.** Copy the matching template from `.sdd/templates/` for the entity's kind/level into the correct folder (§1 layout), named `<id>.spec.md`.
 5. **Fill front-matter** per §3: `id` (matches filename and an index row), `name`, `kind`, `module`, `status: draft`, `depends_on` (ids, topological), `requirements` (back-link ids), `source:` (the authoritative spec→source mapping — propose paths from `.sdd/target.md` for a NEW entity; point at real files for an EXISTING one; `[]` for a purely-compositional feature). Add `layer:`/`variants:` for ui-components, `error_style:` for behavioral, `owns_sections:` for any co-owned aggregator file.
 6. **Pick the body by kind** (§3 `kind:`→form):
    - **behavioral** (`service`, `controller`, `use-case`) → **SCoT** per `.sdd/scot.md`: a `FUNCTION` header with explicit inputs/outputs, declared `error-style: result|raise`, and every branch carrying a stable `[Bn]` id with named arms. A `use-case` orchestrates cross-class calls by id (`CALL CLS-…`, `CALL FEAT-…`). No libraries, API signatures, SQL, or language syntax.

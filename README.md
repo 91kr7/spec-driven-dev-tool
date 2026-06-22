@@ -32,31 +32,41 @@ Both appear, verbatim, in the `MINDSET` line of every agent's ROLE prompt.
 
 ## Repository layout
 
+This repository **is the tool** — the workflow that builds applications, not an
+application built with it. It therefore ships only the tool's content; the
+per-project artifacts (`requirements/`, `plan/`, your generated `specs/`, `src/`,
+`tests/`) are created by the workflow **inside your project** when you run it.
+
+**Ships in this repo (the tool):**
+
 ```
-requirements/REQUIREMENT.md          # raw + refined user requirement (template provided)
-plan/PLAN.md                         # output of Plan mode (template provided)
-.sdd/
-  target.md                          # stack/architecture/framework + canonical commands (AI-written per project)
-  scot.md                            # canonical SCoT grammar (behavioral specs)        ── shipped, authored once
-  ui-schema.md                       # canonical UI-schematic convention (gui specs)    ── shipped, authored once
-  conventions.md                     # ids, front-matter, status, verdicts, rosters     ── shipped, the single reference
-  state.md                           # append-only gatekeeper verdict / audit log
-  impl-notes/<spec-id>.md            # implementer-owned concretization (NOT part of the gated spec)
-specs/
-  indexes/{modules,features,model,classes,ui-components}.index.md   # ONE index per level
-  modules/<id>.spec.md               # incl. MOD-build (build/config/CI/migrations)
-  features/<id>.spec.md              # use-cases (orchestration + integration acceptance)
-  model/<id>.spec.md                 # domain entities (fields, types, relations, constraints)
-  classes/<id>.spec.md               # per-method SCoT (and feature-specific gui screens)
-  ui-components/<id>.spec.md         # shared UI library (default scaffold provided)
-  shared/<id>.spec.md                # shared non-UI abstractions (services, utils, types, interfaces) — indexed in classes.index.md
-  templates/*.template.md            # templates new specs are copied from (each with a filled example)
 .claude/
   agents/*.md                        # the 10 subagents
-  commands/*.md                      # the 6 slash commands
-src/                                 # GENERATED (derived)
-tests/                               # GENERATED (unit ← classes, integration ← features, constraints ← entities)
-examples/user-registration/          # a frozen, worked example slice (delete before real use)
+  commands/*.md                      # the 7 slash commands
+.sdd/
+  conventions.md                     # the single canonical reference (ids, front-matter, status, verdicts, rosters)
+  scot.md                            # canonical SCoT grammar (behavioral specs)
+  ui-schema.md                       # canonical UI-schematic convention — incl. the GUARANTEED baseline UI library (§9)
+  templates/*.template.md            # the forms new specs are copied from (each with a filled example)
+  target.md                          # per-project stack file — ships as a TEMPLATE the AI fills at plan time
+  state.md                           # append-only verdict log — ships as an empty seed
+  impl-notes/_TEMPLATE.md            # impl-notes template
+docs/
+  TECHNICAL.md                       # the detailed technical reference
+  history/                           # the original design conversation (archived)
+README.md
+```
+
+**Created by the workflow at runtime, inside your project (not shipped here):**
+
+```
+requirements/REQUIREMENT.md          # the requirement (raw + refined, with REQ-* ids) — written by /sdd-plan
+plan/PLAN.md                         # the plan — written by plan-architect
+.sdd/target.md (filled) · .sdd/state.md (appended) · .sdd/impl-notes/<id>.md
+specs/indexes/{modules,features,model,classes,ui-components}.index.md   # your per-level indexes
+specs/{modules,features,model,classes,shared}/<id>.spec.md   # your generated specs
+specs/ui-components/<id>.spec.md     # the UI library — baseline GUARANTEED for a GUI project (ui-schema §9), then enriched
+src/   tests/                        # GENERATED code & tests (derived)
 ```
 
 `.sdd/conventions.md` is the **single canonical reference** (ids, front-matter
@@ -162,7 +172,7 @@ suite.
 |---|---|---|---|---|
 | `plan-architect` | `requirements/`, existing `specs/`, `.sdd/` | `plan/`, `.sdd/target.md` (+ `scot`/`ui-schema` if absent) | — | no |
 | `plan-gatekeeper` | `requirements/`, `plan/`, `specs/`, `.sdd/` | `.sdd/state.md` | — | no |
-| `spec-writer` | `plan/`, `requirements/`, `specs/`, `.sdd/{scot,ui-schema,conventions,target}.md` | `specs/` (incl. indexes) | — | no |
+| `spec-writer` | `plan/`, `requirements/`, `specs/`, `.sdd/{scot,ui-schema,conventions,target}.md`, `.sdd/templates/` | `specs/` (incl. indexes) | — | no |
 | `reuse-analyst` | `specs/`, `.sdd/conventions.md` | `specs/` | — | no |
 | `analysis-gatekeeper` | `specs/`, `requirements/`, `.sdd/` | `.sdd/state.md` | — | no |
 | `code-implementer` | `specs/`, `.sdd/{target,scot,ui-schema,conventions}.md`, `.sdd/impl-notes/`, `src/` | `src/` (declared paths), `.sdd/impl-notes/<id>.md` | **Edit** (minimal diffs) | **yes** — spec stays authority |
@@ -179,7 +189,9 @@ read verdicts and advance index `status`.
 ## The five modes (slash commands)
 
 Modes 1–4 are the **manual, human-in-control** path; mode 5 is **automatic, human
-out of the loop**. A sixth helper, `/sdd-trace`, prints traceability on demand.
+out of the loop**. Two read-only helpers — `/sdd-trace` (traceability) and
+`/sdd-status` (a lifecycle dashboard with the `/sdd-auto` resume point) — assist on
+demand.
 
 | Command | Mode | What it runs |
 |---|---|---|
@@ -189,6 +201,7 @@ out of the loop**. A sixth helper, `/sdd-trace`, prints traceability on demand.
 | `/sdd-test` | 4. Test run | `test-writer` → `test-runner` → `test-gatekeeper` (coverage + triage). On full green: `reviewed → approved`. |
 | `/sdd-auto` | 5. Automatic | all of the above end-to-end, **one vertical slice at a time** in `depends_on` order, no manual stop; escalates only on budget overflow. |
 | `/sdd-trace` | helper | prints REQ → FEAT → CLASS → SOURCE → TEST. Read-only. |
+| `/sdd-status` | helper | prints a lifecycle dashboard (status + latest verdict + resume point). Read-only. |
 
 ### How the stack is chosen
 The technologies come from **your prompt**. The AI reads it and writes them into
@@ -201,11 +214,11 @@ already reflects the stack and your prompt may only extend/override it.
 
 ## Quick start
 
-**Adopting the workflow:** start a project from this repo, or copy `.claude/`,
-`.sdd/`, `specs/templates/`, and `specs/ui-components/` into it — those are the
-contracts, the spec templates, and the default UI library that every agent reads.
-The requirement (with the **stack**) is the only thing you must supply; if the stack
-isn't stated, the workflow asks once before writing `.sdd/target.md`.
+**Adopting the workflow:** start a project from this repo, or copy `.claude/` and
+`.sdd/` into it — those are the agents/commands plus all the contracts, templates,
+and the guaranteed UI-library definition (`.sdd/ui-schema.md` §9). The requirement
+(with the **stack**) is the only thing you must supply; if the stack isn't stated,
+the workflow asks once before writing `.sdd/target.md`.
 
 1. `/sdd-plan <describe what to build, and the stack>` — review `plan/PLAN.md` and
    `.sdd/target.md`.
@@ -216,20 +229,18 @@ isn't stated, the workflow asks once before writing `.sdd/target.md`.
 …or run `/sdd-auto <describe what to build>` to do all four automatically, slice by
 slice.
 
-See `examples/user-registration/` for a frozen, fully cross-referenced spec slice
-(a "User registration" feature spanning a Database and an API module) — a reading
-reference; delete it before starting real work.
-
 ---
 
-## Reuse-first frontend (provided from the start)
+## Reuse-first frontend (guaranteed for every GUI project)
 
-`specs/ui-components/` ships a **default UI library scaffold** — `COMP-appShell`,
-`COMP-header`, `COMP-body`, `COMP-footer`, `COMP-panel`, and layout helpers
-(`COMP-stack`, `COMP-grid`, `COMP-section`) — registered in
-`specs/indexes/ui-components.index.md`. Screens **compose these by id**; the
-`reuse-analyst` progressively promotes recurring widgets (Button, TextInput,
-FormField, Modal, Table, …) into the library so nothing is copy-pasted.
+For any project with a GUI, the workflow **guarantees** a default UI component
+library — `COMP-appShell`, `COMP-header`, `COMP-body`, `COMP-footer`, `COMP-panel`,
+and layout helpers (`COMP-stack`, `COMP-grid`, `COMP-section`). It is **defined** in
+`.sdd/ui-schema.md` §9 and **materialized** by the `spec-writer` into the project's
+`specs/ui-components/` (with its index) before any screen is specified — it is **not
+shipped as files**. Screens **compose these by id**; the `reuse-analyst` progressively
+promotes recurring widgets (Button, TextInput, FormField, Modal, Table, …) into the
+library so nothing is copy-pasted.
 
 ---
 

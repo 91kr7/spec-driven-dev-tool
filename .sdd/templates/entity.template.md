@@ -1,5 +1,5 @@
 <!--
-  TEMPLATE — specs/templates/entity.template.md
+  TEMPLATE — .sdd/templates/entity.template.md
   Copy this file to specs/model/<ENT-id>.spec.md and fill every <placeholder>.
   KIND: entity (DECLARATIVE — NO SCoT, NO UI schematic). See .sdd/conventions.md §3, §4.
 

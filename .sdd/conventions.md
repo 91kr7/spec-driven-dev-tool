@@ -28,6 +28,7 @@ plan/PLAN.md                         # output of the Plan mode
 .sdd/conventions.md                  # THIS FILE — ids, front-matter, status, verdicts, rosters
 .sdd/state.md                        # append-only gatekeeper verdict / audit log
 .sdd/impl-notes/<spec-id>.md         # implementer-owned concretization notes (NOT part of the gated spec)
+.sdd/templates/*.template.md         # the forms new specs are copied from (ship with the tool)
 specs/indexes/modules.index.md       # one index PER LEVEL (not per module)
 specs/indexes/features.index.md
 specs/indexes/model.index.md
@@ -37,9 +38,8 @@ specs/modules/<id>.spec.md           # incl. MOD-build (build/config/CI/migratio
 specs/features/<id>.spec.md          # use-case: orchestration + integration acceptance
 specs/model/<id>.spec.md             # domain entities: fields, types, relations, constraints
 specs/classes/<id>.spec.md           # per-method SCoT (and feature-specific gui screens)
-specs/ui-components/<id>.spec.md     # shared UI component library
+specs/ui-components/<id>.spec.md     # shared UI component library (GUI projects: baseline GUARANTEED & materialized — ui-schema §9)
 specs/shared/<id>.spec.md            # shared non-UI abstractions (services, utils, types, interfaces) — indexed in classes.index.md
-specs/templates/*.template.md        # the templates new specs are copied from
 src/                                 # GENERATED (derived)
 tests/                               # GENERATED (unit from classes, integration from features, constraints from entities)
 ```
@@ -264,7 +264,7 @@ single-purpose workers: read inputs from files, write outputs/verdicts to files.
 |---|---|---|---|---|---|
 | `plan-architect` | requirement → plan of indexes/specs | `requirements/`, `specs/` (existing), `.sdd/` | `plan/`, `.sdd/target.md`, `.sdd/scot.md`*, `.sdd/ui-schema.md`* | `Read, Write, Glob, Grep` | no |
 | `plan-gatekeeper` | judge the plan | `requirements/`, `plan/`, `specs/` (existing), `.sdd/` | `.sdd/state.md` | `Read, Glob, Grep` | no |
-| `spec-writer` | write indexes + specs (4 levels + MOD-build) | `plan/`, `requirements/`, `specs/`, `.sdd/{scot,ui-schema,conventions,target}.md` | `specs/` (incl. indexes) | `Read, Write, Glob, Grep` | no |
+| `spec-writer` | write indexes + specs (4 levels + MOD-build) | `plan/`, `requirements/`, `specs/`, `.sdd/{scot,ui-schema,conventions,target}.md`, `.sdd/templates/` | `specs/` (incl. indexes) | `Read, Write, Glob, Grep` | no |
 | `reuse-analyst` | dedupe + promote shared specs (pure author) | `specs/`, `.sdd/conventions.md` | `specs/` | `Read, Write, Glob, Grep` | no |
 | `analysis-gatekeeper` | judge specs (the only spec-phase blocker) | `specs/`, `requirements/`, `.sdd/` | `.sdd/state.md` | `Read, Glob, Grep` | no |
 | `code-implementer` | specs → source (create / minimal diff) | `specs/`, `.sdd/{target,scot,ui-schema,conventions}.md`, `.sdd/impl-notes/`, `src/` | `src/` (declared paths), `.sdd/impl-notes/<id>.md` | `Read, Write, Edit, Glob, Grep` | yes (edit) |
@@ -288,8 +288,9 @@ code-gatekeeper + the independent test suite.
 
 ## 10. Command roster & the loop each drives
 
-Six commands in `.claude/commands/`. Modes 1–4 are the manual, human-in-control
-path; mode 5 is automatic, human out of the loop. Each command runs in the main
+Seven commands in `.claude/commands/` (five flow modes + two read-only helpers).
+Modes 1–4 are the manual, human-in-control path; mode 5 is automatic, human out of
+the loop. Each command runs in the main
 session and drives its loop by: invoke agent → read verdict from `.sdd/state.md`
 → decide (proceed / re-invoke routed author / escalate) → advance index `status`.
 
@@ -301,6 +302,7 @@ session and drives its loop by: invoke agent → read verdict from `.sdd/state.m
 | `/sdd-test` | 4. Test run | `test-writer` → `test-runner` → `test-gatekeeper` (loop ≤5); triage routes back. On full green → status `approved`. |
 | `/sdd-auto` | 5. Automatic | all of the above end-to-end, **one vertical slice at a time** in `depends_on` order, human NOT in the loop; escalate only on budget overflow. |
 | `/sdd-trace` | helper | reconstruct & print REQ→FEAT→CLS→SOURCE→TEST from indexes + front-matter. Read-only. |
+| `/sdd-status` | helper | print a per-entity lifecycle dashboard (status + latest verdict + resume point) from indexes + `state.md`. Read-only. |
 
 ---
 
