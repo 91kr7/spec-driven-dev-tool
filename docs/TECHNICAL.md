@@ -162,7 +162,7 @@ specs/
   ui-components/<id>.spec.md         UI component library — baseline GUARANTEED per GUI project (ui-schema §9), then enriched
   shared/<id>.spec.md                shared non-UI abstractions (SHR-*) — indexed in classes.index.md
 src/                                 GENERATED (derived)
-tests/                               GENERATED (unit←classes, integration←features, constraints←entities)
+tests/                               GENERATED (unit←classes, integration←features, constraints←entities, component←gui, e2e←gui screens — Playwright, GUI projects only)
 ```
 
 ### 3.2 Identifier scheme
@@ -182,8 +182,13 @@ Stable, never renumbered/renamed (a rename = a new id + deprecation of the old).
 | `B` | SCoT branch (in-spec) | `B<n>` + arm | `B1.then`, `B3.empty` |
 
 `MOD-build` is **mandatory in every project**: it owns build files, dependency
-manifests, config, CI, and the **DB schema changes derived from the entity specs**
-(schema changes are never hand-authored independently).
+manifests, config, CI, framework/test-harness config (incl. `playwright.config` for a
+GUI project's e2e), and the **DB schema changes derived from the entity specs** (schema
+changes are never hand-authored independently). It is the **documented exception** to
+the module-overview `source: []` rule — it owns these infra files **directly** in its own
+`source:` (each forward schema script is its own append-only file traced to an `ENT-*`,
+materialized by the code-implementer). When a DB is declared, an empty `source:` with
+persisted entities is blocked by the analysis gate (else the project ships with no schema).
 
 ### 3.3 Spec levels and the `kind:` → form mapping
 
@@ -303,20 +308,29 @@ scope to decide.
 - verdict: PASS | REJECT
 - reasons:
   - <blocking reason, citing the spec id / ACn / branch arm it concerns>
-- routing: <none | spec-writer | reuse-analyst | code-implementer | test-writer>
+- routing: <none | plan-architect | spec-writer | reuse-analyst | code-implementer | test-writer | escalate>
 ```
 
 `state.md` records **why**; the index records **where each entity stands**. (The plan
 gate also uses `phase: analysis`, distinguished from the spec gate by its `scope`.)
+`routing: escalate` (env / `MOD-build` / tooling) is for a REJECT no author can fix —
+a missing dependency, an unresolved placeholder, or an **e2e-setup** failure (the app
+under test won't boot); the command surfaces it to the human instead of looping.
+Because `state.md` is **append-only** but gatekeepers hold `Write` (whole-file), a
+gatekeeper appends by **Read**ing the file then **Write**ing it back in full with one
+new record — never writing only the record (that would clobber the log).
 
 ### 3.9 `tests/REPORT.md` — run report (the test-runner → test-gatekeeper contract)
 
 `test-runner` writes it (overwritten each run); `test-gatekeeper` parses it. Fixed
-structure (conventions §14): `## Run` (timestamp, commands, exit-status,
-phase-reached, tooling) · `## Summary` (total/passed/failed/skipped) · `## Failures`
-(per failing test: `coverage`, `message`, `excerpt`). **Coverage** of the spec is
-verified by the gatekeeper from the tagged test files in `tests/**`; the report
-supplies the run result and the coverage id of each failure.
+structure (conventions §14): `## Run` (timestamp, **scope**, **suites**, commands,
+exit-status, **phase-reached** incl. `component`/`e2e-setup`/`e2e`, tooling) ·
+`## Summary` (total/passed/failed/skipped) · `## Failures` (per failing test:
+`coverage`, `message`, `excerpt`). **Coverage** of the spec is verified by the
+gatekeeper from the tagged test files in `tests/**`; the report supplies the run
+result, the `scope` it was filtered to, the `suites` that ran, and the coverage id of
+each failure. A scoped run's verdict binds only its scope; the final unscoped run is
+the whole-app arbiter.
 
 ### 3.10 Coverage-id notation (the join key)
 
@@ -440,7 +454,7 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
 - **When:** first step of `/sdd-plan` and Phase A of `/sdd-auto`.
 - **Reads:** `requirements/REQUIREMENT.md`, existing `specs/` + indexes, `.claude/sdd/` + `.sdd/`.
 - **Writes:** `plan/PLAN.md`, `.sdd/target.md` only (the `.claude/sdd/` contracts are read-only). It does **not** write `requirements/`.
-- **Tools:** `Read, Write, Glob, Grep`.
+- **Tools:** `Read, Write, Edit, Glob, Grep`.
 - **Procedure:** classify NEW-project vs existing-SDD; derive the stack into
   `target.md` (**STOP and ask the human if the stack is unstated** — never assume a
   default); read the `REQ-*` ids the command assigned in `REQUIREMENT.md`; enumerate
@@ -457,7 +471,7 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
 - **When:** after `plan-architect` (in `/sdd-plan` and `/sdd-auto` Phase A).
 - **Reads:** `requirements/`, `plan/`, `specs/` (existing), `.claude/sdd/` + `.sdd/`.
 - **Writes:** one verdict to `.sdd/state.md`.
-- **Tools:** `Read, Glob, Grep`.
+- **Tools:** `Read, Write, Glob, Grep`.
 - **Veto criteria (REJECT if):** `target.md` missing or **not fully resolved** (any
   `<…>` left in §1 stack / §2 source-path conventions / §3 canonical commands); any
   entity missing `id`/`level`/`module`/`depends_on`/`source`/`requirement` or with a
@@ -474,7 +488,7 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
 - **Reads:** `plan/`, `requirements/`, `specs/` (+ `ui-components.index` for
   discover-before-create), `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.claude/sdd/templates/`.
 - **Writes:** `specs/**` (specs + index rows), all at `status: draft`.
-- **Tools:** `Read, Write, Glob, Grep`.
+- **Tools:** `Read, Write, Edit, Glob, Grep`.
 - **Procedure:** work entities in `depends_on` order; copy the matching template; fill
   front-matter; pick the body by kind (behavioral → SCoT; entity → field table +
   invariants; structural → declarative; **module → overview**; gui → schematic
@@ -495,7 +509,7 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
 - **When:** after `spec-writer`, before the analysis gate; re-run on any spec change.
 - **Reads:** `specs/`, `.claude/sdd/conventions.md`, `.claude/sdd/ui-schema.md`.
 - **Writes:** `specs/**` (promoted/edited specs, updated index rows), `specs/REUSE-REPORT.md`.
-- **Tools:** `Read, Write, Glob, Grep`.
+- **Tools:** `Read, Write, Edit, Glob, Grep`.
 - **Procedure:** detect recurring logic / near-duplicate SCoT / repeated widgets /
   repeated types; promote shared widgets into `specs/ui-components/` (`COMP-*`, correct
   `layer`) and shared non-UI abstractions into `specs/shared/` (`SHR-*`); rewrite
@@ -507,7 +521,7 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
 - **When:** end of `/sdd-specify`; `/sdd-auto` step 7c; on a spec-bug route.
 - **Reads:** all `specs/` + indexes, `requirements/`, `.claude/sdd/` + `.sdd/`.
 - **Writes:** one verdict to `.sdd/state.md`.
-- **Tools:** `Read, Glob, Grep`.
+- **Tools:** `Read, Write, Glob, Grep`.
 - **Veto criteria (REJECT if):** a spec is not self-sufficient to regenerate;
   front-matter missing/invalid; required sections missing **(honoring the
   `module`/`COMP-*` exceptions — do not reject a COMP for "missing Public
@@ -547,8 +561,9 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
 - **When:** `/sdd-implement` step 4; `/sdd-auto` step 8b; after any in-loop code fix.
 - **Reads:** specs, impl-notes, `src/`, `.claude/sdd/` + `.sdd/`.
 - **Writes:** one verdict to `.sdd/state.md`.
-- **Tools:** `Read, Glob, Grep, Bash` (**read-only** — compile/lint/inspect only;
-  never mutate, install, format, or run tests-as-fixes).
+- **Tools:** `Read, Write, Glob, Grep, Bash` (Write = the `.sdd/state.md` verdict only;
+  **Bash read-only** — compile/lint/inspect only; never mutate, install, format, or run
+  tests-as-fixes).
 - **Veto criteria (REJECT if):** code diverges from the SCoT / interface / invariants;
   a `source:` file is missing, or an orphan source file has no spec; a file lacks its
   traceability header; a concretization contradicts the spec; the gated spec was edited
@@ -567,14 +582,18 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
   constraints, gui events; `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`. **Never
   reads `src/` or `.sdd/impl-notes/`.**
 - **Writes:** `tests/**` (+ interface-derived stub helpers).
-- **Tools:** `Read, Write, Glob` (**no `Bash` by design**).
+- **Tools:** `Read, Write, Edit, Glob` (**no `Bash` by design**).
 - **Procedure:** unit tests from class specs (one per branch arm + per `ACn`),
-  integration tests from feature specs, constraint tests from entity specs, gui tests
-  from Events + Accessibility ACs; tag each test with its canonical coverage id
-  (§3.10); stub not-yet-ready dependencies from their interface specs only.
+  integration tests from feature specs, constraint tests from entity specs, **component**
+  tests from gui specs (Events + Accessibility ACs, rendered in a test renderer with the
+  feature mocked), and — for a **GUI project** — **Playwright e2e** tests for each gui
+  screen's `(journey)`-tagged ACs (the real running app in a real browser, selectors by
+  accessible role/name from the spec, file named after the screen id); tag each test with
+  its canonical coverage id (§3.10); stub by test type (unit → all collaborators; integration
+  → infra only; component → the feature; e2e → nothing in-process, real stack on a test DB).
 - **Definition of done:** every in-scope `ACn` and SCoT arm has ≥1 test asserting a
-  spec outcome (never an implementation detail); assertion style matches the spec's
-  declared `error_style`.
+  spec outcome (never an implementation detail); every gui screen has an e2e test per
+  `(journey)` AC; assertion style matches the spec's declared `error_style`.
 
 ### 4.9 `test-runner` (runner · test)
 - **Mission:** run the spec-derived suite via the canonical commands from `target.md`
@@ -583,11 +602,16 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
 - **Reads:** `tests/`, `src/`, `.sdd/target.md`.
 - **Writes:** `tests/REPORT.md`.
 - **Tools:** `Read, Write, Glob, Bash`.
-- **Procedure:** run `install` → `build` → `test-unit`/`test-int` (or `test-all`) from
-  `target.md §3` (a missing/placeholder command → record it and exit non-zero); parse
-  per-test pass/fail and recover each test's **canonical** coverage id, echoing it
-  verbatim; capture failures with message + trimmed excerpt; write the §3.9 structure
-  (`coverage: unknown` rather than inventing one when unrecoverable).
+- **Procedure:** resolve the `{scope}` selector from the scope ids (so only the scope's
+  tests run — empty scope ⇒ the whole-suite arbiter run); run `install` → `build` →
+  `test-unit`/`test-int` (or `test-all`) and, for a GUI project, `test-e2e` last, from
+  `target.md §3` (a missing/placeholder command → record it and exit non-zero; a GUI app
+  that won't launch → `phase-reached: e2e-setup`, stop). The commands bake a **dot**
+  console reporter (small captured output) + a machine-readable file reporter the runner
+  parses (`xmllint`/`jq`); fill **only** `{scope}`, never another flag. Parse per-test
+  pass/fail and recover each test's **canonical** coverage id, echoing it verbatim;
+  capture failures with message + trimmed excerpt; write the §3.9 structure (with `scope`
+  + `suites`; `coverage: unknown` rather than inventing one when unrecoverable).
 
 ### 4.10 `test-gatekeeper` (gate + triage · test)
 - **Mission:** verify coverage (every `ACn` and SCoT arm has a test, else REJECT) and
@@ -595,13 +619,18 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
 - **When:** `/sdd-test` step 3; `/sdd-auto` step 9c.
 - **Reads:** `tests/REPORT.md`, specs, `tests/`, `src/` (read-only, for triage), `.claude/sdd/` + `.sdd/`.
 - **Writes:** one verdict to `.sdd/state.md` with per-failure routing.
-- **Tools:** `Read, Glob, Grep`.
+- **Tools:** `Read, Write, Glob, Grep`.
 - **Veto criteria (REJECT if):** any `ACn` or SCoT arm in scope is uncovered (→
-  `test-writer`); a test asserts an implementation detail instead of a spec AC/branch
-  (→ `test-writer`); any in-scope test is failing. **Triage** each failure: **spec bug**
+  `test-writer`); for a GUI project, any gui screen's `(journey)`-tagged AC has no
+  Playwright **e2e** test, or a gui scope ran with no `e2e` in `suites` (→ `test-writer`,
+  or **escalate** if the e2e phase never executed / the app won't boot — `phase-reached:
+  e2e-setup`); a test asserts an implementation detail instead of a spec AC/branch
+  (→ `test-writer`); any in-scope test is failing. **Run-health first:** a non-running
+  suite (install/build/e2e-setup) is REJECTed by offending-file location or **escalated**,
+  never treated as a `test-writer` coverage gap. **Triage** each failure: **spec bug**
   → `spec-writer` (fix spec, then regenerate code); **code bug** → `code-implementer`
   (minimal diff); **test bug** → `test-writer`. PASS only when coverage is complete
-  **and** the suite is green.
+  (incl. e2e journeys) **and** the suite is green.
 
 ---
 
@@ -656,10 +685,14 @@ On overflow escalate. **Does not set `approved`** — `reviewed → approved` re
 green tests (Mode 4). It records the code-gate PASS in `state.md` for `/sdd-test`.
 
 ### 5.4 `/sdd-test` — Mode 4 (Test run)
-Generate spec-derived tests, run them, verify coverage, triage failures; on full green
-advance `reviewed → approved`. Steps: invoke `test-writer` (independent oracle), then
-`test-runner` (→ `tests/REPORT.md`), then `test-gatekeeper` (coverage + triage). On
-PASS advance `reviewed → approved`; on REJECT route per triage (test budget 5):
+Generate spec-derived tests, run them **scoped to the work**, verify coverage, triage
+failures; on full green advance `reviewed → approved`. Steps: invoke `test-writer`
+(independent oracle — unit/integration/constraint/component + Playwright **e2e** per
+`(journey)` AC for a GUI project), then `test-runner` (filters to the scope via `{scope}`,
+runs e2e last for a GUI project, → `tests/REPORT.md`), then `test-gatekeeper` (coverage
+incl. e2e journeys + triage). The no-argument run is the unscoped whole-project arbiter.
+On PASS advance `reviewed → approved`; on REJECT route per triage (test budget 5; a
+`routing: escalate` run-health/e2e-setup failure escalates immediately, not a budget step):
 - **test bug** → `test-writer` → redo run + judge.
 - **code bug** → re-run the implement step (`code-implementer` → `code-gatekeeper`,
   iterating until the **code gate** PASSes, bounded by the test budget) → redo run +
@@ -778,8 +811,7 @@ independent tests.
 blocker, `code-gatekeeper` the semantic code↔spec equivalence check, `test-gatekeeper`
 the spec/code/test triage); `sonnet` for the two **purely mechanical** roles
 (`test-writer` coverage enumeration, `test-runner` execution + reporting). The
-pipeline is reasoning-heavy, so the split is opus-leaning by design; a project may
-override any agent's `model:`. Canonical in
+pipeline is reasoning-heavy, so the split is opus-leaning by design. Canonical in
 `.claude/sdd/conventions.md` §9; a project may override any agent's `model:`.
 
 ---
@@ -808,16 +840,21 @@ modular, Express + React, pnpm, Postgres).
    go into `.sdd/impl-notes/`; `code-gatekeeper` PASS.
 4. **`/sdd-test`** → `test-writer` derives the suite from the behavioral specs
    (unit per branch arm + per `ACn`, integration from `FEAT-001`, constraints from
-   `ENT-user`); `test-runner` runs it → `tests/REPORT.md`; `test-gatekeeper` confirms
-   full coverage + green → the command advances every row `reviewed → approved`.
+   `ENT-user`, **component** from `CLS-registerScreen`'s events, and a **Playwright e2e**
+   for the screen's `(journey)` AC — registration succeeds end-to-end against the running
+   app); `test-runner` runs it **scoped to the slice** (`{scope}`, dot reporter) →
+   `tests/REPORT.md`; `test-gatekeeper` confirms full coverage (incl. the e2e journey) +
+   green → the command advances every row `reviewed → approved`.
 
 `/sdd-status` at any point shows the dashboard; `/sdd-trace FEAT-001` shows the chain.
 
 ### 8.2 Automatic path
 **`/sdd-auto "...requirement + stack..."`** runs the same four phases unattended, **one
 vertical slice at a time** in `depends_on` order, advancing status from each verdict
-and escalating only on a budget overflow (or the stack question if unresolvable). If it
-is interrupted, re-running it resumes from `state.md` + index `status`.
+and escalating only on a budget overflow (or the stack question if unresolvable). Each
+slice's tests run **scoped**; once every slice is `approved` it runs a **final unscoped
+whole-suite run** to catch cross-scope regressions before declaring done. If it is
+interrupted, re-running it resumes from `state.md` + index `status`.
 
 ### 8.3 A test-phase failure (triage in action)
 `test-runner` reports `CLS-regCtrl::register#B1.then` failing (a duplicate email returns
@@ -830,9 +867,10 @@ re-implement (code gate) → re-test.
 ### 8.4 Feature evolution (already `approved`)
 To change `ENT-user` (add a `displayName`): `/sdd-specify ENT-user` demotes the touched
 entities `approved → draft`, the `spec-writer` edits the entity spec, the analysis gate
-re-passes (`reviewed`), `/sdd-implement` applies a minimal diff to the entity + the
-`MOD-build` schema change (code gate), `/sdd-test` re-derives constraint tests and
-re-approves. The blast radius is the touched entity, not the project.
+re-passes (`reviewed`), `/sdd-implement` applies a minimal diff to the entity + adds the
+**next forward `MOD-build` schema script** (append-only — a new `Vn`, never editing a
+shipped one) (code gate), `/sdd-test` re-derives constraint tests and re-approves. The
+blast radius is the touched entity, not the project.
 
 ---
 

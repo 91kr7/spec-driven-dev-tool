@@ -84,7 +84,7 @@ Each "thing" is specified in the form that fits it (chosen by a `kind:` field):
 | **Feature / use-case** | `use-case` | orchestration **SCoT** (cross-class calls, by id) + integration ACs | integration / acceptance |
 | **Entity / data-model** | `entity` | **declarative**: fields, types, relations, invariants | constraint / validation |
 | **Class / service** | `service`, `controller` | **per-method SCoT** + invariants | unit |
-| **UI component / screen** | `gui` | **UI schematic** (wireframe + component tree + state/events) | UI / interaction |
+| **UI component / screen** | `gui` | **UI schematic** (wireframe + component tree + state/events) | component (in-process) + **e2e** (Playwright, for `(journey)` ACs) |
 
 Structural artifacts (`dto`, `enum`, `interface`, `config`) are **declarative**;
 an `interface` lists signatures only (the SCoT lives in the implementing class),
@@ -102,6 +102,27 @@ and a **stub/mock is auto-derived from its interface** — never specced separat
 Concretization the SCoT omits (library, API binding, idiom, edge case, bug-fix
 lesson) goes into `.sdd/impl-notes/<id>.md` — **never** into the gated spec — so
 the spec stays clean and **regenerable**.
+
+---
+
+## How tests work
+
+Five test types, all **derived from the specs** (the test-writer is an independent
+oracle — it never reads `src/`):
+
+- **unit** ← class SCoT (one per branch arm, collaborators stubbed) · **integration**
+  ← feature SCoT (real in-process collaboration, infrastructure mocked) · **constraint**
+  ← entity invariants · **component** ← gui specs (rendered in a test renderer, the
+  feature mocked) · **e2e (Playwright)** ← gui screens, **GUI projects only** — drives
+  the **real running app in a real browser** for each AC tagged `(journey)` (the
+  primary success journey + each rendered failure journey), selecting elements by
+  accessible role/name from the spec.
+- **Scoped during the workflow.** Each canonical `test-*` command in `.sdd/target.md`
+  carries a `{scope}` selector the `test-runner` fills, so only the **scope under work**
+  runs — never the whole app. The final whole-project run is unscoped and catches
+  cross-scope regressions.
+- **Compact output.** The `test-*` commands bake a **dot** console reporter (tiny
+  captured output) alongside a machine-readable JUnit/JSON file the runner parses.
 
 ---
 
@@ -136,8 +157,8 @@ the spec stays clean and **regenerable**.
 | `analysis-gatekeeper` | the single blocker of the spec phase (veto) | no |
 | `code-implementer` | specs → source: create new files **or minimal diffs**; writes impl-notes | yes (edit) |
 | `code-gatekeeper` | verifies code ≡ spec & mapping (veto) | yes (review) |
-| `test-writer` | specs → tests, an **independent oracle** (≥1 per AC & per branch) | **no (by role)** |
-| `test-runner` | runs the suite, writes `tests/REPORT.md` | yes |
+| `test-writer` | specs → tests, an **independent oracle** (≥1 per AC & per branch; + Playwright e2e per `(journey)` AC for GUI projects) | **no (by role)** |
+| `test-runner` | runs the suite **scoped to the work** (`{scope}`), writes `tests/REPORT.md` | yes |
 | `test-gatekeeper` | verifies coverage + triages failures (spec/code/test) | yes |
 
 **Gatekeepers judge; authors write.** Feedback loops have an **iteration budget**
@@ -195,7 +216,7 @@ demand.
 | `/sdd-plan` | 1. Plan | `plan-architect` → `plan-gatekeeper`. Derives the stack into `.sdd/target.md` (asks you if it isn't stated). **No specs or code.** |
 | `/sdd-specify` | 2. Plan approval | you approve the plan → `spec-writer` → `reuse-analyst` → `analysis-gatekeeper`. Advances `draft → reviewed`. |
 | `/sdd-implement` | 3. Implement | `code-implementer` → `code-gatekeeper`, in `depends_on` order (new files or minimal diffs). |
-| `/sdd-test` | 4. Test run | `test-writer` → `test-runner` → `test-gatekeeper` (coverage + triage). On full green: `reviewed → approved`. |
+| `/sdd-test` | 4. Test run | `test-writer` → `test-runner` (scoped) → `test-gatekeeper` (coverage incl. e2e journeys + triage). On full green: `reviewed → approved`. |
 | `/sdd-auto` | 5. Automatic | all of the above end-to-end, **one vertical slice at a time** in `depends_on` order, no manual stop; escalates only on budget overflow. |
 | `/sdd-trace` | helper | prints REQ → FEAT → CLASS → SOURCE → TEST. Read-only. |
 | `/sdd-status` | helper | prints a lifecycle dashboard (status + latest verdict + resume point). Read-only. |
@@ -238,7 +259,9 @@ and layout helpers (`COMP-stack`, `COMP-grid`, `COMP-section`). It is **defined*
 `specs/ui-components/` (with its index) before any screen is specified — it is **not
 shipped as files**. Screens **compose these by id**; the `reuse-analyst` progressively
 promotes recurring widgets (Button, TextInput, FormField, Modal, Table, …) into the
-library so nothing is copy-pasted.
+library so nothing is copy-pasted. A GUI project also guarantees its **e2e harness**:
+`MOD-build` owns `playwright.config` and `.sdd/target.md` carries a real `test-e2e`
+command, so each screen's `(journey)` ACs are validated end-to-end in a real browser.
 
 ---
 
