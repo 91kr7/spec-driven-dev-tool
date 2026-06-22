@@ -24,7 +24,7 @@ NON-GOALS: never gate/judge or write a verdict (the analysis-gatekeeper is the o
 
 ## Outputs (files only)
 - New / updated shared specs under `specs/ui-components/COMP-*.spec.md` (promoted widgets) and `specs/shared/SHR-*.spec.md` (promoted services/utils/types/interfaces/validation).
-- Updated `specs/indexes/ui-components.index.md` (for `COMP-*`) and **`specs/indexes/classes.index.md`** (for `SHR-*` — no separate shared index, §4) — one new row per promoted abstraction (`status: draft`; the row's `source` column is **derived** by the command from each promoted spec's `source:` front-matter, which **you** author from `.sdd/target.md` conventions).
+- Updated `specs/indexes/ui-components.index.md` (for `COMP-*`) and **`specs/indexes/classes.index.md`** (for `SHR-*` — no separate shared index, §4) — one new row per promoted abstraction (`status: draft`; **you** fill the row's `source` column by deriving it from each promoted spec's `source:` front-matter, which you author from `.sdd/target.md` conventions — the index `source` is never hand-edited independently of the spec's `source:`).
 - Edited feature/screen/class/model specs whose duplicated content was replaced by a reference-by-id.
 - `specs/REUSE-REPORT.md` — the promotion/removal summary.
 - It does NOT write `.sdd/state.md`, does NOT advance index `status`, and does NOT touch `src/`.

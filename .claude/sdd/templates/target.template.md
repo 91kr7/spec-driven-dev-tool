@@ -51,8 +51,8 @@ for new specs). Adapt to the stack:
 - File comment syntax for the traceability header: `<// …>`.
 - Design-token names referenced by UI specs resolve here: `<token source / theme file>`.
 - **Test layout (one test target per spec id, so a scoped run resolves mechanically):**
-  `<e.g. unit/component → tests/unit/<id>.* ; integration → tests/integration/<FEAT-id>.* ; constraint → tests/model/<ENT-id>.* ; e2e → tests/e2e/<screen-or-FEAT-id>.spec.*>`. Each
-  test file's name/path carries the spec id it covers so the `test-runner` can map scope ids → test files for the `{scope}` selector.
+  `<e.g. unit/component → tests/unit/<id>.* ; integration → tests/integration/<FEAT-id>.* ; constraint → tests/model/<ENT-id>.* ; e2e → tests/e2e/<CLS-screen-id>.spec.*>`. Each
+  test file's name/path carries the spec id it covers so the `test-runner` can map scope ids → test files for the `{scope}` selector. **Name each e2e file after the screen id (`CLS-*` gui)** it drives — not the feature id — so a screen-scoped run resolves its own e2e (a feature's scope closure already includes its screens).
 
 ---
 

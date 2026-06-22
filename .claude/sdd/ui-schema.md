@@ -142,6 +142,24 @@ END
 Trivial handlers (a single assignment or a navigation) need no SCoT — the table
 row is enough.
 
+**Journey acceptance criteria (the e2e contract — GUI projects).** A screen's
+**Acceptance criteria** (§1 item 5) come in two altitudes, and the spec **marks** which
+is which so coverage is mechanical (not inferred):
+
+- a **journey AC** — tag it `(journey)` right after its id, e.g. `**AC1** (journey) — …`
+  — is one whose outcome **crosses the running stack**: a navigation-on-success, a
+  persisted/emitted effect, or a rendered service-error banner. Journey ACs are validated
+  **end-to-end by a Playwright e2e test** against the real running app.
+- every other AC (inline validation, a disabled-while-busy rule, clear-on-edit, an
+  accessibility rule) is a **view AC**, covered by an in-process **component** test with
+  the feature call mocked.
+
+A screen that **calls a feature** (its `submit`-style handler has a `CALL FEAT-…`/
+`CALL CLS-…` on its success path) MUST declare **≥1 `(journey)` AC** (the primary success
+journey), plus a `(journey)` AC for each end-to-end failure it renders to the user. The
+`test-writer` writes one e2e per `(journey)` AC; the `test-gatekeeper` requires it; the
+`analysis-gatekeeper` blocks a feature-calling screen that declares no `(journey)` AC.
+
 **Handler snippet notes.** (1) *Call target:* a screen invokes its feature **by id**
 — call the feature's coordinator if it owns one, otherwise the **controller** the
 feature orchestrates (e.g. `CLS-regCtrl.register`). A purely-compositional feature

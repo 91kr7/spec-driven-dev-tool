@@ -29,8 +29,9 @@
 > latest verdict in `.sdd/state.md` — gatekeepers and authors never edit it.
 >
 > **`source` is derived.** The `source` column is filled **from each spec's
-> `source:` front-matter** (a command derives it; never hand-edited here). The
-> spec front-matter is the single authoritative spec→source mapping.
+> `source:` front-matter** by the **authoring agent** (`spec-writer` / `reuse-analyst`)
+> when it writes the row; never hand-edited independently here. The spec front-matter is
+> the single authoritative spec→source mapping.
 
 <!-- COLUMN CONTRACT (conventions §4):
      | id | name | description (WHAT, one line) | module | depends_on | spec | source | status |

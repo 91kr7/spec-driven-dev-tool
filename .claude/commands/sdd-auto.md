@@ -86,7 +86,10 @@ for the slice scope from `.sdd/state.md` and advance the affected index rows'
       `reviewed`/`approved` to `draft` — §5 — so its modified spec re-flows through
       the gate.)
    b. Invoke `reuse-analyst` via Task on the slice's specs to dedupe and promote
-      shared `SHR-*` / `COMP-*` abstractions (DRY) before judging.
+      shared `SHR-*` / `COMP-*` abstractions (DRY) before judging. Then read
+      `specs/REUSE-REPORT.md`: for every id under its **`Demote-for-re-gate:`** heading
+      (a `reviewed`/`approved` spec the reuse-analyst rewrote — §5), **demote that index
+      row to `draft`** so the changed spec re-passes the analysis gate.
    c. Invoke `analysis-gatekeeper` via Task (the only spec-phase blocker), passing
       the slice's specs + `requirements/` + `.claude/sdd/` + `.sdd/`.
    d. Read the latest analysis verdict. **PASS** → advance the slice's spec rows

@@ -129,14 +129,17 @@ END
 
 <!-- ui-schema §5 + conventions §3: Given/When/Then, each with a stable ACn id. Cover every
      non-trivial branch arm above and every visible rule. The test-writer turns these +
-     the SCoT arms into tests. TWO altitudes (GUI project): a screen's user-JOURNEY ACs —
-     those whose outcome crosses the running stack (navigation-on-success, a persisted/
-     emitted effect, a service-error banner) — are validated end-to-end by a **Playwright
-     e2e** test against the real running app; arm-level, accessibility, and pure-view ACs
-     are covered by in-process **component** tests with the feature call mocked. -->
+     the SCoT arms into tests. TWO altitudes (GUI project) — TAG the altitude so coverage is
+     mechanical (ui-schema §5 "Journey acceptance criteria"): a **journey AC** (tag `(journey)`
+     after its id) is one whose outcome crosses the running stack (navigation-on-success, a
+     persisted/emitted effect, a service-error banner) and is validated end-to-end by a
+     **Playwright e2e** test against the real running app; every other (view) AC — inline
+     validation, disabled-while-busy, clear-on-edit, accessibility — is covered by an
+     in-process **component** test with the feature call mocked. A screen that calls a
+     feature MUST declare ≥1 `(journey)` AC. -->
 
-- **AC1** — Given <context>, When <action>, Then <observable outcome>.
-- **AC2** — Given <context>, When <action>, Then <observable outcome>.
+- **AC1** (journey) — Given <context>, When <action>, Then <observable cross-stack outcome>.
+- **AC2** — Given <context>, When <action>, Then <observable view outcome>.
 
 ---
 
@@ -278,16 +281,17 @@ Coverage set for `submit`: `B1.then`, `B1.else`, `B2.then`, `B2.else`.
 
 ### Acceptance criteria
 
-- **AC1** — Given a registered user with correct credentials, When they fill
+- **AC1** (journey) — Given a registered user with correct credentials, When they fill
   Email and Password and click **Sign in**, Then `FEAT-002.authenticate` is
   called and the screen navigates to `redirectTo` (covers `submit#B1.else`,
-  `submit#B2.then`).
+  `submit#B2.then`). *Primary success journey → Playwright e2e.*
 - **AC2** — Given the Email field is empty, When the user clicks **Sign in**,
   Then no authentication call is made and `errors.email` shows a required-field
   message (covers `submit#B1.then`).
-- **AC3** — Given valid-looking but wrong credentials, When the user clicks
+- **AC3** (journey) — Given valid-looking but wrong credentials, When the user clicks
   **Sign in**, Then `errors.form` shows the service error message and the user
   stays on the screen with the typed email preserved (covers `submit#B2.else`).
+  *Rendered failure journey → Playwright e2e.*
 - **AC4** — Given a submit is in flight, When `submitting` is `true`, Then the
   **Sign in** button is disabled and shows its loading state (covers the
   no-double-submit invariant).

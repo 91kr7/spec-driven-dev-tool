@@ -74,7 +74,13 @@ under `specs/indexes/<level>/<MOD-id>.index.md`, keeping `modules.index` and
   as `playwright.config.ts` for a GUI project's e2e, the app entry/bootstrap file —
   so committed boilerplate has an owning spec and is never an orphan), and **DB schema
   changes derived from the entity specs** (schema changes are never hand-authored
-  independently; forward-only, append-only once shipped).
+  independently; forward-only, append-only once shipped). When the project declares a
+  database (`.sdd/target.md` DB ≠ `none`) and any persisted `ENT-*` exists, `MOD-build`
+  MUST declare ≥1 forward schema-change script in its `source:` (an empty `source:` with
+  persisted entities + a DB is a defect the analysis gate blocks — else the project would
+  silently ship with no schema). For a **GUI project** (Frontend ≠ `none`), `MOD-build`
+  likewise owns the **e2e harness** (`playwright.config.*` with its `webServer`), and
+  `.sdd/target.md`'s `test-e2e` command must be a real command, not `n/a`.
 
 ---
 
@@ -100,8 +106,9 @@ error_style: result             # behavioral specs only: result|raise (see scot.
 ```
 
 - `source:` is the **single authoritative home** of the spec→source mapping. The
-  index `source` column is **derived** from it (a command fills it; never
-  hand-edited). A **new** entity proposes paths from `.sdd/target.md` conventions;
+  index `source` column is **derived** from it by the **authoring agent**
+  (`spec-writer` for its rows, `reuse-analyst` for promoted rows) when it writes the
+  row — never hand-edited later. A **new** entity proposes paths from `.sdd/target.md` conventions;
   an **existing** one points at the real files.
 - **Default ownership: one file ↔ one spec.** A shared aggregator file (barrel,
   shared `types`) MAY be co-owned, but only if every co-owner declares it in
@@ -160,7 +167,7 @@ Each index lists **all** entries of one level. Columns (min):
 
 - `description` says **what it represents**, never how it is built.
 - `module` shows the partitioning (the level's home module).
-- `source` is **derived** from each spec's `source:` front-matter.
+- `source` is **derived** from each spec's `source:` front-matter by the authoring agent (spec-writer / reuse-analyst) when it writes the row.
 - `status` is the **canonical** lifecycle home for the entry (see §5).
 - `ui-components.index.md` adds a `layer` and a `variants` column.
 - Shared non-UI abstractions (`SHR-*`, in `specs/shared/`) are listed in
@@ -220,11 +227,20 @@ happens for a **code** or **test** bug — those leave the spec and its status u
 - reasons:
   - <blocking reason 1 (with the spec id / AC id / branch id it concerns)>
   - <blocking reason 2>
-- routing: <none | spec-writer | reuse-analyst | code-implementer | test-writer>   # REJECT only
+- routing: <none | plan-architect | spec-writer | reuse-analyst | code-implementer | test-writer | escalate>   # REJECT only
 ```
 
-The driving command reads the **latest** record for a scope to decide: advance
-status (PASS) / re-invoke the routed author (REJECT) / escalate (budget overflow).
+`routing: escalate` (env / `MOD-build` / tooling) is for a REJECT no author can fix —
+a missing dependency, an unresolved placeholder, or an **e2e-setup** failure (the app
+under test won't boot); the driving command surfaces it to the human instead of looping
+to an author. The driving command reads the **latest** record for a scope to decide: advance
+status (PASS) / re-invoke the routed author (REJECT) / escalate (an `escalate` routing, or
+a budget overflow).
+
+**Appending (every gate).** `state.md` is append-only but gatekeepers hold `Write`
+(whole-file overwrite), not `Edit`. To append safely a gatekeeper MUST first **Read** the
+current `.sdd/state.md`, then **Write it back in full** with its one new record appended —
+never Write only the new record (that clobbers the audit log).
 
 ---
 
@@ -246,6 +262,7 @@ red test never patches code arbitrarily*:
 - **test bug** → `test-writer` (fix the test; it must assert a spec AC/branch).
 - **build / setup failure** (the suite never ran — non-zero `install`/`build` phase in `tests/REPORT.md`) → route by the offending file: a compile error in `src/**` → `code-implementer`, in `tests/**` → `test-writer`; a missing dependency / tooling → **escalate** (env / `MOD-build`). Judge run-health *before* coverage; a non-running suite is never an automatic `test-writer` coverage gap.
 - **e2e-setup failure** (`phase-reached: e2e-setup` — the **running app under test failed to launch**, or the browser binaries are missing) → **escalate** (env / `MOD-build` / the `run`/`test-e2e` command), *not* a code or test bug by default; only route to `code-implementer`/`test-writer` when the report pins the cause to a `src/**` runtime crash or a `tests/**` (Playwright) error respectively. An app that won't boot is never an automatic `test-writer` coverage gap.
+- **e2e phase did not run** (any in-scope spec is `kind: gui` but `e2e` is **absent from the REPORT's `suites`**, even on a green `phase-reached: complete` run) → **REJECT / escalate** (env / `MOD-build` / `test-e2e`): the e2e phase was skipped, so a green run is **not** a PASS for a GUI scope. Never PASS a gui scope whose e2e suite never executed, and never treat it as a mere `test-writer` coverage gap.
 
 ---
 
