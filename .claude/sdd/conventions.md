@@ -124,6 +124,12 @@ error_style: result             # behavioral specs only: result|raise (see scot.
 | `module`       | structural  | declarative — module overview (purpose, contained entries, boundaries & dependencies) |
 | `gui`          | ui          | **UI schematic** (`.claude/sdd/ui-schema.md`)      |
 
+**GUI-project trigger.** A project is a **GUI project** iff `.sdd/target.md` declares a
+Frontend framework ≠ `none` (equivalently, the plan/specs contain any `gui`-kind entry).
+**Only** a GUI project must materialize the mandatory baseline UI library
+(`.claude/sdd/ui-schema.md` §9); a backend / CLI / library project has no `gui` specs and
+requires **no baseline**.
+
 A **stub/mock is never specced separately** — it is auto-derived from its
 `interface` spec (empty implementation returning defaults), for not-yet-ready
 dependencies or for tests.
@@ -271,7 +277,7 @@ single-purpose workers: read inputs from files, write outputs/verdicts to files.
 | `plan-architect` | requirement → plan of indexes/specs | `requirements/`, `specs/` (existing), `.claude/sdd/`, `.sdd/target.md` | `plan/`, `.sdd/target.md` | `Read, Write, Glob, Grep` | no |
 | `plan-gatekeeper` | judge the plan | `requirements/`, `plan/`, `specs/` (existing), `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | `Read, Glob, Grep` | no |
 | `spec-writer` | write indexes + specs (4 levels + MOD-build) | `plan/`, `requirements/`, `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.claude/sdd/templates/` | `specs/` (incl. indexes) | `Read, Write, Glob, Grep` | no |
-| `reuse-analyst` | dedupe + promote shared specs (pure author) | `specs/`, `.claude/sdd/{conventions,ui-schema}.md` | `specs/` | `Read, Write, Glob, Grep` | no |
+| `reuse-analyst` | dedupe + promote shared specs (pure author) | `specs/`, `.claude/sdd/{conventions,ui-schema}.md`, `.sdd/target.md` | `specs/` | `Read, Write, Glob, Grep` | no |
 | `analysis-gatekeeper` | judge specs (the only spec-phase blocker) | `specs/`, `requirements/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | `Read, Glob, Grep` | no |
 | `code-implementer` | specs → source (create / minimal diff) | `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.sdd/impl-notes/`, `src/` | `src/` (declared paths), `.sdd/impl-notes/<id>.md` | `Read, Write, Edit, Glob, Grep` | yes (edit) |
 | `code-gatekeeper` | judge code ≡ spec | `specs/`, `.sdd/impl-notes/`, `src/`, `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | `Read, Glob, Grep, Bash` (read-only) | yes (review) |
