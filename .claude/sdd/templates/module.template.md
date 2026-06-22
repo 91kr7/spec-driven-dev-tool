@@ -1,5 +1,5 @@
 <!--
-  TEMPLATE — MODULE spec (kind: module, structural overview). Schema per .sdd/conventions.md §3.
+  TEMPLATE — MODULE spec (kind: module, structural overview). Schema per .claude/sdd/conventions.md §3.
   A module partitions the system and names the entries (FEAT/CLS/ENT/COMP/SHR) it contains.
   It carries no SCoT and no UI schematic — those belong to the entries it contains.
   Copy to specs/modules/MOD-<kebab>.spec.md; the "## Filled example" (MOD-build) is a sample — delete it from a real spec.
@@ -77,13 +77,13 @@ Dependencies MUST be acyclic at the module level (see conventions §12).
 
 <!--
 GUIDANCE: ONLY rules that are special to THIS module and not already in
-.sdd/conventions.md / .sdd/target.md (DRY — never restate the canonical
+.claude/sdd/conventions.md / .sdd/target.md (DRY — never restate the canonical
 contracts). Examples: a naming pattern local to this module, an ordering rule,
 an isolation rule, a derivation rule. If the module has no special rules, write
-"None beyond .sdd/conventions.md." Do NOT leave this empty.
+"None beyond .claude/sdd/conventions.md." Do NOT leave this empty.
 -->
 
-- <module-local rule 1, or "None beyond .sdd/conventions.md.">
+- <module-local rule 1, or "None beyond .claude/sdd/conventions.md.">
 
 ---
 

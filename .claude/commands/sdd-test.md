@@ -15,7 +15,7 @@ red test never patches code arbitrarily; the triage decides what is actually wro
 
 ## Preconditions
 - `.sdd/target.md` exists and declares the canonical build/test/run commands.
-- `.sdd/conventions.md`, `.sdd/scot.md`, `.sdd/ui-schema.md` exist (shared contracts).
+- `.claude/sdd/conventions.md`, `.claude/sdd/scot.md`, `.claude/sdd/ui-schema.md` exist (shared contracts).
 - The scope's code already exists with a **code gate PASS** — i.e. the relevant
   index rows are at status `reviewed` and the latest `.sdd/state.md` record for
   the scope (`phase: code`) is `PASS`. If code is missing or the code gate has not
@@ -32,7 +32,7 @@ red test never patches code arbitrarily; the triage decides what is actually wro
 ## Steps (you, the main session, perform these)
 1. **Author tests.** Invoke `test-writer` via Task, passing the resolved spec
    paths/ids for the scope. It is an **independent oracle**: it reads only the
-   behavioral spec sections (and `.sdd/{target,scot,ui-schema,conventions}.md`),
+   behavioral spec sections (and `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`),
    **never** `src/` or `.sdd/impl-notes/`. It must emit **≥1 test per acceptance
    criterion `ACn`** and **≥1 test per SCoT branch arm** (e.g. `B1.then`,
    `B1.else`, `B3.empty`), tagging each test with its coverage id

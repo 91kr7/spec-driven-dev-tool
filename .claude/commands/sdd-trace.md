@@ -7,7 +7,7 @@ argument-hint: "<optional: a requirement id (REQ-001), feature id (FEAT-001), or
 
 Reconstructs and prints the full traceability chain
 **REQUIREMENT → FEATURE → CLASS/ENTITY/COMPONENT → SOURCE → TEST** on demand, from
-the indexes and spec front-matter (per `.sdd/conventions.md` §13 — there is **no**
+the indexes and spec front-matter (per `.claude/sdd/conventions.md` §13 — there is **no**
 separate traceability file; it is rebuilt every time). This is a **helper**, not
 one of the 5 flow modes: it changes nothing, advances no status, runs no gate. It
 exists for audits and impact analysis **before** a change. Mindset throughout:
@@ -52,7 +52,7 @@ exists for audits and impact analysis **before** a change. Mindset throughout:
    spec id. A missing or mismatched header is a **traceability gap** to highlight.
 5. **Cross-reference the tests' coverage ids.** Grep `tests/` for the fully-
    qualified coverage ids `<spec-id>::<function>#<arm-id>` and the `ACn` ids each
-   behavioral spec declares (per `.sdd/scot.md` §7). Map every covering test back
+   behavioral spec declares (per `.claude/sdd/scot.md` §7). Map every covering test back
    to the node it covers. For `gui`/structural specs, map tests to their `ACn`.
 6. **Compute coverage gaps.** For each behavioral node, derive its expected
    coverage set (every SCoT arm id + every `ACn`) and diff it against the coverage
@@ -78,7 +78,7 @@ exists for audits and impact analysis **before** a change. Mindset throughout:
 
 - **None.** `/sdd-trace` is read-only: it advances no index `status`
   (`draft`/`reviewed`/`approved` are owned by the flow commands per
-  `.sdd/conventions.md` §5) and appends no verdict to `.sdd/state.md`. It only
+  `.claude/sdd/conventions.md` §5) and appends no verdict to `.sdd/state.md`. It only
   *reads and reports* the `status` already recorded in each index row.
 
 ## Outputs

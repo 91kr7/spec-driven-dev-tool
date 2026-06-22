@@ -14,17 +14,17 @@ owns_sections: []               # only if this screen co-owns a shared aggregato
   HOW TO USE THIS TEMPLATE
   ------------------------
   Copy this file to specs/classes/CLS-<lowerCamel>.spec.md and fill every <placeholder>.
-  This is a feature-specific SCREEN (kind: gui) — its UI form obeys .sdd/ui-schema.md EXACTLY.
+  This is a feature-specific SCREEN (kind: gui) — its UI form obeys .claude/sdd/ui-schema.md EXACTLY.
   A screen COMPOSES shared library components BY ID; it never re-describes a button, input,
   panel, etc. that already exists. DISCOVER BEFORE CREATE: read
   specs/indexes/ui-components.index.md first; reference each widget by its COMP-* id. If a
   recurring widget is missing from the library, the reuse-analyst promotes it — you do not
   inline it here.
 
-  Values that bind this file (see .sdd/conventions.md): Markdown is the source of truth
+  Values that bind this file (see .claude/sdd/conventions.md): Markdown is the source of truth
   (authority); reuse over repetition (DRY).
 
-  Required sections for a kind: gui spec (.sdd/conventions.md §3 + ui-schema §1):
+  Required sections for a kind: gui spec (.claude/sdd/conventions.md §3 + ui-schema §1):
     # Purpose · # Public interface · # Invariants & rules ·
     then the FIVE UI-schema sections: Wireframe, Component tree, State, Events,
     Acceptance criteria. Delete these guidance comments in the real spec.
@@ -98,7 +98,7 @@ COMP-<rootLayoutId>
 
 <!-- ui-schema §5. Map each user/system event to a handler and its effect. Trivial handlers
      (single assignment / navigation) need only the table row. For a NON-TRIVIAL handler,
-     attach a small SCoT snippet below (grammar = .sdd/scot.md) with branch ids [Bn] so the
+     attach a small SCoT snippet below (grammar = .claude/sdd/scot.md) with branch ids [Bn] so the
      test-writer can cover each arm. -->
 
 | Event           | Trigger                | Handler                     | Effect                                  |

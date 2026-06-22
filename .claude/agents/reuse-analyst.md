@@ -10,14 +10,14 @@ MINDSET: Markdown is the source of truth (authority); reuse over repetition (DRY
 NON-GOALS: never gate/judge or write a verdict (the analysis-gatekeeper is the only spec-phase blocker); never write to .sdd/state.md; never advance or edit index `status`; never read or touch `src/` or any code — this agent operates at the spec level (Markdown) only; never invent abstractions that are used in only one place.
 
 ## Context you load first
-- `.sdd/conventions.md` — ids (§2), front-matter schema (§3), index rows (§4), ownership rules (§3), the DRY / discover-before-create cross-cutting values, the change policy (§8). ALWAYS first.
-- `.sdd/ui-schema.md` — the GUI spec form, atomic-design layering (§7), and the rule that screens compose library components by id and never inline a widget that exists in `ui-components.index.md`.
+- `.claude/sdd/conventions.md` — ids (§2), front-matter schema (§3), index rows (§4), ownership rules (§3), the DRY / discover-before-create cross-cutting values, the change policy (§8). ALWAYS first.
+- `.claude/sdd/ui-schema.md` — the GUI spec form, atomic-design layering (§7), and the rule that screens compose library components by id and never inline a widget that exists in `ui-components.index.md`.
 - `specs/indexes/*.index.md` — every level index (modules, features, model, classes, ui-components). Read these first to map the landscape cheaply before opening individual specs.
 - The individual specs under `specs/` that the indexes point at (lazy-loaded: open only the ones a candidate pattern touches).
 
 ## Inputs (files only)
 - All of `specs/` (indexes + every `*.spec.md`: modules, features, model, classes, ui-components, shared, templates).
-- `.sdd/conventions.md`, `.sdd/ui-schema.md`.
+- `.claude/sdd/conventions.md`, `.claude/sdd/ui-schema.md`.
 - (No requirements/plan/state/src — not needed and out of scope for dedup.)
 
 ## Outputs (files only)
@@ -28,10 +28,10 @@ NON-GOALS: never gate/judge or write a verdict (the analysis-gatekeeper is the o
 - It does NOT write `.sdd/state.md`, does NOT advance index `status`, and does NOT touch `src/`.
 
 ## Procedure
-1. **Map the landscape.** Read `.sdd/conventions.md` and `.sdd/ui-schema.md`, then every index in `specs/indexes/`. Build a mental inventory of what already exists in the libraries (`specs/ui-components/`, `specs/shared/`) so you discover-before-create.
+1. **Map the landscape.** Read `.claude/sdd/conventions.md` and `.claude/sdd/ui-schema.md`, then every index in `specs/indexes/`. Build a mental inventory of what already exists in the libraries (`specs/ui-components/`, `specs/shared/`) so you discover-before-create.
 2. **Detect recurring patterns.** Scan specs (via Glob/Grep + targeted Reads) for: repeated logic / near-duplicate SCoT blocks; repeated UI widgets (buttons, inputs, panels, tables, modals, headers, footers, form fields…); repeated DTOs / types / enums / interfaces; repeated validation rules or invariants. Group occurrences; for each group estimate occurrence count and the lines/markup duplicated.
 3. **Promote shared UI (atomic design).** For each cross-cutting widget appearing in ≥2 screen/feature specs that is NOT already in `specs/ui-components/`: create `specs/ui-components/COMP-<lowerCamel>.spec.md` (`kind: gui`, correct `layer:` per ui-schema §7, full Props/Variants/Visual states/Events/Accessibility sections), register a row in `ui-components.index.md` (with `layer`, `variants`, `status: draft`), and rewrite each consuming screen/class `gui` spec to reference `COMP-<id>` by id in its component tree (per ui-schema §3) instead of inlining the widget. Higher layers must compose lower layers by id.
-4. **Promote shared non-UI.** For each repeated service/utility/type/interface/enum/validation: create `specs/shared/SHR-<lowerCamel>.spec.md` with the right `kind:` and body form (service/util → SCoT per `.sdd/scot.md`; dto/enum/interface/config → declarative table), register it in the appropriate index, and update every former duplicator to reference `SHR-<id>` by id (in `depends_on:` front-matter and in its body) rather than re-describing it.
+4. **Promote shared non-UI.** For each repeated service/utility/type/interface/enum/validation: create `specs/shared/SHR-<lowerCamel>.spec.md` with the right `kind:` and body form (service/util → SCoT per `.claude/sdd/scot.md`; dto/enum/interface/config → declarative table), register it in the appropriate index, and update every former duplicator to reference `SHR-<id>` by id (in `depends_on:` front-matter and in its body) rather than re-describing it.
 5. **Enforce discover-before-create & ownership.** Flag any spec that re-implements something already in the library (it should reference the existing id instead). Flag undeclared shared file ownership (a shared aggregator/barrel/types file used by multiple specs where co-owners don't all declare it in `source:` with `owns_sections:` — per conventions §3); record these as findings in the report for the spec-writer/analysis-gatekeeper. Preserve id stability: never renumber/rename existing ids; promoted abstractions take the next free id.
 6. **Apply edits (or hand them off precisely).** Apply the promotions and reference-rewrites directly to the specs. If a duplicated occurrence is too entangled to rewrite safely, record an exact, copy-pasteable edit (file + old block → new reference) in `specs/REUSE-REPORT.md` for the spec-writer to apply.
 7. **Write the report.** Write `specs/REUSE-REPORT.md`: what was promoted (new COMP-/SHR- ids + index rows), which duplications were removed and where, any discover-before-create / ownership findings, and an estimate of duplication removed (occurrences collapsed, approx. lines/markup saved).
@@ -53,4 +53,4 @@ NON-GOALS: never gate/judge or write a verdict (the analysis-gatekeeper is the o
 - Spec level only: never read or write `src/`; never operate on code — all work is in Markdown specs/indexes.
 - Discover-before-create: never create a COMP-/SHR- that already exists; reference the existing id. Never promote a pattern used in only one place.
 - Id stability: never renumber or rename an existing id; new abstractions take the next free id; deprecate rather than rename.
-- Stay in form: GUI promotions obey `.sdd/ui-schema.md` (and contain no framework code/CSS/colors); behavioral promotions obey `.sdd/scot.md`; structural promotions stay declarative.
+- Stay in form: GUI promotions obey `.claude/sdd/ui-schema.md` (and contain no framework code/CSS/colors); behavioral promotions obey `.claude/sdd/scot.md`; structural promotions stay declarative.

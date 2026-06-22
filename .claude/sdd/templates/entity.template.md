@@ -1,7 +1,7 @@
 <!--
-  TEMPLATE — .sdd/templates/entity.template.md
+  TEMPLATE — .claude/sdd/templates/entity.template.md
   Copy this file to specs/model/<ENT-id>.spec.md and fill every <placeholder>.
-  KIND: entity (DECLARATIVE — NO SCoT, NO UI schematic). See .sdd/conventions.md §3, §4.
+  KIND: entity (DECLARATIVE — NO SCoT, NO UI schematic). See .claude/sdd/conventions.md §3, §4.
 
   Governing values (apply to every entity spec):
     Markdown is the source of truth (authority); reuse over repetition (DRY).
@@ -57,7 +57,7 @@ owns_sections: []                    # only for a co-owned aggregator file; othe
 
 # Fields
 
-<!-- The data shape. Use NEUTRAL type names from .sdd/scot.md §2 (Int, Long,
+<!-- The data shape. Use NEUTRAL type names from .claude/sdd/scot.md §2 (Int, Long,
      Decimal, Bool, String, Date, DateTime, UUID, List<T>, Map<K,V>, Option<T>,
      enum/entity by id or name). Constraints are declarative facts (required,
      unique, format, range, default, derived) — NOT storage directives. -->

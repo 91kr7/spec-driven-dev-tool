@@ -1,8 +1,8 @@
 <!--
   TEMPLATE — class/service/controller spec (behavioral, SCoT).
   Copy this file to specs/classes/CLS-<lowerCamel>.spec.md and fill every <placeholder>.
-  Authority: .sdd/conventions.md (ids, front-matter §3, status, ROLE block, change policy),
-             .sdd/scot.md (the ONLY behavioral grammar — branch ids [Bn], arm enumeration, §6 error styles).
+  Authority: .claude/sdd/conventions.md (ids, front-matter §3, status, ROLE block, change policy),
+             .claude/sdd/scot.md (the ONLY behavioral grammar — branch ids [Bn], arm enumeration, §6 error styles).
   Values that bind this artifact: Markdown is the source of truth (authority); reuse over repetition (DRY).
   Discover before create: read specs/indexes/classes.index.md first and reuse SHR-*/CLS-* by id.
   Placeholders below are intentional. The "## Filled example" section at the bottom is a complete,
@@ -47,7 +47,7 @@ error_style: <result|raise>   # behavioral specs ONLY — must equal the SCoT `e
 
 # SCoT
 
-<!-- Behavioral body. Grammar = .sdd/scot.md ONLY. State error-style first (must match front-matter).
+<!-- Behavioral body. Grammar = .claude/sdd/scot.md ONLY. State error-style first (must match front-matter).
      One FUNCTION per public method. Every branching construct carries a stable [Bn] id and ALL its
      arms must be enumerated (IF → Bn.then/Bn.elifk/Bn.else; loops → Bn.body + Bn.empty|skip; etc.).
      No library/framework names, no language syntax, no SQL — those go to .sdd/impl-notes/<id>.md. -->

@@ -8,9 +8,9 @@
     - specs/indexes/model.index.md        → base columns
     - specs/indexes/classes.index.md      → base columns
     - specs/indexes/ui-components.index.md → base columns + `layer` + `variants`
-  Authority: .sdd/conventions.md — §4 (index row schema), §2 (id scheme), §3 (front-matter,
+  Authority: .claude/sdd/conventions.md — §4 (index row schema), §2 (id scheme), §3 (front-matter,
              from which `source` is DERIVED), §5 (status lifecycle is owned HERE).
-             ui-components form also obeys .sdd/ui-schema.md (§7 layers).
+             ui-components form also obeys .claude/sdd/ui-schema.md (§7 layers).
   Values that bind this artifact: Markdown is the source of truth (authority); reuse over repetition (DRY).
   Placeholders below are intentional. The "## Filled example" section at the bottom shows every
   level with real rows — keep it as a reference, delete it from a real index.

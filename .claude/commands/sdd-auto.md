@@ -15,7 +15,7 @@ iteration-budget overflow. This is mode 5 of the 5-mode flow (modes 1–4 are th
 manual, human-in-control path `/sdd-plan` → `/sdd-specify` → `/sdd-implement` →
 `/sdd-test`; this command fuses all four and runs them unattended).
 
-Honor `.sdd/conventions.md` as canonical throughout: ids (§2), front-matter (§3),
+Honor `.claude/sdd/conventions.md` as canonical throughout: ids (§2), front-matter (§3),
 index rows (§4), status lifecycle and separation of duties (§5), the verdict
 record format (§6), budgets and failure routing (§7), the change policy (§8), the
 agent roster + isolation matrix (§9), and topological / vertical-slice processing
@@ -32,10 +32,8 @@ first and code is regenerated from it.
   command MUST still ask the human — it cannot assume a default stack. Ask the
   single stack question, capture the answer, then proceed unattended. (After this,
   the human is out of the loop until an escalation.)
-- The canonical contracts exist and are obeyed: `.sdd/conventions.md`,
-  `.sdd/scot.md`, `.sdd/ui-schema.md`. `plan-architect` authors `scot.md` /
-  `ui-schema.md` only if absent (a brand-new project); otherwise they are left
-  untouched.
+- The canonical contracts ship with the tool and are obeyed: `.claude/sdd/conventions.md`,
+  `.claude/sdd/scot.md`, `.claude/sdd/ui-schema.md` (read-only — no agent authors them).
 - No human approval gate is required to run — that is the defining property of
   mode 5.
 
@@ -50,10 +48,10 @@ first and code is regenerated from it.
    (raw + refined), assigning a stable `REQ-001`, `REQ-002`, … id to each atomic,
    testable requirement (the back-link targets for every spec's `requirements:`).
    Then invoke `plan-architect` via Task, passing `requirements/REQUIREMENT.md` +
-   the `.sdd/` contracts; it writes/extends `.sdd/target.md`, authors
-   `scot.md`/`ui-schema.md` only if they do not exist, and writes `plan/PLAN.md`.
+   the `.claude/sdd/` contracts; it writes/extends `.sdd/target.md` and writes
+   `plan/PLAN.md`. (Contracts ship with the tool — `plan-architect` never authors them.)
 3. Invoke `plan-gatekeeper` via Task, passing `plan/PLAN.md`, `requirements/`,
-   `.sdd/`. Read the **latest** plan-phase record for the scope from
+   `.claude/sdd/`, `.sdd/`. Read the **latest** plan-phase record for the scope from
    `.sdd/state.md`.
 4. Decide on that verdict:
    - **PASS** → continue automatically to Phase B (DO NOT stop for approval; this
@@ -66,7 +64,7 @@ first and code is regenerated from it.
 
 ### Phase B — Build the slice list
 5. From the approved `plan/PLAN.md` and the indexes under `specs/indexes/`,
-   compute the processing order by `depends_on` (`.sdd/conventions.md` §12):
+   compute the processing order by `depends_on` (`.claude/sdd/conventions.md` §12):
    topological, dependencies first. On a dependency **cycle**, schedule the
    `interface`/`contract` specs first and let implementations depend on the
    interface (stubs derive from the interface meanwhile).
@@ -90,7 +88,7 @@ for the slice scope from `.sdd/state.md` and advance the affected index rows'
    b. Invoke `reuse-analyst` via Task on the slice's specs to dedupe and promote
       shared `SHR-*` / `COMP-*` abstractions (DRY) before judging.
    c. Invoke `analysis-gatekeeper` via Task (the only spec-phase blocker), passing
-      the slice's specs + `requirements/` + `.sdd/`.
+      the slice's specs + `requirements/` + `.claude/sdd/` + `.sdd/`.
    d. Read the latest analysis verdict. **PASS** → advance the slice's spec rows
       `draft → reviewed`; go to step 8. **REJECT** → route per the verdict
       (`spec-writer` for spec defects, `reuse-analyst` for duplication/ownership
@@ -170,7 +168,7 @@ triggers a routed re-invocation.
 
 ## Outputs
 - `requirements/REQUIREMENT.md`, `plan/PLAN.md`.
-- `.sdd/target.md` (and `.sdd/scot.md` / `.sdd/ui-schema.md` if newly authored).
+- `.sdd/target.md` (and `.claude/sdd/scot.md` / `.claude/sdd/ui-schema.md` if newly authored).
 - Slice-by-slice: `specs/indexes/*.index.md` rows + `specs/**/*.spec.md`,
   `src/**` (declared paths), `.sdd/impl-notes/<id>.md`, `tests/**`,
   `tests/REPORT.md`.

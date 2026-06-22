@@ -1,8 +1,8 @@
 <!--
   TEMPLATE — shared NON-UI abstraction spec (SHR-*, lives in specs/shared/).
   Copy this file to specs/shared/SHR-<lowerCamel>.spec.md and fill every <placeholder>.
-  Authority: .sdd/conventions.md (ids §2, front-matter §3, kind→FORM §3 table, status §5, ROLE block §11, change policy §8),
-             .sdd/scot.md (the ONLY behavioral grammar — needed ONLY when kind: service).
+  Authority: .claude/sdd/conventions.md (ids §2, front-matter §3, kind→FORM §3 table, status §5, ROLE block §11, change policy §8),
+             .claude/sdd/scot.md (the ONLY behavioral grammar — needed ONLY when kind: service).
   Values that bind this artifact: Markdown is the source of truth (authority); reuse over repetition (DRY).
   Discover before create: read specs/indexes/* (and existing specs/shared/*) FIRST and reuse SHR-*/ENT-* by id —
     a shared abstraction exists to be reused, so promoting one over duplicating logic is the whole point.
@@ -81,7 +81,7 @@ error_style: <result|raise>   # ONLY for behavioral kinds (service) — must equ
 # SCoT
 
 <!-- BEHAVIORAL KINDS ONLY (kind: service). DELETE this whole section for interface/dto/enum/type/config.
-     Grammar = .sdd/scot.md ONLY. State error-style first (must match front-matter). One FUNCTION per public method.
+     Grammar = .claude/sdd/scot.md ONLY. State error-style first (must match front-matter). One FUNCTION per public method.
      Every branching construct carries a stable [Bn] id and ALL arms must be enumerated (scot.md §4, §7).
      No library/framework names, no language syntax, no SQL — those go to .sdd/impl-notes/<id>.md. -->
 

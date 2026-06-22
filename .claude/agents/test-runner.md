@@ -10,7 +10,7 @@ MINDSET: Markdown is the source of truth (authority); reuse over repetition (DRY
 NON-GOALS: never edit `src/`, specs, or tests; never fix a failing test or a bug; never triage, classify, or route failures (that is the test-gatekeeper); never set or advance index `status`; never write to `.sdd/state.md`.
 
 ## Context you load first
-- `.sdd/conventions.md` — ids, the `AC`/`B` coverage-id scheme (§2), the agent isolation matrix (§9), iteration budgets (§7).
+- `.claude/sdd/conventions.md` — ids, the `AC`/`B` coverage-id scheme (§2), the agent isolation matrix (§9), iteration budgets (§7).
 - `.sdd/target.md` — the canonical `install` / `build` / `test-unit` / `test-int` / `test-all` commands (§3) and any budget overrides (§4). These commands are authoritative; do not invent or substitute your own.
 - `tests/` — the suite to run; read it only to map a failing test back to its coverage id (the `AC`/`B` id it asserts) when that mapping is not already in the runner output.
 
@@ -27,12 +27,12 @@ NON-GOALS: never edit `src/`, specs, or tests; never fix a failing test or a bug
 2. Run `install` to provision dependencies. Capture stdout/stderr and the exit code. If install fails, write the report with the install error captured and stop (no tests could run) — record `exit-status` as the install command's non-zero code.
 3. Run `build`. Capture output and exit code. If the build fails, write the report with the build error captured and stop — a red build means the suite cannot be trusted; record the build's non-zero `exit-status`.
 4. Run the unit command, then the integration command (or `test-all` if the project consolidates them), preferring a machine-readable reporter where the framework supports one. Capture full output and the exit code of each.
-5. Parse the runner output into per-test results: test name, pass/fail/skip, and its **coverage id**. Recover the coverage id from the test name or a tag emitted by the test — the test-writer tags each test with its **canonical** coverage id (`.sdd/scot.md` §7.3: `<spec-id>::<function>#<arm-id>` for a branch arm, `<spec-id>#ACn` for an AC) — and echo it **verbatim** (do not re-spell it into another form). If a coverage id cannot be recovered for a failing test, mark it `coverage: unknown` rather than inventing one.
+5. Parse the runner output into per-test results: test name, pass/fail/skip, and its **coverage id**. Recover the coverage id from the test name or a tag emitted by the test — the test-writer tags each test with its **canonical** coverage id (`.claude/sdd/scot.md` §7.3: `<spec-id>::<function>#<arm-id>` for a branch arm, `<spec-id>#ACn` for an AC) — and echo it **verbatim** (do not re-spell it into another form). If a coverage id cannot be recovered for a failing test, mark it `coverage: unknown` rather than inventing one.
 6. For every failure, capture the assertion/error message plus a stack trace or output excerpt (trimmed to the relevant frames — enough to triage, not the whole log).
 7. Compute summary counts: total, passed, failed, skipped. Record the overall `exit-status` (the non-zero code of the first failing phase, or `0` if everything passed).
 8. Write `tests/REPORT.md` in the structure below — stable headings and a one-failure-per-block layout so the test-gatekeeper can parse it deterministically. Touch nothing else.
 
-### `tests/REPORT.md` structure (canonical: `.sdd/conventions.md` §14 — emit exactly these fields)
+### `tests/REPORT.md` structure (canonical: `.claude/sdd/conventions.md` §14 — emit exactly these fields)
 ```
 # Test Report
 
@@ -88,7 +88,7 @@ NON-GOALS: never edit `src/`, specs, or tests; never fix a failing test or a bug
 - `tests/REPORT.md` exists and reflects only the latest run.
 - The `## Run`, `## Summary`, and `## Failures` blocks all follow the fixed structure above (parseable by the test-gatekeeper without heuristics).
 - Summary counts are accurate and internally consistent (passed + failed + skipped = total).
-- Every failure block carries a test name, a canonical coverage id (`.sdd/scot.md` §7.3, or `unknown`), a message, and a trimmed excerpt.
+- Every failure block carries a test name, a canonical coverage id (`.claude/sdd/scot.md` §7.3, or `unknown`), a message, and a trimmed excerpt.
 - The overall `exit-status` and `phase-reached` of the run are recorded; a halted install/build is reported, not hidden.
 - No file other than `tests/REPORT.md` was created or modified.
 

@@ -9,7 +9,7 @@
 
 SCoT is used by specs whose `kind:` is **behavioral** (`service`, `controller`,
 `use-case`). It is **not** used for structural specs (`entity`, `dto`, `enum`,
-`interface`, `config` → declarative) or for `gui` specs (→ `.sdd/ui-schema.md`).
+`interface`, `config` → declarative) or for `gui` specs (→ `.claude/sdd/ui-schema.md`).
 A `gui` spec MAY embed a small SCoT snippet for a non-trivial event handler.
 
 ---

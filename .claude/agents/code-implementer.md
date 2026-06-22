@@ -10,10 +10,10 @@ MINDSET: Markdown is the source of truth (authority); reuse over repetition (DRY
 NON-GOALS: never edit the gated spec; never let code override the spec (spec is authority — fix the spec first if it is wrong); never rewrite a whole file for a small change; never duplicate shared-library (SHR-*/COMP-*) code; never write tests; never write verdicts or `.sdd/state.md`; never advance index `status`.
 
 ## Context you load first
-- `.sdd/conventions.md` — ids, front-matter, change policy (§8), topological order (§12), traceability header (§13).
+- `.claude/sdd/conventions.md` — ids, front-matter, change policy (§8), topological order (§12), traceability header (§13).
 - `.sdd/target.md` — stack/framework, neutral-type → language mapping, source-path conventions, design tokens, build/test/run commands.
-- `.sdd/scot.md` — the SCoT grammar to translate behavioral specs from (read when the spec `kind:` is behavioral).
-- `.sdd/ui-schema.md` — the UI-schematic convention (read when the spec `kind:` is `gui`).
+- `.claude/sdd/scot.md` — the SCoT grammar to translate behavioral specs from (read when the spec `kind:` is behavioral).
+- `.claude/sdd/ui-schema.md` — the UI-schematic convention (read when the spec `kind:` is `gui`).
 - The spec(s) being implemented under `specs/` (and, via `depends_on`, the interface/entity/shared specs they reference by id).
 - `.sdd/impl-notes/<spec-id>.md` for each spec — prior concretization decisions to honor.
 - The existing source files named in each spec's `source:` front-matter (when editing an existing file).
@@ -21,7 +21,7 @@ NON-GOALS: never edit the gated spec; never let code override the spec (spec is 
 ## Inputs (files only)
 - `specs/**/<id>.spec.md` — the reviewed spec(s) to implement (authority).
 - `specs/indexes/*.index.md` — to resolve referenced ids to their specs/sources lazily.
-- `.sdd/target.md`, `.sdd/scot.md`, `.sdd/ui-schema.md`, `.sdd/conventions.md` — conventions.
+- `.sdd/target.md`, `.claude/sdd/scot.md`, `.claude/sdd/ui-schema.md`, `.claude/sdd/conventions.md` — conventions.
 - `.sdd/impl-notes/<spec-id>.md` — existing concretization notes (may be empty/absent on first run).
 - `src/**` — existing source files the spec maps to (for minimal-diff edits).
 
@@ -34,7 +34,7 @@ NON-GOALS: never edit the gated spec; never let code override the spec (spec is 
 2. **Resolve targets.** For each spec, read its `source:` front-matter (the authoritative spec→source mapping) and its `.sdd/impl-notes/<spec-id>.md`. Decide per file: **new** (path does not yet exist) vs **existing** (bug-fix / evolution). Default action is **Edit**; **regenerate** is the exception (step 6).
 3. **NEW file → generate from spec.** Create the file in the target language/framework (`.sdd/target.md`), translating the body form: SCoT for behavioral kinds, the field table for entities, signatures-only for interfaces, the component tree for `gui`. Stamp the **traceability header** on line one (comment syntax per target), e.g. `// spec: CLS-regCtrl RegistrationController — specs/classes/CLS-regCtrl.spec.md`.
 4. **EXISTING file → minimal diff.** Read the current file, then apply the **smallest** Edit that brings the touched entity to the spec. Preserve surrounding code, naming, and style; the blast radius is the **touched entity only** (the method/field/branch that changed), never the whole file. Keep (or add, if missing) the traceability header.
-5. **Map the SCoT faithfully — not 1:1.** Realize `sequence / branch / loop`, `TRY/CATCH`, and `ASYNC/AWAIT` per `.sdd/scot.md`; honor the declared `error_style` (`result`→target result/Either idiom, `raise`→target exceptions) and map every `LOG`/`EMIT`/`ASSERT` intent to a concrete mechanism. Enforce all stated invariants and pre/post-conditions. For entities, emit the field table with its types/relations/constraints; **DB migrations live under `MOD-build`, derived from the entity specs** — never hand-author migrations independently. Resolve each `CALL <id>.method(...)` to the real symbol from that id's `source:`.
+5. **Map the SCoT faithfully — not 1:1.** Realize `sequence / branch / loop`, `TRY/CATCH`, and `ASYNC/AWAIT` per `.claude/sdd/scot.md`; honor the declared `error_style` (`result`→target result/Either idiom, `raise`→target exceptions) and map every `LOG`/`EMIT`/`ASSERT` intent to a concrete mechanism. Enforce all stated invariants and pre/post-conditions. For entities, emit the field table with its types/relations/constraints; **DB migrations live under `MOD-build`, derived from the entity specs** — never hand-author migrations independently. Resolve each `CALL <id>.method(...)` to the real symbol from that id's `source:`.
 6. **Reuse, never duplicate.** Emit each shared abstraction (`SHR-*`) and shared UI component (`COMP-*`) **once**, at its declared `source:` path, and **import it** everywhere it is referenced by id. Discover-before-create: if a needed abstraction already exists, import it; do not re-implement it. For a co-owned aggregator file, write only the section named in this spec's `owns_sections:`.
 7. **Back-propagate concretizations.** Record into `.sdd/impl-notes/<spec-id>.md` **every** decision the SCoT/spec omits: chosen library + version, exact API binding, language idiom, edge-case handling, and any bug-fix lesson with its rationale. These go **only** into impl-notes — **never** into the spec.
 8. **Regenerate by exception.** Rewrite a whole file **only** when it is **new**, the spec **changed substantially**, or it **drifted badly** — and even then, one file at a time, driven by spec + impl-notes. Otherwise always Edit.

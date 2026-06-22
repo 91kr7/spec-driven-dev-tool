@@ -7,12 +7,12 @@ argument-hint: "none (acts on the approved plan) or a slice id (e.g. FEAT-001)"
 
 Manual, human-in-control mode (mode 2 of the 5-mode flow; modes 1–4 are manual, mode 5 is automatic). This command represents the human's **approval of `plan/PLAN.md`**, then turns the approved plan into the spec corpus — the per-level indexes and the `*.spec.md` files (4 levels + `MOD-build`) — and drives them through the analysis gate until they are internally sound. It advances each spec from `draft` to `reviewed`. It writes no code and no tests.
 
-Authority reminder (per `.sdd/conventions.md`): **Markdown is the source of truth (authority); reuse over repetition (DRY).** You (the main session) are the orchestrator: you invoke subagents via the Task tool, read their verdicts from `.sdd/state.md`, and own all index `status` edits. Subagents do not spawn subagents; hand-off is **file-based** — pass only paths/ids.
+Authority reminder (per `.claude/sdd/conventions.md`): **Markdown is the source of truth (authority); reuse over repetition (DRY).** You (the main session) are the orchestrator: you invoke subagents via the Task tool, read their verdicts from `.sdd/state.md`, and own all index `status` edits. Subagents do not spawn subagents; hand-off is **file-based** — pass only paths/ids.
 
 ## Preconditions
 - `plan/PLAN.md` exists and **passed the plan gate** (latest `plan-gatekeeper` record for the plan in `.sdd/state.md` is `PASS`). If the plan never passed, stop and tell the human to run `/sdd-plan` first.
 - `.sdd/target.md` is complete (stack/architecture/framework + canonical build/test/run commands).
-- The canonical contracts exist: `.sdd/conventions.md`, `.sdd/scot.md`, `.sdd/ui-schema.md`.
+- The canonical contracts exist: `.claude/sdd/conventions.md`, `.claude/sdd/scot.md`, `.claude/sdd/ui-schema.md`.
 - `requirements/REQUIREMENT.md` exists (specs back-link to its requirement ids).
 - **Optional arg** `$ARGUMENTS`: if a slice id (e.g. `FEAT-001`) is given, scope spec-writing to that feature and its `depends_on` closure; if empty, act on the whole approved plan.
 
@@ -20,9 +20,9 @@ Authority reminder (per `.sdd/conventions.md`): **Markdown is the source of trut
 
 1. **Capture human approval (gate of this mode).** Confirm the human approves `plan/PLAN.md`. This command *represents* that approval — **do not proceed without an explicit go-ahead**. If the human has changes, stop and send them back to `/sdd-plan`.
 
-2. **Write indexes + specs.** Invoke `spec-writer` via Task. Pass the input paths/ids it needs: `plan/PLAN.md`, `requirements/REQUIREMENT.md`, the scope (`$ARGUMENTS` or "full plan"), and the canonical contracts (`.sdd/conventions.md`, `.sdd/scot.md`, `.sdd/ui-schema.md`, `.sdd/target.md`). It writes the per-level indexes under `specs/indexes/` and the `*.spec.md` files (modules incl. `MOD-build`, features, model, classes, ui-components) — **every new index row starts `status: draft`** and each spec's front-matter `status:` mirrors it. For **feature evolution** on an existing SDD project, before an entity already at `reviewed`/`approved` has its spec modified, YOU demote its index row to `draft` (§5) so the changed spec re-flows through the gate.
+2. **Write indexes + specs.** Invoke `spec-writer` via Task. Pass the input paths/ids it needs: `plan/PLAN.md`, `requirements/REQUIREMENT.md`, the scope (`$ARGUMENTS` or "full plan"), and the canonical contracts (`.claude/sdd/conventions.md`, `.claude/sdd/scot.md`, `.claude/sdd/ui-schema.md`, `.sdd/target.md`). It writes the per-level indexes under `specs/indexes/` and the `*.spec.md` files (modules incl. `MOD-build`, features, model, classes, ui-components) — **every new index row starts `status: draft`** and each spec's front-matter `status:` mirrors it. For **feature evolution** on an existing SDD project, before an entity already at `reviewed`/`approved` has its spec modified, YOU demote its index row to `draft` (§5) so the changed spec re-flows through the gate.
 
-3. **Dedupe + promote shared specs.** Invoke `reuse-analyst` via Task (pure author — judges nothing, writes no verdict). Pass `specs/` and `.sdd/conventions.md`. It removes duplication, promotes recurring abstractions into `specs/shared/` (`SHR-*`) and `specs/ui-components/` (`COMP-*`), rewires `depends_on`/component-tree references to the promoted ids, and writes `specs/REUSE-REPORT.md`. Promoted specs are also `status: draft`.
+3. **Dedupe + promote shared specs.** Invoke `reuse-analyst` via Task (pure author — judges nothing, writes no verdict). Pass `specs/` and `.claude/sdd/conventions.md`. It removes duplication, promotes recurring abstractions into `specs/shared/` (`SHR-*`) and `specs/ui-components/` (`COMP-*`), rewires `depends_on`/component-tree references to the promoted ids, and writes `specs/REUSE-REPORT.md`. Promoted specs are also `status: draft`.
 
 4. **Run the analysis gate.** Invoke `analysis-gatekeeper` via Task, passing the scope ids and `specs/`. It JUDGES only and appends one verdict record to `.sdd/state.md`. Read the **latest** `analysis-gatekeeper` record for this scope from `.sdd/state.md`.
 

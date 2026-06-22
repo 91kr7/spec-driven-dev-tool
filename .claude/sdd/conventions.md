@@ -3,8 +3,8 @@
 > **Status: canonical contract.** Every agent reads this first. It pins the
 > shared vocabulary so hand-offs (which happen **only through files**) are
 > unambiguous. If any other file disagrees with this one, this one wins — except
-> for the two sibling contracts it defers to: `.sdd/scot.md` (behavioral grammar)
-> and `.sdd/ui-schema.md` (UI form).
+> for the two sibling contracts it defers to: `.claude/sdd/scot.md` (behavioral grammar)
+> and `.claude/sdd/ui-schema.md` (UI form).
 
 Cross-cutting values that bind **every** agent:
 
@@ -20,28 +20,29 @@ Cross-cutting values that bind **every** agent:
 ## 1. File & folder layout (canonical)
 
 ```
-requirements/REQUIREMENT.md          # raw + refined user requirement
+# THE TOOL — .claude/ (immutable; installed once; a project never edits it)
+.claude/agents/*.md                  # the 10 subagents
+.claude/commands/*.md                # the 7 slash commands
+.claude/sdd/conventions.md           # THIS FILE — ids, front-matter, status, verdicts, rosters
+.claude/sdd/scot.md                  # canonical SCoT grammar (behavioral specs)
+.claude/sdd/ui-schema.md             # canonical UI-schematic convention (gui specs) + the GUARANTEED baseline UI library (§9)
+.claude/sdd/templates/*.template.md  # the forms new specs are copied from (incl. target.template, impl-notes.template)
+
+# THE PROJECT — created/written at runtime by the workflow (the project's own files)
+requirements/REQUIREMENT.md          # raw + refined user requirement (with REQ-* ids)
 plan/PLAN.md                         # output of the Plan mode
-.sdd/target.md                       # stack/architecture/framework + canonical build/test/run commands (AI-written, per project)
-.sdd/scot.md                         # canonical SCoT grammar (behavioral specs)
-.sdd/ui-schema.md                    # canonical UI-schematic convention (gui specs)
-.sdd/conventions.md                  # THIS FILE — ids, front-matter, status, verdicts, rosters
+.sdd/target.md                       # stack/architecture + canonical build/test/run commands (AI-written, per project)
 .sdd/state.md                        # append-only gatekeeper verdict / audit log
 .sdd/impl-notes/<spec-id>.md         # implementer-owned concretization notes (NOT part of the gated spec)
-.sdd/templates/*.template.md         # the forms new specs are copied from (ship with the tool)
-specs/indexes/modules.index.md       # one index PER LEVEL (not per module)
-specs/indexes/features.index.md
-specs/indexes/model.index.md
-specs/indexes/classes.index.md
-specs/indexes/ui-components.index.md
+specs/indexes/{modules,features,model,classes,ui-components}.index.md   # one index PER LEVEL
 specs/modules/<id>.spec.md           # incl. MOD-build (build/config/CI/migrations)
 specs/features/<id>.spec.md          # use-case: orchestration + integration acceptance
 specs/model/<id>.spec.md             # domain entities: fields, types, relations, constraints
 specs/classes/<id>.spec.md           # per-method SCoT (and feature-specific gui screens)
-specs/ui-components/<id>.spec.md     # shared UI component library (GUI projects: baseline GUARANTEED & materialized — ui-schema §9)
-specs/shared/<id>.spec.md            # shared non-UI abstractions (services, utils, types, interfaces) — indexed in classes.index.md
+specs/ui-components/<id>.spec.md     # UI library (GUI projects: baseline GUARANTEED & materialized — ui-schema §9)
+specs/shared/<id>.spec.md            # shared non-UI abstractions — indexed in classes.index.md
 src/                                 # GENERATED (derived)
-tests/                               # GENERATED (unit from classes, integration from features, constraints from entities)
+tests/                               # GENERATED (unit←classes, integration←features, constraints←entities)
 ```
 
 **Scaling option (decided in the plan):** for a large multi-module project the
@@ -109,7 +110,7 @@ error_style: result             # behavioral specs only: result|raise (see scot.
 
 | `kind:`        | Category    | Body form                                   |
 |----------------|-------------|---------------------------------------------|
-| `service`      | behavioral  | **SCoT** (`.sdd/scot.md`)                   |
+| `service`      | behavioral  | **SCoT** (`.claude/sdd/scot.md`)                   |
 | `controller`   | behavioral  | **SCoT**                                    |
 | `use-case`     | behavioral  | **SCoT** (orchestration: cross-class calls) |
 | `entity`       | structural  | declarative — field table, relations, invariants |
@@ -118,7 +119,7 @@ error_style: result             # behavioral specs only: result|raise (see scot.
 | `interface`    | structural  | declarative — signatures only, **no body**  |
 | `config`       | structural  | declarative — key/type/default table        |
 | `module`       | structural  | declarative — module overview (purpose, contained entries, boundaries & dependencies) |
-| `gui`          | ui          | **UI schematic** (`.sdd/ui-schema.md`)      |
+| `gui`          | ui          | **UI schematic** (`.claude/sdd/ui-schema.md`)      |
 
 A **stub/mock is never specced separately** — it is auto-derived from its
 `interface` spec (empty implementation returning defaults), for not-yet-ready
@@ -134,7 +135,7 @@ table; `gui` **screens** (`CLS-*`) add the five UI-schema sections.
 Two kinds shape their sections differently: a **`module`** spec uses `# Purpose` ·
 `# Contained entries` · `# Boundaries & dependencies` (no Public-interface/Invariants
 pair); a **shared UI component** (`COMP-*`, `kind: gui`) replaces `# Public interface`
-and `# Invariants & rules` with the `.sdd/ui-schema.md` §6 sections (Props · Variants ·
+and `# Invariants & rules` with the `.claude/sdd/ui-schema.md` §6 sections (Props · Variants ·
 Visual states · Events · Accessibility), which carry its interface and rules.
 
 ---
@@ -262,20 +263,20 @@ single-purpose workers: read inputs from files, write outputs/verdicts to files.
 
 | Agent | Role | May READ | May WRITE | tools frontmatter | Reads `src/`? |
 |---|---|---|---|---|---|
-| `plan-architect` | requirement → plan of indexes/specs | `requirements/`, `specs/` (existing), `.sdd/` | `plan/`, `.sdd/target.md`, `.sdd/scot.md`*, `.sdd/ui-schema.md`* | `Read, Write, Glob, Grep` | no |
-| `plan-gatekeeper` | judge the plan | `requirements/`, `plan/`, `specs/` (existing), `.sdd/` | `.sdd/state.md` | `Read, Glob, Grep` | no |
-| `spec-writer` | write indexes + specs (4 levels + MOD-build) | `plan/`, `requirements/`, `specs/`, `.sdd/{scot,ui-schema,conventions,target}.md`, `.sdd/templates/` | `specs/` (incl. indexes) | `Read, Write, Glob, Grep` | no |
-| `reuse-analyst` | dedupe + promote shared specs (pure author) | `specs/`, `.sdd/conventions.md` | `specs/` | `Read, Write, Glob, Grep` | no |
-| `analysis-gatekeeper` | judge specs (the only spec-phase blocker) | `specs/`, `requirements/`, `.sdd/` | `.sdd/state.md` | `Read, Glob, Grep` | no |
-| `code-implementer` | specs → source (create / minimal diff) | `specs/`, `.sdd/{target,scot,ui-schema,conventions}.md`, `.sdd/impl-notes/`, `src/` | `src/` (declared paths), `.sdd/impl-notes/<id>.md` | `Read, Write, Edit, Glob, Grep` | yes (edit) |
-| `code-gatekeeper` | judge code ≡ spec | `specs/`, `.sdd/impl-notes/`, `src/`, `.sdd/` | `.sdd/state.md` | `Read, Glob, Grep, Bash` (read-only) | yes (review) |
-| `test-writer` | specs → tests (independent oracle) | behavioral spec sections, `.sdd/{target,scot,ui-schema,conventions}.md` | `tests/` | `Read, Write, Glob` | **no — by role** |
+| `plan-architect` | requirement → plan of indexes/specs | `requirements/`, `specs/` (existing), `.claude/sdd/`, `.sdd/target.md` | `plan/`, `.sdd/target.md` | `Read, Write, Glob, Grep` | no |
+| `plan-gatekeeper` | judge the plan | `requirements/`, `plan/`, `specs/` (existing), `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | `Read, Glob, Grep` | no |
+| `spec-writer` | write indexes + specs (4 levels + MOD-build) | `plan/`, `requirements/`, `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.claude/sdd/templates/` | `specs/` (incl. indexes) | `Read, Write, Glob, Grep` | no |
+| `reuse-analyst` | dedupe + promote shared specs (pure author) | `specs/`, `.claude/sdd/conventions.md` | `specs/` | `Read, Write, Glob, Grep` | no |
+| `analysis-gatekeeper` | judge specs (the only spec-phase blocker) | `specs/`, `requirements/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | `Read, Glob, Grep` | no |
+| `code-implementer` | specs → source (create / minimal diff) | `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.sdd/impl-notes/`, `src/` | `src/` (declared paths), `.sdd/impl-notes/<id>.md` | `Read, Write, Edit, Glob, Grep` | yes (edit) |
+| `code-gatekeeper` | judge code ≡ spec | `specs/`, `.sdd/impl-notes/`, `src/`, `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | `Read, Glob, Grep, Bash` (read-only) | yes (review) |
+| `test-writer` | specs → tests (independent oracle) | behavioral spec sections, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md` | `tests/` | `Read, Write, Glob` | **no — by role** |
 | `test-runner` | run tests, write report | `tests/`, `src/`, `.sdd/target.md` | `tests/REPORT.md` | `Read, Write, Glob, Bash` | yes |
-| `test-gatekeeper` | verify coverage + triage failures | `tests/REPORT.md`, `specs/`, `src/`, `tests/`, `.sdd/` | `.sdd/state.md` | `Read, Glob, Grep` | yes |
+| `test-gatekeeper` | verify coverage + triage failures | `tests/REPORT.md`, `specs/`, `src/`, `tests/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | `Read, Glob, Grep` | yes |
 
-\* `plan-architect` authors `.sdd/scot.md` / `.sdd/ui-schema.md` **only if they do
-not already exist** (a new project). On an existing SDD project they are left
-untouched. `.sdd/target.md` it writes/extends from the user prompt (asking the
+The `.claude/sdd/` contracts (`conventions`/`scot`/`ui-schema`) and the templates ship
+with the **tool** and are **read-only** — no agent authors or edits them. `plan-architect`
+only writes/extends the per-project `.sdd/target.md` from the user prompt (asking the
 human if the stack is unstated).
 
 **test-writer independence is SOFT** (by design, no runtime hook): minimal tools
@@ -296,7 +297,7 @@ session and drives its loop by: invoke agent → read verdict from `.sdd/state.m
 
 | Command | Mode | Drives |
 |---|---|---|
-| `/sdd-plan` | 1. Plan | `plan-architect` → `plan-gatekeeper` (loop ≤3). Derives stack → `.sdd/target.md`; authors `scot.md`/`ui-schema.md` once if absent. No specs/code. |
+| `/sdd-plan` | 1. Plan | `plan-architect` → `plan-gatekeeper` (loop ≤3). Derives the stack → `.sdd/target.md`. No specs/code. (The `.claude/sdd/` contracts ship with the tool, read-only.) |
 | `/sdd-specify` | 2. Plan approval | capture human approval → `spec-writer` → `reuse-analyst` → `analysis-gatekeeper` (loop ≤3). Advances status to `reviewed`. |
 | `/sdd-implement` | 3. Implement | `code-implementer` → `code-gatekeeper` (loop ≤3), in `depends_on` order. |
 | `/sdd-test` | 4. Test run | `test-writer` → `test-runner` → `test-gatekeeper` (loop ≤5); triage routes back. On full green → status `approved`. |
@@ -358,7 +359,7 @@ It MUST follow this fixed structure so the gatekeeper can read it without heuris
 Note the division of labour: **coverage** of the spec (every `ACn` and every SCoT
 branch arm having a test) is verified by the gatekeeper from the tagged test files in
 `tests/**`; this report supplies the **run result** — what ran, pass/fail counts, and
-each failure with the canonical coverage id (`.sdd/scot.md` §7.3) it asserts.
+each failure with the canonical coverage id (`.claude/sdd/scot.md` §7.3) it asserts.
 
 ```
 # Test Report
@@ -378,7 +379,7 @@ each failure with the canonical coverage id (`.sdd/scot.md` §7.3) it asserts.
 
 ## Failures
 ### <test name>
-- coverage: <canonical coverage id(s), .sdd/scot.md §7.3 — e.g. CLS-regCtrl::register#B1.then and/or CLS-regCtrl#AC2 | unknown>
+- coverage: <canonical coverage id(s), .claude/sdd/scot.md §7.3 — e.g. CLS-regCtrl::register#B1.then and/or CLS-regCtrl#AC2 | unknown>
 - message: <assertion or error message>
 - excerpt: |
     <trimmed stack / output excerpt>

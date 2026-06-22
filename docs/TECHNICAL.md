@@ -3,12 +3,12 @@
 > Production reference for the Spec-Driven Development (SDD) agentic workflow:
 > how the **commands** orchestrate, how the **agents** work, and how every artifact
 > flows through the pipeline. This document describes the system **as implemented**.
-> The machine-read contract is `.sdd/conventions.md` (plus `.sdd/scot.md` and
-> `.sdd/ui-schema.md`); this file is the human-read companion. For a short overview
+> The machine-read contract is `.claude/sdd/conventions.md` (plus `.claude/sdd/scot.md` and
+> `.claude/sdd/ui-schema.md`); this file is the human-read companion. For a short overview
 > see `README.md`.
 
 **Audience:** engineers operating, supervising, or extending the workflow.
-**Conventions in this doc:** `§N` refers to a section of the named `.sdd/*.md`
+**Conventions in this doc:** `§N` refers to a section of the named `.claude/sdd/*.md`
 contract; `<id>` placeholders follow the id scheme in §[Identifiers](#32-identifier-scheme).
 
 ---
@@ -73,7 +73,7 @@ Five principles govern every part of the system.
 
 ```
  ┌──────────────────────────────────────────────────────────────────────┐
- │ CONTRACTS (.sdd/) — authored once, read by every agent                │
+ │ CONTRACTS (.claude/sdd/) — authored once, read by every agent                │
  │   conventions.md · scot.md · ui-schema.md · target.md(*)              │
  └──────────────────────────────────────────────────────────────────────┘
                                   │ govern
@@ -81,7 +81,7 @@ Five principles govern every part of the system.
  ┌──────────────────────────────────────────────────────────────────────┐
  │ SPECS (specs/) — the source of truth                                  │
  │   indexes/*.index.md  +  modules/ features/ model/ classes/           │
- │   ui-components/ shared/  (copy-from forms live in .sdd/templates/)   │
+ │   ui-components/ shared/  (copy-from forms live in .claude/sdd/templates/)   │
  └──────────────────────────────────────────────────────────────────────┘
                                   │ derived into                       ▲
                                   ▼                                    │ verified against
@@ -136,16 +136,23 @@ commands themselves.
 ### 3.1 Folder layout
 
 ```
+# THE TOOL — .claude/ (immutable; one portable folder; a project never edits it)
+.claude/agents/*.md                  the 10 subagents
+.claude/commands/*.md                the 7 slash commands
+.claude/sdd/
+  conventions.md                     THE canonical reference (ids, front-matter, status, verdicts, rosters)
+  scot.md                            canonical SCoT grammar (behavioral specs)
+  ui-schema.md                       canonical UI-schematic convention (gui specs) + the GUARANTEED baseline UI library (§9)
+  templates/*.template.md            the forms new specs are copied from (incl. target.template, impl-notes.template)
+docs/TECHNICAL.md                    this document
+
+# THE PROJECT — created/written at runtime by the workflow
 requirements/REQUIREMENT.md          raw + refined requirement, with REQ-* ids
 plan/PLAN.md                         output of the Plan mode
 .sdd/
   target.md                          stack + source-path conventions + canonical commands (AI-written, per project)
-  scot.md                            canonical SCoT grammar (behavioral specs)        — ships with the tool
-  ui-schema.md                       canonical UI-schematic convention (gui specs) + the GUARANTEED baseline UI library (§9)
-  conventions.md                     THE canonical reference (ids, front-matter, status, verdicts, rosters)
   state.md                           append-only verdict / audit log
   impl-notes/<spec-id>.md            implementer-owned concretization (NOT part of the gated spec)
-  templates/*.template.md            the forms new specs are copied from (ship with the tool)
 specs/
   indexes/{modules,features,model,classes,ui-components}.index.md   one index PER LEVEL
   modules/<id>.spec.md               incl. MOD-build (build/config/CI/migrations)
@@ -156,7 +163,6 @@ specs/
   shared/<id>.spec.md                shared non-UI abstractions (SHR-*) — indexed in classes.index.md
 src/                                 GENERATED (derived)
 tests/                               GENERATED (unit←classes, integration←features, constraints←entities)
-docs/TECHNICAL.md                    this document
 ```
 
 ### 3.2 Identifier scheme
@@ -360,11 +366,13 @@ front-matter + headers + test coverage ids.
 
 ### 3.14 Tool content vs runtime artifacts
 
-This repository is the **tool**. It ships only `.claude/`, `.sdd/` (the `conventions`/
-`scot`/`ui-schema` contracts, the `templates/` forms, the `target.md` template, the
-`state.md` seed, and the impl-notes template), and `docs/`. In particular the **UI
+This repository is the **tool**. It ships only `.claude/` (agents, commands, and
+`.claude/sdd/` = the `conventions`/`scot`/`ui-schema` contracts + the `templates/`
+forms, including `target.template` and `impl-notes.template`) and `docs/`. The
+per-project `.sdd/` (`target.md` / `state.md` / `impl-notes/`) is created at runtime.
+In particular the **UI
 library is not shipped as files**: for a GUI project the `spec-writer` materializes the
-guaranteed baseline (`.sdd/ui-schema.md` §9) into `specs/ui-components/`. The
+guaranteed baseline (`.claude/sdd/ui-schema.md` §9) into `specs/ui-components/`. The
 layout in §3.1 is the **runtime** layout of a *project that uses the tool*:
 `requirements/`, `plan/`, `src/`, `tests/`, and the populated `specs/` subfolders are
 **created by the workflow inside that project**, not shipped in the tool repo.
@@ -430,9 +438,8 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
 - **Mission:** turn the requirement into a PLAN of which indexes/specs to create or
   modify — no specs, no code.
 - **When:** first step of `/sdd-plan` and Phase A of `/sdd-auto`.
-- **Reads:** `requirements/REQUIREMENT.md`, existing `specs/` + indexes, `.sdd/*`.
-- **Writes:** `plan/PLAN.md`, `.sdd/target.md` (and `.sdd/scot.md`/`.sdd/ui-schema.md`
-  **only if absent** — a fresh clone). It does **not** write `requirements/`.
+- **Reads:** `requirements/REQUIREMENT.md`, existing `specs/` + indexes, `.claude/sdd/` + `.sdd/`.
+- **Writes:** `plan/PLAN.md`, `.sdd/target.md` only (the `.claude/sdd/` contracts are read-only). It does **not** write `requirements/`.
 - **Tools:** `Read, Write, Glob, Grep`.
 - **Procedure:** classify NEW-project vs existing-SDD; derive the stack into
   `target.md` (**STOP and ask the human if the stack is unstated** — never assume a
@@ -448,7 +455,7 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
 ### 4.2 `plan-gatekeeper` (gate · plan)
 - **Mission:** judge `plan/PLAN.md`; PASS or REJECT with blocking reasons.
 - **When:** after `plan-architect` (in `/sdd-plan` and `/sdd-auto` Phase A).
-- **Reads:** `requirements/`, `plan/`, `specs/` (existing), `.sdd/*`.
+- **Reads:** `requirements/`, `plan/`, `specs/` (existing), `.claude/sdd/` + `.sdd/`.
 - **Writes:** one verdict to `.sdd/state.md`.
 - **Tools:** `Read, Glob, Grep`.
 - **Veto criteria (REJECT if):** `target.md` missing or **not fully resolved** (any
@@ -465,7 +472,7 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
   the form its `kind` requires.
 - **When:** `/sdd-specify` step 2; `/sdd-auto` step 7a; re-invoked on a spec-bug route.
 - **Reads:** `plan/`, `requirements/`, `specs/` (+ `ui-components.index` for
-  discover-before-create), `.sdd/{conventions,scot,ui-schema,target}.md`, `.sdd/templates/`.
+  discover-before-create), `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.claude/sdd/templates/`.
 - **Writes:** `specs/**` (specs + index rows), all at `status: draft`.
 - **Tools:** `Read, Write, Glob, Grep`.
 - **Procedure:** work entities in `depends_on` order; copy the matching template; fill
@@ -486,7 +493,7 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
 - **Mission:** maximize reuse / eliminate duplication across the **specs** (Markdown
   only), before any code exists. A **pure author** — it edits, it does not judge.
 - **When:** after `spec-writer`, before the analysis gate; re-run on any spec change.
-- **Reads:** `specs/`, `.sdd/conventions.md`, `.sdd/ui-schema.md`.
+- **Reads:** `specs/`, `.claude/sdd/conventions.md`, `.claude/sdd/ui-schema.md`.
 - **Writes:** `specs/**` (promoted/edited specs, updated index rows), `specs/REUSE-REPORT.md`.
 - **Tools:** `Read, Write, Glob, Grep`.
 - **Procedure:** detect recurring logic / near-duplicate SCoT / repeated widgets /
@@ -498,7 +505,7 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
 ### 4.5 `analysis-gatekeeper` (gate · spec)
 - **Mission:** the single authority that blocks the spec phase.
 - **When:** end of `/sdd-specify`; `/sdd-auto` step 7c; on a spec-bug route.
-- **Reads:** all `specs/` + indexes, `requirements/`, `.sdd/*`.
+- **Reads:** all `specs/` + indexes, `requirements/`, `.claude/sdd/` + `.sdd/`.
 - **Writes:** one verdict to `.sdd/state.md`.
 - **Tools:** `Read, Glob, Grep`.
 - **Veto criteria (REJECT if):** a spec is not self-sufficient to regenerate;
@@ -519,7 +526,7 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
   in impl-notes; never edit the gated spec.
 - **When:** `/sdd-implement` step 3; `/sdd-auto` step 8a; on a code-bug/spec-bug
   re-route.
-- **Reads:** the spec(s), `.sdd/{target,scot,ui-schema,conventions}.md`,
+- **Reads:** the spec(s), `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`,
   `.sdd/impl-notes/<id>.md`, and the existing `src/` files it touches.
 - **Writes:** `src/**` (declared `source:` paths), `.sdd/impl-notes/<id>.md`.
 - **Tools:** `Read, Write, Edit, Glob, Grep`.
@@ -538,7 +545,7 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
 - **Mission:** verify code faithfully implements the spec and the on-disk spec↔source
   mapping is real, complete, and traceable.
 - **When:** `/sdd-implement` step 4; `/sdd-auto` step 8b; after any in-loop code fix.
-- **Reads:** specs, impl-notes, `src/`, `.sdd/*`.
+- **Reads:** specs, impl-notes, `src/`, `.claude/sdd/` + `.sdd/`.
 - **Writes:** one verdict to `.sdd/state.md`.
 - **Tools:** `Read, Glob, Grep, Bash` (**read-only** — compile/lint/inspect only;
   never mutate, install, format, or run tests-as-fixes).
@@ -557,7 +564,7 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
   **behavioral** part of the specs — ≥1 test per `ACn` and per SCoT branch arm.
 - **When:** `/sdd-test` step 1; `/sdd-auto` step 9a; re-invoked on a test-bug route.
 - **Reads:** behavioral spec sections (public interface, ACs, SCoT), entity
-  constraints, gui events; `.sdd/{target,scot,ui-schema,conventions}.md`. **Never
+  constraints, gui events; `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`. **Never
   reads `src/` or `.sdd/impl-notes/`.**
 - **Writes:** `tests/**` (+ interface-derived stub helpers).
 - **Tools:** `Read, Write, Glob` (**no `Bash` by design**).
@@ -586,7 +593,7 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
 - **Mission:** verify coverage (every `ACn` and SCoT arm has a test, else REJECT) and
   triage each failure as a spec / code / test bug.
 - **When:** `/sdd-test` step 3; `/sdd-auto` step 9c.
-- **Reads:** `tests/REPORT.md`, specs, `tests/`, `src/` (read-only, for triage), `.sdd/*`.
+- **Reads:** `tests/REPORT.md`, specs, `tests/`, `src/` (read-only, for triage), `.claude/sdd/` + `.sdd/`.
 - **Writes:** one verdict to `.sdd/state.md` with per-failure routing.
 - **Tools:** `Read, Glob, Grep`.
 - **Veto criteria (REJECT if):** any `ACn` or SCoT arm in scope is uncovered (→
@@ -618,7 +625,7 @@ and is the orchestrator (§2.2).
 Turn the requirement into a plan; **no specs, no code**. Steps: capture/refine
 `requirements/REQUIREMENT.md` from `$ARGUMENTS`, **assigning a stable `REQ-*` id to each
 atomic requirement** (these are the back-link targets); invoke `plan-architect` (it
-derives `target.md` and, on a fresh clone, authors `scot.md`/`ui-schema.md`); if the
+derives `target.md`); if the
 stack is unstated, relay its question to the human and stop until answered; invoke
 `plan-gatekeeper`; on PASS tell the human the plan is ready for `/sdd-specify`; on
 REJECT re-invoke `plan-architect` with the reasons (analysis budget 3); on overflow
@@ -753,16 +760,16 @@ independent tests.
 
 | Agent | May READ | May WRITE | Bash/Edit | Reads `src/`? |
 |---|---|---|---|---|
-| `plan-architect` | `requirements/`, existing `specs/`, `.sdd/` | `plan/`, `.sdd/target.md` (+ `scot`/`ui-schema` if absent) | — | no |
-| `plan-gatekeeper` | `requirements/`, `plan/`, `specs/`, `.sdd/` | `.sdd/state.md` | — | no |
-| `spec-writer` | `plan/`, `requirements/`, `specs/`, `.sdd/{scot,ui-schema,conventions,target}.md`, `.sdd/templates/` | `specs/` (incl. indexes) | — | no |
-| `reuse-analyst` | `specs/`, `.sdd/conventions.md` | `specs/` | — | no |
-| `analysis-gatekeeper` | `specs/`, `requirements/`, `.sdd/` | `.sdd/state.md` | — | no |
-| `code-implementer` | `specs/`, `.sdd/{target,scot,ui-schema,conventions}.md`, `.sdd/impl-notes/`, `src/` | `src/` (declared paths), `.sdd/impl-notes/<id>.md` | **Edit** | **yes** — spec stays authority |
-| `code-gatekeeper` | `specs/`, `.sdd/impl-notes/`, `src/`, `.sdd/` | `.sdd/state.md` | Bash (read-only) | yes (review) |
-| `test-writer` | behavioral spec sections, `.sdd/{target,scot,ui-schema,conventions}.md` | `tests/` | — | **no — by role** |
+| `plan-architect` | `requirements/`, existing `specs/`, `.claude/sdd/`, `.sdd/target.md` | `plan/`, `.sdd/target.md` | — | no |
+| `plan-gatekeeper` | `requirements/`, `plan/`, `specs/`, `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | — | no |
+| `spec-writer` | `plan/`, `requirements/`, `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.claude/sdd/templates/` | `specs/` (incl. indexes) | — | no |
+| `reuse-analyst` | `specs/`, `.claude/sdd/conventions.md` | `specs/` | — | no |
+| `analysis-gatekeeper` | `specs/`, `requirements/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | — | no |
+| `code-implementer` | `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.sdd/impl-notes/`, `src/` | `src/` (declared paths), `.sdd/impl-notes/<id>.md` | **Edit** | **yes** — spec stays authority |
+| `code-gatekeeper` | `specs/`, `.sdd/impl-notes/`, `src/`, `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | Bash (read-only) | yes (review) |
+| `test-writer` | behavioral spec sections, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md` | `tests/` | — | **no — by role** |
 | `test-runner` | `tests/`, `src/`, `.sdd/target.md` | `tests/REPORT.md` | Bash (run) | yes |
-| `test-gatekeeper` | `tests/REPORT.md`, `specs/`, `src/`, `tests/`, `.sdd/` | `.sdd/state.md` | — | yes |
+| `test-gatekeeper` | `tests/REPORT.md`, `specs/`, `src/`, `tests/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | — | yes |
 | *commands* (main session) | everything | index `status`, drives all | Task | no (coordinates) |
 
 ---
@@ -833,11 +840,11 @@ re-approves. The blast radius is the touched entity, not the project.
 ## 10. Operating the workflow
 
 ### 10.1 Adopting the tool
-Start a project from this repository, or copy `.claude/` and `.sdd/` into it — those
-hold the agents/commands plus all contracts, the `templates/` forms, and the guaranteed
-UI-library definition (`.sdd/ui-schema.md` §9). The only thing you must supply is the
-requirement (with the stack); the UI library is materialized into your `specs/` on the
-first GUI feature.
+Drop the **`.claude/`** folder into your project (copy it, or `ln -s` it from this
+repo) — that one folder *is* the tool: agents, commands, contracts, templates, and the
+guaranteed UI-library definition (`.claude/sdd/ui-schema.md` §9). The only thing you
+supply is the requirement (with the stack); everything else (`.sdd/`, `specs/`, `src/`,
+`tests/`) the workflow creates inside your project.
 
 ### 10.2 The stack question
 The stack comes from your prompt; the AI writes it into `.sdd/target.md`. **If the
@@ -859,12 +866,12 @@ escalates to the human.
 ## 11. Extending the workflow
 
 - **Add a UI component** — the **baseline is guaranteed automatically** (the
-  `spec-writer` materializes `.sdd/ui-schema.md` §9); for anything beyond it let the
+  `spec-writer` materializes `.claude/sdd/ui-schema.md` §9); for anything beyond it let the
   `reuse-analyst` promote it (the normal path), or author a `COMP-*` spec in
   `specs/ui-components/` (per `ui-schema §6`, with a `layer`) and register it in
   `ui-components.index.md`. Screens then reference it by id.
 - **Add a spec kind** — add the row to `conventions.md §3` (`kind:`→form), define its
-  required sections, add a template under `.sdd/templates/`, and teach the
+  required sections, add a template under `.claude/sdd/templates/`, and teach the
   `spec-writer` (body form) and `analysis-gatekeeper` (sections) about it. (This is
   exactly how `module` and the `COMP-*` exception were added.)
 - **Non-functional requirements** — today NFRs enter as testable `ACn` (so the test

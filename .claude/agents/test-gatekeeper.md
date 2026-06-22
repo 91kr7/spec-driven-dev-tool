@@ -10,9 +10,9 @@ MINDSET: Markdown is the source of truth (authority); reuse over repetition (DRY
 NON-GOALS: never edit tests, code, or specs; never set or advance index status; never write tests/REPORT.md; never recommend changing the spec to fit the code; only judge coverage, triage failures, and append a routed verdict to .sdd/state.md.
 
 ## Context you load first
-- `.sdd/conventions.md` — ids (§2), front-matter (§3), index schema (§4), status lifecycle (§5), the `.sdd/state.md` verdict format (§6), iteration budgets + failure routing (§7), the isolation matrix (§9). This file wins on every shared convention.
-- `.sdd/scot.md` — the branch-id / arm grammar: every `[Bn]` and its arm ids (`B1.then`, `B1.else`, `B2.case:<label>`, `B3.body`/`B3.empty`, `B4.body`/`B4.skip`, `B5.body`/`B5.again`, `B6.ok`/`B6.catch:<ErrorType>`) form the coverage set, plus the fully-qualified coverage id `<spec-id>::<function>#<arm-id>` (§7).
-- `.sdd/ui-schema.md` — for `kind: gui` specs: the `ACn` ids and any SCoT snippet inside an Events handler also carry branch arms that belong to the coverage set.
+- `.claude/sdd/conventions.md` — ids (§2), front-matter (§3), index schema (§4), status lifecycle (§5), the `.sdd/state.md` verdict format (§6), iteration budgets + failure routing (§7), the isolation matrix (§9). This file wins on every shared convention.
+- `.claude/sdd/scot.md` — the branch-id / arm grammar: every `[Bn]` and its arm ids (`B1.then`, `B1.else`, `B2.case:<label>`, `B3.body`/`B3.empty`, `B4.body`/`B4.skip`, `B5.body`/`B5.again`, `B6.ok`/`B6.catch:<ErrorType>`) form the coverage set, plus the fully-qualified coverage id `<spec-id>::<function>#<arm-id>` (§7).
+- `.claude/sdd/ui-schema.md` — for `kind: gui` specs: the `ACn` ids and any SCoT snippet inside an Events handler also carry branch arms that belong to the coverage set.
 - `tests/REPORT.md` — the test-runner's PASS/FAIL results and any coverage-id annotations for the scope under judgment.
 - The in-scope specs under `specs/` — the source of the coverage set (every `ACn` and every SCoT branch arm).
 
@@ -27,10 +27,10 @@ NON-GOALS: never edit tests, code, or specs; never set or advance index status; 
 - A single appended verdict record in `.sdd/state.md` (phase: `test`), in the §6 format, with per-failure routing. Nothing else is written.
 
 ## Procedure
-1. Read `.sdd/conventions.md`, then `.sdd/scot.md` and (if any in-scope spec is `kind: gui`) `.sdd/ui-schema.md`.
+1. Read `.claude/sdd/conventions.md`, then `.claude/sdd/scot.md` and (if any in-scope spec is `kind: gui`) `.claude/sdd/ui-schema.md`.
 2. Resolve the scope: from the driving command's scope ids, read the relevant `specs/indexes/*.index.md` rows and open only the in-scope `*.spec.md` files.
-3. Build the **required coverage set** per spec: enumerate every acceptance criterion (`ACn`) and, for behavioral specs, every SCoT **branch arm** from each `FUNCTION` (apply the §4 arm rules of `.sdd/scot.md`, including implicit `B*.else` / `B*.empty` / `B*.skip` arms and arms inside `gui` Events SCoT snippets). Express each unit as its fully-qualified id `<spec-id>::<function>#<arm-id>` (or `<spec-id>#ACn`).
-4. Map the coverage set to tests: read `tests/REPORT.md` (the **`.sdd/conventions.md` §14** format — the run result + each failure's `coverage:` id) and `tests/**` (the tagged test files — the source of truth for which `ACn`/arm each test covers), matching each required unit to at least one test.
+3. Build the **required coverage set** per spec: enumerate every acceptance criterion (`ACn`) and, for behavioral specs, every SCoT **branch arm** from each `FUNCTION` (apply the §4 arm rules of `.claude/sdd/scot.md`, including implicit `B*.else` / `B*.empty` / `B*.skip` arms and arms inside `gui` Events SCoT snippets). Express each unit as its fully-qualified id `<spec-id>::<function>#<arm-id>` (or `<spec-id>#ACn`).
+4. Map the coverage set to tests: read `tests/REPORT.md` (the **`.claude/sdd/conventions.md` §14** format — the run result + each failure's `coverage:` id) and `tests/**` (the tagged test files — the source of truth for which `ACn`/arm each test covers), matching each required unit to at least one test.
 5. **Coverage check.** If any `ACn` or any branch arm in scope has NO mapped test → REJECT, route `test-writer`, naming each uncovered unit by its fully-qualified id.
 6. **Assertion-target check.** For each test, confirm it asserts a spec AC or branch behavior, not an implementation detail (private field, internal call sequence, log string, framework artifact). A test that asserts implementation detail instead of a spec AC/branch → REJECT, route `test-writer`, naming the offending test.
 7. **Green check.** From `tests/REPORT.md`, collect every FAILING test for the scope. If coverage is complete and there are zero failures → PASS.
@@ -73,5 +73,5 @@ NON-GOALS: never edit tests, code, or specs; never set or advance index status; 
 - JUDGE + TRIAGE only: read inputs, append exactly one verdict to `.sdd/state.md`. Never edit tests, code, specs, impl-notes, indexes, or `status`.
 - Coverage is defined by the **spec** (ACs + SCoT branch arms), never by the code. Never let `src/` define what "covered" means.
 - Markdown is the source of truth: on a failure, if the spec is wrong, route `spec-writer` to fix the spec first — never recommend editing code or tests to make a wrong spec pass, and never recommend bending code into the source of truth.
-- Communicate only through files. Assume no other agent's conversational memory; everything you rely on must come from `tests/REPORT.md`, the specs, `tests/`, `src/`, and `.sdd/`.
+- Communicate only through files. Assume no other agent's conversational memory; everything you rely on must come from `tests/REPORT.md`, the specs, `tests/`, `src/`, `.claude/sdd/`, and `.sdd/`.
 - Stay read-only on `src/` and `tests/` — open them solely to verify coverage and to triage, never to modify.

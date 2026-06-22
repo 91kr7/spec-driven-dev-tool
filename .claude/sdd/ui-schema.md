@@ -117,7 +117,7 @@ here but **owned** by a service/shared spec and referenced by id.
 | `submit`   | click **Register**       | see SCoT snippet below               | calls feature `FEAT-001`; nav on success |
 | `cancel`   | click **Cancel**         | navigate to `/home`                  | leaves the screen                        |
 
-For a **non-trivial** handler, attach a small SCoT snippet (grammar = `.sdd/scot.md`),
+For a **non-trivial** handler, attach a small SCoT snippet (grammar = `.claude/sdd/scot.md`),
 with branch ids so it is covered by tests:
 
 ```
@@ -147,7 +147,7 @@ row is enough.
 feature orchestrates (e.g. `CLS-regCtrl.register`). A purely-compositional feature
 (`source: []`) has **no callable code of its own**, so the screen calls its
 controller, not the feature id. (2) *Error style:* if a handler's own SCoT
-returns/raises errors, declare `error-style:` at its top (`.sdd/scot.md` §6); a
+returns/raises errors, declare `error-style:` at its top (`.claude/sdd/scot.md` §6); a
 trivial result check like the one above needs none.
 
 ---
@@ -226,7 +226,7 @@ atoms; an organism never re-describes its molecules.
 For **any** project with a GUI the workflow **GUARANTEES** a default UI component
 library, so screens are composed — never hand-rolled. These baseline components are
 **not shipped as files**: the `spec-writer` **materializes** them (from
-`.sdd/templates/ui-component.template.md`) into the project's `specs/ui-components/`
+`.claude/sdd/templates/ui-component.template.md`) into the project's `specs/ui-components/`
 and registers them in `specs/indexes/ui-components.index.md` **before** any screen
 composes them. The baseline = layout primitives + the panel container:
 

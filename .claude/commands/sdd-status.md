@@ -19,7 +19,7 @@ coverage gaps): `/sdd-status` answers *"where does each thing stand and what's n
 ## Preconditions
 
 - `specs/indexes/` exists with the per-level indexes (the `status` column is the
-  canonical lifecycle home — `.sdd/conventions.md` §5).
+  canonical lifecycle home — `.claude/sdd/conventions.md` §5).
 - `.sdd/state.md` exists (the append-only verdict log — §6 format).
 - `$ARGUMENTS`, if given, is a single scope id (`FEAT-…` / `MOD-…` / `CLS-…` / `ENT-…`
   / `COMP-…` / `SHR-…`); empty → whole project.
@@ -72,7 +72,7 @@ coverage gaps): `/sdd-status` answers *"where does each thing stand and what's n
 
 - **None.** `/sdd-status` is read-only: it advances no index `status`
   (`draft`/`reviewed`/`approved` are owned by the flow commands per
-  `.sdd/conventions.md` §5) and appends no verdict to `.sdd/state.md`. It only *reads
+  `.claude/sdd/conventions.md` §5) and appends no verdict to `.sdd/state.md`. It only *reads
   and reports* what the indexes and the log already record.
 
 ## Outputs

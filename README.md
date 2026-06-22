@@ -40,17 +40,14 @@ per-project artifacts (`requirements/`, `plan/`, your generated `specs/`, `src/`
 **Ships in this repo (the tool):**
 
 ```
-.claude/
+.claude/                             # ← THE WHOLE TOOL: one portable, immutable folder
   agents/*.md                        # the 10 subagents
   commands/*.md                      # the 7 slash commands
-.sdd/
-  conventions.md                     # the single canonical reference (ids, front-matter, status, verdicts, rosters)
-  scot.md                            # canonical SCoT grammar (behavioral specs)
-  ui-schema.md                       # canonical UI-schematic convention — incl. the GUARANTEED baseline UI library (§9)
-  templates/*.template.md            # the forms new specs are copied from (each with a filled example)
-  target.md                          # per-project stack file — ships as a TEMPLATE the AI fills at plan time
-  state.md                           # append-only verdict log — ships as an empty seed
-  impl-notes/_TEMPLATE.md            # impl-notes template
+  sdd/
+    conventions.md                   # the single canonical reference (ids, front-matter, status, verdicts, rosters)
+    scot.md                          # canonical SCoT grammar (behavioral specs)
+    ui-schema.md                     # canonical UI-schematic convention — incl. the GUARANTEED baseline UI library (§9)
+    templates/*.template.md          # the forms new specs are copied from (incl. target.template, impl-notes.template)
 docs/
   TECHNICAL.md                       # the detailed technical reference
   history/                           # the original design conversation (archived)
@@ -62,19 +59,19 @@ README.md
 ```
 requirements/REQUIREMENT.md          # the requirement (raw + refined, with REQ-* ids) — written by /sdd-plan
 plan/PLAN.md                         # the plan — written by plan-architect
-.sdd/target.md (filled) · .sdd/state.md (appended) · .sdd/impl-notes/<id>.md
+.sdd/target.md · .sdd/state.md · .sdd/impl-notes/<id>.md   # the project's SDD state
 specs/indexes/{modules,features,model,classes,ui-components}.index.md   # your per-level indexes
 specs/{modules,features,model,classes,shared}/<id>.spec.md   # your generated specs
 specs/ui-components/<id>.spec.md     # the UI library — baseline GUARANTEED for a GUI project (ui-schema §9), then enriched
 src/   tests/                        # GENERATED code & tests (derived)
 ```
 
-`.sdd/conventions.md` is the **single canonical reference** (ids, front-matter
+`.claude/sdd/conventions.md` is the **single canonical reference** (ids, front-matter
 schema, status lifecycle, verdict format, the agent/command rosters, the ROLE
 template). It is the first file every agent reads, so the conventions are stated
 **once** instead of duplicated across eleven prompts — DRY applied to the workflow
-itself. It defers to its two siblings: `.sdd/scot.md` (behavior) and
-`.sdd/ui-schema.md` (UI form).
+itself. It defers to its two siblings: `.claude/sdd/scot.md` (behavior) and
+`.claude/sdd/ui-schema.md` (UI form).
 
 ---
 
@@ -93,11 +90,11 @@ Structural artifacts (`dto`, `enum`, `interface`, `config`) are **declarative**;
 an `interface` lists signatures only (the SCoT lives in the implementing class),
 and a **stub/mock is auto-derived from its interface** — never specced separately.
 
-- **SCoT** (`.sdd/scot.md`) — keyword/block pseudo-code (sequence / branch / loop,
+- **SCoT** (`.claude/sdd/scot.md`) — keyword/block pseudo-code (sequence / branch / loop,
   `async`, `try`), explicit I/O, and a **stable branch id** (`[B1]`, arm `B1.then`)
   on every decision so coverage is mechanical: the test-writer must produce ≥1 test
   per branch arm and per acceptance criterion (`ACn`).
-- **UI schematic** (`.sdd/ui-schema.md`) — the framework-agnostic source form of a
+- **UI schematic** (`.claude/sdd/ui-schema.md`) — the framework-agnostic source form of a
   UI: ASCII wireframe, a component tree that **references library components by
   id**, and state/events tables. Atomic-design layers (atom → molecule → organism
   → layout). The concrete framework is applied at implementation time.
@@ -170,16 +167,16 @@ suite.
 
 | Agent | May READ | May WRITE | Bash / Edit | Reads `src/`? |
 |---|---|---|---|---|
-| `plan-architect` | `requirements/`, existing `specs/`, `.sdd/` | `plan/`, `.sdd/target.md` (+ `scot`/`ui-schema` if absent) | — | no |
-| `plan-gatekeeper` | `requirements/`, `plan/`, `specs/`, `.sdd/` | `.sdd/state.md` | — | no |
-| `spec-writer` | `plan/`, `requirements/`, `specs/`, `.sdd/{scot,ui-schema,conventions,target}.md`, `.sdd/templates/` | `specs/` (incl. indexes) | — | no |
-| `reuse-analyst` | `specs/`, `.sdd/conventions.md` | `specs/` | — | no |
-| `analysis-gatekeeper` | `specs/`, `requirements/`, `.sdd/` | `.sdd/state.md` | — | no |
-| `code-implementer` | `specs/`, `.sdd/{target,scot,ui-schema,conventions}.md`, `.sdd/impl-notes/`, `src/` | `src/` (declared paths), `.sdd/impl-notes/<id>.md` | **Edit** (minimal diffs) | **yes** — spec stays authority |
-| `code-gatekeeper` | `specs/`, `.sdd/impl-notes/`, `src/`, `.sdd/` | `.sdd/state.md` | Bash (read-only) | yes (review) |
-| `test-writer` | behavioral spec sections, `.sdd/{target,scot,ui-schema,conventions}.md` | `tests/` | — | **no — by role** (not impl-notes either) |
+| `plan-architect` | `requirements/`, existing `specs/`, `.claude/sdd/`, `.sdd/target.md` | `plan/`, `.sdd/target.md` | — | no |
+| `plan-gatekeeper` | `requirements/`, `plan/`, `specs/`, `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | — | no |
+| `spec-writer` | `plan/`, `requirements/`, `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.claude/sdd/templates/` | `specs/` (incl. indexes) | — | no |
+| `reuse-analyst` | `specs/`, `.claude/sdd/conventions.md` | `specs/` | — | no |
+| `analysis-gatekeeper` | `specs/`, `requirements/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | — | no |
+| `code-implementer` | `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.sdd/impl-notes/`, `src/` | `src/` (declared paths), `.sdd/impl-notes/<id>.md` | **Edit** (minimal diffs) | **yes** — spec stays authority |
+| `code-gatekeeper` | `specs/`, `.sdd/impl-notes/`, `src/`, `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | Bash (read-only) | yes (review) |
+| `test-writer` | behavioral spec sections, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md` | `tests/` | — | **no — by role** (not impl-notes either) |
 | `test-runner` | `tests/`, `src/`, `.sdd/target.md` | `tests/REPORT.md` | Bash (run tests) | yes |
-| `test-gatekeeper` | `tests/REPORT.md`, `specs/`, `src/`, `tests/`, `.sdd/` | `.sdd/state.md` | — | yes |
+| `test-gatekeeper` | `tests/REPORT.md`, `specs/`, `src/`, `tests/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | — | yes |
 
 Orchestration is **not** an agent row — it is the commands (main session), which
 read verdicts and advance index `status`.
@@ -214,11 +211,12 @@ already reflects the stack and your prompt may only extend/override it.
 
 ## Quick start
 
-**Adopting the workflow:** start a project from this repo, or copy `.claude/` and
-`.sdd/` into it — those are the agents/commands plus all the contracts, templates,
-and the guaranteed UI-library definition (`.sdd/ui-schema.md` §9). The requirement
-(with the **stack**) is the only thing you must supply; if the stack isn't stated,
-the workflow asks once before writing `.sdd/target.md`.
+**Adopting the workflow:** drop the **`.claude/`** folder into your project (copy it,
+or `ln -s` it from this repo) — that single folder *is* the tool: agents, commands,
+contracts, templates, and the guaranteed UI-library definition (`.claude/sdd/ui-schema.md`
+§9). The requirement (with the **stack**) is the only thing you supply; if the stack
+isn't stated, the workflow asks once before writing `.sdd/target.md`. Everything else
+(`.sdd/`, `specs/`, `src/`, `tests/`) the workflow creates inside your project.
 
 1. `/sdd-plan <describe what to build, and the stack>` — review `plan/PLAN.md` and
    `.sdd/target.md`.
@@ -236,7 +234,7 @@ slice.
 For any project with a GUI, the workflow **guarantees** a default UI component
 library — `COMP-appShell`, `COMP-header`, `COMP-body`, `COMP-footer`, `COMP-panel`,
 and layout helpers (`COMP-stack`, `COMP-grid`, `COMP-section`). It is **defined** in
-`.sdd/ui-schema.md` §9 and **materialized** by the `spec-writer` into the project's
+`.claude/sdd/ui-schema.md` §9 and **materialized** by the `spec-writer` into the project's
 `specs/ui-components/` (with its index) before any screen is specified — it is **not
 shipped as files**. Screens **compose these by id**; the `reuse-analyst` progressively
 promotes recurring widgets (Button, TextInput, FormField, Modal, Table, …) into the
@@ -246,7 +244,7 @@ library so nothing is copy-pasted.
 
 ## What I changed from the starting proposal (and why)
 
-- **Added `.sdd/conventions.md`** — a single canonical reference for ids,
+- **Added `.claude/sdd/conventions.md`** — a single canonical reference for ids,
   front-matter, status, verdict format, and the rosters. The agents were each going
   to restate these; centralizing them is the workflow practicing its own DRY value
   and guarantees the eleven prompts can't drift.

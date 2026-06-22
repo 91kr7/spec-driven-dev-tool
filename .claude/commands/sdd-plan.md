@@ -15,9 +15,10 @@ specs — the first of the 5 modes, fully **manual / human-in-control**. It writ
 - A requirement is available — either in `requirements/REQUIREMENT.md` already, or
   passed inline as `$ARGUMENTS`. If neither exists, ask the human for the
   requirement and stop.
-- `.sdd/conventions.md` exists (canonical contract; read by every agent).
+- `.claude/sdd/conventions.md` exists (canonical contract; read by every agent).
 - This command does **not** require any prior plan, target, or specs — it is the
-  entry point and may bootstrap `.sdd/target.md`, `.sdd/scot.md`, `.sdd/ui-schema.md`.
+  entry point and bootstraps the per-project `.sdd/target.md`. (The `.claude/sdd/`
+  contracts ship with the tool — read-only, never authored here.)
 
 ## Steps (you, the main session, perform these)
 1. **Capture the requirement.** If `$ARGUMENTS` is non-empty, write/refine
@@ -30,12 +31,10 @@ specs — the first of the 5 modes, fully **manual / human-in-control**. It writ
    front-matter points to (never renumber an existing one). `plan-architect` reads
    these ids; it does not write `requirements/`.
 2. **Invoke `plan-architect`** via Task. Pass only paths: the input
-   `requirements/REQUIREMENT.md` and the contracts under `.sdd/` it must obey.
+   `requirements/REQUIREMENT.md` and the contracts under `.claude/sdd/` it must obey.
    It will:
    - derive the stack/architecture into `.sdd/target.md` (including canonical
      build/test/run commands and any budget overrides);
-   - author `.sdd/scot.md` and `.sdd/ui-schema.md` **only if they are absent**
-     (new project); on an existing SDD project it leaves them untouched;
    - write the plan to `plan/PLAN.md` (which indexes/specs to create or modify, at
      which levels, in `depends_on` order — discover-before-create, reuse over new).
 3. **Handle an unstated stack.** If `plan-architect` reports that the stack is
@@ -68,7 +67,6 @@ specs — the first of the 5 modes, fully **manual / human-in-control**. It writ
 - `requirements/REQUIREMENT.md` — captured/refined requirement.
 - `plan/PLAN.md` — the plan of indexes/specs to create or modify.
 - `.sdd/target.md` — derived stack/architecture + canonical build/test/run commands.
-- `.sdd/scot.md`, `.sdd/ui-schema.md` — authored **only if previously absent**.
 - `.sdd/state.md` — one or more `plan-gatekeeper` verdict records (append-only).
 
 ## Next command (manual path)

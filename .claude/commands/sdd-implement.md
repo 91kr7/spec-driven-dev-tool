@@ -12,12 +12,12 @@ mode 3 of the 5-mode flow (manual, human-in-control): it sits between
 `src/` and impl-notes only — it does **not** set `approved`.
 
 Two cross-cutting values bind every step: **Markdown is the source of truth
-(authority); reuse over repetition (DRY).** Read `.sdd/conventions.md` (esp. §5
+(authority); reuse over repetition (DRY).** Read `.claude/sdd/conventions.md` (esp. §5
 separation of duties, §7 budgets/routing, §8 change policy, §9 roster, §12
 topological order) before acting; it is the single source of truth.
 
 ## Preconditions
-- `.sdd/conventions.md`, `.sdd/scot.md`, `.sdd/ui-schema.md` exist (canonical contracts).
+- `.claude/sdd/conventions.md`, `.claude/sdd/scot.md`, `.claude/sdd/ui-schema.md` exist (canonical contracts).
 - `.sdd/target.md` is complete (stack/architecture + canonical build/test/run commands and any budget overrides).
 - The target specs in scope are `status: reviewed` in their index row (analysis gate passed). Specs still at `draft` are out of scope — finish `/sdd-specify` for them first.
 - `.sdd/state.md` exists (append-only verdict log); `.sdd/impl-notes/` is writable (created on demand).

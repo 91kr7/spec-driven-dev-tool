@@ -1,8 +1,8 @@
 <!--
   TEMPLATE — FEATURE / USE-CASE spec (kind: use-case, behavioral orchestration).
   Copy this file to specs/features/<FEAT-nnn>.spec.md and fill every field.
-  Authority: .sdd/conventions.md (ids §2, front-matter §3, sections §3, status §5).
-  Body form for kind:use-case is SCoT — grammar in .sdd/scot.md (orchestration:
+  Authority: .claude/sdd/conventions.md (ids §2, front-matter §3, sections §3, status §5).
+  Body form for kind:use-case is SCoT — grammar in .claude/sdd/scot.md (orchestration:
   cross-class CALLs only). Markdown is the source of truth (authority); reuse over
   repetition (DRY) — name collaborators by id, never re-describe them here.
   The "## Filled example" at the bottom is a complete sample — delete it from a real spec.
@@ -17,7 +17,7 @@ depends_on: [CLS-<lowerCamel>, ENT-<kebab>, SHR-<lowerCamel>]  # ids of every co
 requirements: [REQ-<nnn>]            # requirement id(s) this feature serves (back-link)
 source: []                           # [] if purely compositional (no coordinator code → integration tests only);
                                      # else a single coordinator file, e.g. [src/features/<name>Flow.ts]
-error_style: result                  # result|raise — declares the SCoT error style (.sdd/scot.md §6)
+error_style: result                  # result|raise — declares the SCoT error style (.claude/sdd/scot.md §6)
 ---
 
 # Purpose
@@ -28,7 +28,7 @@ error_style: result                  # result|raise — declares the SCoT error 
 
 # Public interface
 <!-- The feature's entry point as seen by a caller (a screen/controller). Inputs,
-     outputs, and the error cases (list them regardless of error_style — .sdd/scot.md §6). -->
+     outputs, and the error cases (list them regardless of error_style — .claude/sdd/scot.md §6). -->
 
 - **Inputs:** `<command/DTO name>` — `{ <field>: <NeutralType>, … }`
 - **Outputs:** `<Result type>` — `<what success returns>`
@@ -58,8 +58,8 @@ error_style: result                  # result|raise — declares the SCoT error 
 
 # Orchestration SCoT
 <!-- HIGH-LEVEL sequence of CROSS-CLASS CALLs only (one FUNCTION, the entry point).
-     Grammar = .sdd/scot.md. Reference collaborators by id in every CALL. Each
-     decision point carries a stable branch id [Bn]; arms get ids per .sdd/scot.md §4
+     Grammar = .claude/sdd/scot.md. Reference collaborators by id in every CALL. Each
+     decision point carries a stable branch id [Bn]; arms get ids per .claude/sdd/scot.md §4
      (B1.then / B1.else / B6.catch:<Error> …). No library names, no language syntax,
      no per-method internals — those belong to the collaborators' own specs and to
      .sdd/impl-notes/. Keep ids stable across re-runs (never renumber). -->
@@ -86,7 +86,7 @@ END
 ```
 
 # Integration acceptance criteria
-<!-- End-to-end Given/When/Then, each with a stable ACn id (.sdd/conventions.md §2).
+<!-- End-to-end Given/When/Then, each with a stable ACn id (.claude/sdd/conventions.md §2).
      These drive the INTEGRATION tests (one per feature). Each AC should exercise a
      full cross-class path; together they should cover every orchestration branch arm
      above. State observable outcomes across collaborators, not internal calls. -->

@@ -4,10 +4,10 @@ Copy this file to specs/ui-components/COMP-<lowerCamel>.spec.md and replace ever
 <placeholder>. Delete the guidance comments (<!-- ... -->) before committing.
 
 Canonical contracts (single source of truth — obey, do not restate):
-- .sdd/conventions.md  — ids (§2), front-matter (§3), status lifecycle (§5), rosters.
-- .sdd/ui-schema.md    — GUI spec form; §6 = the EXTRA sections a shared COMP-* adds;
+- .claude/sdd/conventions.md  — ids (§2), front-matter (§3), status lifecycle (§5), rosters.
+- .claude/sdd/ui-schema.md    — GUI spec form; §6 = the EXTRA sections a shared COMP-* adds;
                          §7 = atomic-design layers (atom|molecule|organism|layout).
-- .sdd/scot.md         — only if a non-trivial event handler needs a SCoT snippet.
+- .claude/sdd/scot.md         — only if a non-trivial event handler needs a SCoT snippet.
 
 VALUES THAT BIND THIS SPEC:
   Markdown is the source of truth (authority); reuse over repetition (DRY).
@@ -92,7 +92,7 @@ concrete values here — only the named change. -->
 # Events
 
 <!-- ui-schema §6 events table. name | payload | when. For a non-trivial handler,
-attach a small SCoT snippet (grammar = .sdd/scot.md) with branch ids; trivial
+attach a small SCoT snippet (grammar = .claude/sdd/scot.md) with branch ids; trivial
 events need only the row. -->
 
 | Event     | Payload     | When                              |

@@ -71,7 +71,7 @@ migrate:   <e.g. pnpm migrate>
 
 ## 4. Iteration budgets (optional override)
 
-Override the defaults from `.sdd/conventions.md` §7 if needed:
+Override the defaults from `.claude/sdd/conventions.md` §7 if needed:
 
 ```
 analysis: 3
