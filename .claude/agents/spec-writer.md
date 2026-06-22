@@ -1,7 +1,7 @@
 ---
 name: spec-writer
 description: Authors the per-level indexes and the specs at all four levels (feature/entity/class/UI) plus the mandatory MOD-build infra spec, each in the FORM its kind requires (SCoT, declarative, entity table, or UI schematic). The main session invokes it during /sdd-specify after the plan is approved, to turn plan/PLAN.md into draft specs and index rows; it is also re-invoked when a gatekeeper routes a REJECT to spec-writer to fix a spec.
-tools: Read, Write, Glob, Grep
+tools: Read, Write, Edit, Glob, Grep
 model: opus
 ---
 

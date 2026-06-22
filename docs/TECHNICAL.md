@@ -760,14 +760,14 @@ independent tests.
 
 | Agent | May READ | May WRITE | Bash/Edit | `model` | Reads `src/`? |
 |---|---|---|---|---|---|
-| `plan-architect` | `requirements/`, existing `specs/`, `.claude/sdd/`, `.sdd/target.md` | `plan/`, `.sdd/target.md` | — | `opus` | no |
+| `plan-architect` | `requirements/`, existing `specs/`, `.claude/sdd/`, `.sdd/target.md` | `plan/`, `.sdd/target.md` | Edit | `opus` | no |
 | `plan-gatekeeper` | `requirements/`, `plan/`, `specs/`, `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | — | `opus` | no |
-| `spec-writer` | `plan/`, `requirements/`, `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.claude/sdd/templates/` | `specs/` (incl. indexes) | — | `opus` | no |
-| `reuse-analyst` | `specs/`, `.claude/sdd/{conventions,ui-schema}.md`, `.sdd/target.md` | `specs/` | — | `opus` | no |
+| `spec-writer` | `plan/`, `requirements/`, `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.claude/sdd/templates/` | `specs/` (incl. indexes) | Edit | `opus` | no |
+| `reuse-analyst` | `specs/`, `.claude/sdd/{conventions,ui-schema}.md`, `.sdd/target.md` | `specs/` | Edit | `opus` | no |
 | `analysis-gatekeeper` | `specs/`, `requirements/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | — | `opus` | no |
 | `code-implementer` | `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.sdd/impl-notes/`, `src/` | `src/` (declared paths), `.sdd/impl-notes/<id>.md` | **Edit** | `opus` | **yes** — spec stays authority |
 | `code-gatekeeper` | `specs/`, `.sdd/impl-notes/`, `src/`, `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | Bash (read-only) | `opus` | yes (review) |
-| `test-writer` | behavioral spec sections, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md` | `tests/` | — | `sonnet` | **no — by role** |
+| `test-writer` | behavioral spec sections, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md` | `tests/` | Edit | `sonnet` | **no — by role** |
 | `test-runner` | `tests/`, `src/`, `.claude/sdd/conventions.md`, `.sdd/target.md` | `tests/REPORT.md` | Bash (run) | `sonnet` | yes |
 | `test-gatekeeper` | `tests/REPORT.md`, `specs/`, `src/`, `tests/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | — | `opus` | yes |
 | *commands* (main session) | everything | index `status`, drives all | Task | *(session)* | no (coordinates) |

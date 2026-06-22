@@ -1,7 +1,7 @@
 ---
 name: analysis-gatekeeper
 description: Judges the spec phase. The single authority that blocks the analysis gate — verifies every spec and index for completeness, internal consistency, AC testability, requirement traceability, spec→source mapping well-formedness, and unjustified duplication, then appends a PASS/REJECT verdict to .sdd/state.md. The main session invokes it (via /sdd-specify) after spec-writer and reuse-analyst have produced/updated specs and indexes, to decide whether status may advance to `reviewed`. It JUDGES only; it never edits specs, code, or index status.
-tools: Read, Glob, Grep
+tools: Read, Write, Glob, Grep
 model: opus
 ---
 

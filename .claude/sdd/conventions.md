@@ -274,21 +274,21 @@ single-purpose workers: read inputs from files, write outputs/verdicts to files.
 
 | Agent | Role | May READ | May WRITE | tools frontmatter | Reads `src/`? |
 |---|---|---|---|---|---|
-| `plan-architect` | requirement → plan of indexes/specs | `requirements/`, `specs/` (existing), `.claude/sdd/`, `.sdd/target.md` | `plan/`, `.sdd/target.md` | `Read, Write, Glob, Grep` | no |
-| `plan-gatekeeper` | judge the plan | `requirements/`, `plan/`, `specs/` (existing), `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | `Read, Glob, Grep` | no |
-| `spec-writer` | write indexes + specs (4 levels + MOD-build) | `plan/`, `requirements/`, `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.claude/sdd/templates/` | `specs/` (incl. indexes) | `Read, Write, Glob, Grep` | no |
-| `reuse-analyst` | dedupe + promote shared specs (pure author) | `specs/`, `.claude/sdd/{conventions,ui-schema}.md`, `.sdd/target.md` | `specs/` | `Read, Write, Glob, Grep` | no |
-| `analysis-gatekeeper` | judge specs (the only spec-phase blocker) | `specs/`, `requirements/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | `Read, Glob, Grep` | no |
+| `plan-architect` | requirement → plan of indexes/specs | `requirements/`, `specs/` (existing), `.claude/sdd/`, `.sdd/target.md` | `plan/`, `.sdd/target.md` | `Read, Write, Edit, Glob, Grep` | no |
+| `plan-gatekeeper` | judge the plan | `requirements/`, `plan/`, `specs/` (existing), `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | `Read, Write, Glob, Grep` | no |
+| `spec-writer` | write indexes + specs (4 levels + MOD-build) | `plan/`, `requirements/`, `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.claude/sdd/templates/` | `specs/` (incl. indexes) | `Read, Write, Edit, Glob, Grep` | no |
+| `reuse-analyst` | dedupe + promote shared specs (pure author) | `specs/`, `.claude/sdd/{conventions,ui-schema}.md`, `.sdd/target.md` | `specs/` | `Read, Write, Edit, Glob, Grep` | no |
+| `analysis-gatekeeper` | judge specs (the only spec-phase blocker) | `specs/`, `requirements/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | `Read, Write, Glob, Grep` | no |
 | `code-implementer` | specs → source (create / minimal diff) | `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.sdd/impl-notes/`, `src/` | `src/` (declared paths), `.sdd/impl-notes/<id>.md` | `Read, Write, Edit, Glob, Grep` | yes (edit) |
-| `code-gatekeeper` | judge code ≡ spec | `specs/`, `.sdd/impl-notes/`, `src/`, `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | `Read, Glob, Grep, Bash` (read-only) | yes (review) |
-| `test-writer` | specs → tests (independent oracle) | behavioral spec sections, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md` | `tests/` | `Read, Write, Glob` | **no — by role** |
+| `code-gatekeeper` | judge code ≡ spec | `specs/`, `.sdd/impl-notes/`, `src/`, `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | `Read, Write, Glob, Grep, Bash` (read-only) | yes (review) |
+| `test-writer` | specs → tests (independent oracle) | behavioral spec sections, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md` | `tests/` | `Read, Write, Edit, Glob` | **no — by role** |
 | `test-runner` | run tests, write report | `tests/`, `src/`, `.claude/sdd/conventions.md`, `.sdd/target.md` | `tests/REPORT.md` | `Read, Write, Glob, Bash` | yes |
-| `test-gatekeeper` | verify coverage + triage failures | `tests/REPORT.md`, `specs/`, `src/`, `tests/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | `Read, Glob, Grep` | yes |
+| `test-gatekeeper` | verify coverage + triage failures | `tests/REPORT.md`, `specs/`, `src/`, `tests/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | `Read, Write, Glob, Grep` | yes |
 
 The `.claude/sdd/` contracts (`conventions`/`scot`/`ui-schema`) and the templates ship
 with the **tool** and are **read-only** — no agent authors or edits them. `plan-architect`
 only writes/extends the per-project `.sdd/target.md` from the user prompt (asking the
-human if the stack is unstated).
+human if the stack is unstated). A gatekeeper's `Write` is scoped to **appending its verdict to `.sdd/state.md` only** — it never edits specs, code, tests, impl-notes, or index `status` (its NON-GOALS bind that).
 
 **test-writer independence is SOFT** (by design, no runtime hook): minimal tools
 (no `Bash`) + an explicit NON-GOAL ("never read `src/` or `.sdd/impl-notes/`") +
