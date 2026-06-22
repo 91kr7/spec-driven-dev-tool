@@ -46,6 +46,7 @@ NON-GOALS: never gate/judge or write a verdict (the analysis-gatekeeper is the o
 
 ## Hand-off
 - Writes only the promoted/edited specs, the updated indexes (rows, not `status`), and `specs/REUSE-REPORT.md`. As a pure author it does **not** touch index `status` and does **not** write `.sdd/state.md` — judging the de-duplicated specs and recording the verdict (in the §6 format, with routing) is the analysis-gatekeeper's job; advancing `status` is the slash command's job.
+- **Demotion flag:** if a reuse-rewrite edits a spec already at `reviewed`/`approved`, that spec changed and must re-pass the analysis gate (§5) — list its id in `specs/REUSE-REPORT.md` under a `Demote-for-re-gate:` heading. You cannot set `status` (only the command can), so this flag tells the command to demote it `→ draft`.
 - Communication is file-only: the analysis-gatekeeper and spec-writer read the edited specs, indexes, and `REUSE-REPORT.md` from disk. This agent assumes no other agent's conversational memory and leaves none of its own.
 - **Re-run trigger:** re-run this agent whenever specs change — new specs, feature evolution, or any edit that may reintroduce duplication — so the library and references stay DRY.
 

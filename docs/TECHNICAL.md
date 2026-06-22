@@ -761,7 +761,7 @@ independent tests.
 | Agent | May READ | May WRITE | Bash/Edit | `model` | Reads `src/`? |
 |---|---|---|---|---|---|
 | `plan-architect` | `requirements/`, existing `specs/`, `.claude/sdd/`, `.sdd/target.md` | `plan/`, `.sdd/target.md` | — | `opus` | no |
-| `plan-gatekeeper` | `requirements/`, `plan/`, `specs/`, `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | — | `sonnet` | no |
+| `plan-gatekeeper` | `requirements/`, `plan/`, `specs/`, `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | — | `opus` | no |
 | `spec-writer` | `plan/`, `requirements/`, `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.claude/sdd/templates/` | `specs/` (incl. indexes) | — | `opus` | no |
 | `reuse-analyst` | `specs/`, `.claude/sdd/{conventions,ui-schema}.md` | `specs/` | — | `opus` | no |
 | `analysis-gatekeeper` | `specs/`, `requirements/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | — | `opus` | no |
@@ -774,10 +774,12 @@ independent tests.
 
 **Model split.** `opus` for under-specified **authoring** (`plan-architect`,
 `spec-writer`, `reuse-analyst`, `code-implementer`) and the **verification gates**
-(`analysis-gatekeeper` the spec blocker, `code-gatekeeper` the semantic code↔spec
-equivalence check, `test-gatekeeper` the spec/code/test triage); `sonnet` for
-**mechanical / checklist** work a concrete contract or a downstream gate already
-constrains (`plan-gatekeeper`, `test-writer`, `test-runner`). Canonical in
+(`plan-gatekeeper` graph/DAG + coverage validation, `analysis-gatekeeper` the spec
+blocker, `code-gatekeeper` the semantic code↔spec equivalence check, `test-gatekeeper`
+the spec/code/test triage); `sonnet` for the two **purely mechanical** roles
+(`test-writer` coverage enumeration, `test-runner` execution + reporting). The
+pipeline is reasoning-heavy, so the split is opus-leaning by design; a project may
+override any agent's `model:`. Canonical in
 `.claude/sdd/conventions.md` §9; a project may override any agent's `model:`.
 
 ---

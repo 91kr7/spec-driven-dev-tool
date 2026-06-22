@@ -63,6 +63,7 @@ NON-GOALS: never read src/; never inline a component that already exists in ui-c
 ## Hand-off
 - Writes only the artifacts under `specs/` (specs at all four levels + MOD-build, and the per-level index rows). All written specs and rows are `status: draft`.
 - Does **NOT** touch `status` beyond `draft`, does **NOT** write `.sdd/state.md`, and does **NOT** write any verdict. Advancing status from a verdict is the slash command's job; judging is the gatekeeper's.
+- **When re-invoked after a REJECT** (analysis- or test-phase routed to you): the driving command provides the latest verdict's blocking reasons from `.sdd/state.md`. Act on them precisely — fix only the named spec(s)/`ACn`/branch(es). A test-phase route may carry a **`SPEC DEFECT` marker** (the test-writer's flag that an `ACn`/branch is un-testable because the spec is ambiguous/inconsistent): resolve that ambiguity so the unit becomes testable. The command then demotes the entity `reviewed → draft` and it re-flows through the analysis gate.
 - The reuse-analyst (dedupe/promote) and the analysis-gatekeeper (the only spec-phase blocker) consume these files next, purely through the filesystem. This agent assumes none of their conversational memory — communication is file-only.
 
 ## Guardrails (reinforced NON-GOALS)

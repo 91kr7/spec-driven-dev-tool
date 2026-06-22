@@ -175,7 +175,8 @@ Per-entity status lives in the **index row**: `draft → reviewed → approved`.
 **Backward transitions (a spec change after `reviewed`).** Status moves forward by
 default, but **code is only ever generated from a `reviewed` spec**. So whenever a
 spec changes after it reached `reviewed`/`approved` — a gate routing a **spec bug**,
-or a deliberate **feature evolution** — it must **re-pass the analysis gate** before
+a deliberate **feature evolution**, or a **reuse-analyst promotion** that rewrites an
+already-`reviewed`/`approved` spec — it must **re-pass the analysis gate** before
 code is (re)generated: the
 **command** demotes the affected entity `reviewed → draft` (or `approved → draft` if
 it was already approved), `spec-writer` fixes it, then it re-advances the normal
@@ -299,7 +300,7 @@ downstream gate) already constrains. A project MAY override any agent's `model:`
 | `code-implementer` | `opus` | faithful SCoT→code, minimal diffs, concretization decisions |
 | `analysis-gatekeeper` | `opus` | the only spec-phase blocker; judges self-sufficiency & testability |
 | `test-gatekeeper` | `opus` | triages spec/code/test bug — a mis-route costs a whole iteration |
-| `plan-gatekeeper` | `sonnet` | structural checklist on the plan; backstopped by the analysis gate |
+| `plan-gatekeeper` | `opus` | validating graph acyclicity (DAG), topological order, and full requirement coverage is abstract reasoning where weaker models slip |
 | `code-gatekeeper` | `opus` | behavioral-equivalence of multi-branch SCoT→code is deep verification, not a checklist — the primary semantic-correctness gate |
 | `test-writer` | `sonnet` | mechanical coverage — one test per `ACn`/arm from concrete specs |
 | `test-runner` | `sonnet` | runs canonical commands, parses, emits the fixed REPORT format |
@@ -367,7 +368,7 @@ Every generated source file carries a header pointing back to its spec, e.g.:
 // spec: CLS-regCtrl RegistrationController — specs/classes/CLS-regCtrl.spec.md
 ```
 
-(comment syntax per the target language).
+(comment syntax per the target language). The header goes at the **top of the file but after any mandatory first-line construct** (shebang `#!`, `<?php`, a `"use client"` directive, an XML/encoding declaration). **Comment-less formats are exempt:** a file in a format with no comment syntax (pure JSON such as `package.json`/`tsconfig.json`, lockfiles) carries **no** header — its spec↔source link is the `source:` declaration alone, and the gatekeeper verifies the mapping without demanding a header.
 
 ---
 
