@@ -28,6 +28,10 @@ red test never patches code arbitrarily; the triage decides what is actually wro
 - Resolve the scope from the indexes under `specs/indexes/`, expanding a feature to
   its `depends_on` closure so integration tests have their unit-level targets. Pass
   only the resolved **paths/ids** to each agent (hand-off is file-based).
+- **Scoped vs full run.** A named scope runs **filtered** (the `test-runner` fills
+  `{scope}` so only that scope's tests execute — fast, bounded). The **no-argument**
+  invocation (whole project) is the **unscoped arbiter run** that also catches
+  cross-scope regressions; run it before declaring the project done.
 
 ## Steps (you, the main session, perform these)
 1. **Author tests.** Invoke `test-writer` via Task, passing the resolved spec
@@ -36,15 +40,22 @@ red test never patches code arbitrarily; the triage decides what is actually wro
    **never** `src/` or `.sdd/impl-notes/`. It must emit **≥1 test per acceptance
    criterion `ACn`** and **≥1 test per SCoT branch arm** (e.g. `B1.then`,
    `B1.else`, `B3.empty`), tagging each test with its coverage id
-   `<spec-id>::<function>#<arm-id>` / `<spec-id>#ACn`. Output goes to `tests/`.
-2. **Run tests.** Invoke `test-runner` via Task. It runs the **canonical test
-   command from `.sdd/target.md`** (never an ad-hoc command), captures pass/fail
-   and any coverage data, and writes `tests/REPORT.md`.
+   `<spec-id>::<function>#<arm-id>` / `<spec-id>#ACn`. For a **GUI project** it also
+   writes **Playwright e2e** tests for each in-scope screen's user journeys (primary
+   success + rendered failure journeys), selecting by accessible role/name. Output goes to `tests/`.
+2. **Run tests.** Invoke `test-runner` via Task, **passing the scope ids**. It runs the
+   **canonical test commands from `.sdd/target.md`** (never an ad-hoc command),
+   **filling the `{scope}` selector so only the scope's tests run** (unit + integration +
+   component, plus e2e for a GUI project) — not the whole app. The baked **dot** reporter
+   keeps captured output small; the structured reporter file is parsed for failures. It
+   writes `tests/REPORT.md` (recording the `scope` it filtered to and the `suites` that ran).
 3. **Judge + triage.** Invoke `test-gatekeeper` via Task, passing the scope ids,
    `tests/REPORT.md`, and the spec paths. It (a) verifies **coverage** — REJECT if
-   any `ACn` or any branch arm in scope is uncovered — and (b) **triages each
+   any `ACn` or any branch arm in scope is uncovered, or (GUI project) any in-scope
+   screen lacks a Playwright **e2e** test for its primary journey — and (b) **triages each
    failing test** to one source with routing: **spec bug → `spec-writer`**, **code
-   bug → `code-implementer`**, **test bug → `test-writer`**. It writes a verdict to
+   bug → `code-implementer`**, **test bug → `test-writer`** (an **e2e-setup** failure —
+   app won't boot — **escalates**, it is not a coverage gap). It writes a verdict to
    `.sdd/state.md` (`phase: test`) and edits nothing else.
 4. **Read the verdict.** Read the **latest** `.sdd/state.md` record for the scope.
 5. **Decide:**
@@ -86,10 +97,12 @@ red test never patches code arbitrarily; the triage decides what is actually wro
   the gate ultimately passes.
 
 ## Outputs
-- `tests/` — the generated, spec-derived suite (unit tests from class SCoT, integration
-  tests from features, constraint tests from entities), each test tagged with its
-  coverage id.
-- `tests/REPORT.md` — the latest run report (pass/fail, coverage).
+- `tests/` — the generated, spec-derived suite (unit from class SCoT, integration from
+  features, constraint from entities, component from gui specs, and — for a GUI project —
+  Playwright **e2e** from screen/feature journeys under `tests/e2e/`), each test tagged
+  with its coverage id.
+- `tests/REPORT.md` — the latest run report (pass/fail, coverage, the `scope` filtered to,
+  the `suites` that ran).
 - Appended verdict record(s) in `.sdd/state.md` (`phase: test`).
 - Updated `status: approved` rows in the relevant `specs/indexes/*.index.md` on PASS.
 

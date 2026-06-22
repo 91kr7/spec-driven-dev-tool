@@ -42,7 +42,7 @@ specs/classes/<id>.spec.md           # per-method SCoT (and feature-specific gui
 specs/ui-components/<id>.spec.md     # UI library (GUI projects: baseline GUARANTEED & materialized — ui-schema §9)
 specs/shared/<id>.spec.md            # shared non-UI abstractions — indexed in classes.index.md
 src/                                 # GENERATED (derived)
-tests/                               # GENERATED (unit←classes, integration←features, constraints←entities)
+tests/                               # GENERATED (unit←classes, integration←features, constraints←entities, component←gui, e2e←gui screens/feature flows — Playwright, GUI projects only)
 ```
 
 **Scaling option (decided in the plan):** for a large multi-module project the
@@ -70,7 +70,8 @@ under `specs/indexes/<level>/<MOD-id>.index.md`, keeping `modules.index` and
 - A spec file is named after its id: `specs/classes/CLS-userRepo.spec.md`.
 - `MOD-build` is a **mandatory** infra module in every project: it owns build
   files, dependency manifests, config, CI, **framework config & build/entry scaffolding**
-  (e.g. `next.config.js`, `vite.config.ts`, `tsconfig.json`, the app entry/bootstrap file —
+  (e.g. `next.config.js`, `vite.config.ts`, `tsconfig.json`, the test-harness config such
+  as `playwright.config.ts` for a GUI project's e2e, the app entry/bootstrap file —
   so committed boilerplate has an owning spec and is never an orphan), and **DB schema
   changes derived from the entity specs** (schema changes are never hand-authored
   independently; forward-only, append-only once shipped).
@@ -244,6 +245,7 @@ red test never patches code arbitrarily*:
 - **code bug** → `code-implementer` (minimal diff to match the spec).
 - **test bug** → `test-writer` (fix the test; it must assert a spec AC/branch).
 - **build / setup failure** (the suite never ran — non-zero `install`/`build` phase in `tests/REPORT.md`) → route by the offending file: a compile error in `src/**` → `code-implementer`, in `tests/**` → `test-writer`; a missing dependency / tooling → **escalate** (env / `MOD-build`). Judge run-health *before* coverage; a non-running suite is never an automatic `test-writer` coverage gap.
+- **e2e-setup failure** (`phase-reached: e2e-setup` — the **running app under test failed to launch**, or the browser binaries are missing) → **escalate** (env / `MOD-build` / the `run`/`test-e2e` command), *not* a code or test bug by default; only route to `code-implementer`/`test-writer` when the report pins the cause to a `src/**` runtime crash or a `tests/**` (Playwright) error respectively. An app that won't boot is never an automatic `test-writer` coverage gap.
 
 ---
 
@@ -288,7 +290,7 @@ single-purpose workers: read inputs from files, write outputs/verdicts to files.
 The `.claude/sdd/` contracts (`conventions`/`scot`/`ui-schema`) and the templates ship
 with the **tool** and are **read-only** — no agent authors or edits them. `plan-architect`
 only writes/extends the per-project `.sdd/target.md` from the user prompt (asking the
-human if the stack is unstated). A gatekeeper's `Write` is scoped to **appending its verdict to `.sdd/state.md` only** — it never edits specs, code, tests, impl-notes, or index `status` (its NON-GOALS bind that).
+human if the stack is unstated). A gatekeeper's `Write` is scoped to **appending its verdict to `.sdd/state.md` only** — it never edits specs, code, tests, impl-notes, or index `status` (its NON-GOALS bind that). The **test-runner** is the only agent that **executes** the suite: it runs the canonical `.sdd/target.md` commands verbatim (filling only the `{scope}` selector), and for a GUI project's e2e phase those commands **launch and tear down the running app under test** (e.g. Playwright `webServer`) — always via the declared canonical command, never an ad-hoc invocation.
 
 **test-writer independence is SOFT** (by design, no runtime hook): minimal tools
 (no `Bash`) + an explicit NON-GOAL ("never read `src/` or `.sdd/impl-notes/`") +
@@ -395,10 +397,12 @@ each failure with the canonical coverage id (`.claude/sdd/scot.md` §7.3) it ass
 
 ## Run
 - timestamp: <ISO-8601>
-- commands: install=<cmd> | build=<cmd> | unit=<cmd> | int=<cmd>
+- scope: <whole-suite (unscoped) | the in-scope ids the run was filtered to, e.g. FEAT-001, CLS-regCtrl>
+- suites: <which suites actually ran, e.g. unit, integration, component, e2e>
+- commands: install=<cmd> | build=<cmd> | unit=<cmd> | int=<cmd> | e2e=<cmd | n/a>
 - exit-status: <0 | first non-zero phase code>
-- phase-reached: <install | build | unit | integration | complete>
-- tooling: <none | note about a missing/placeholder command or reporter>
+- phase-reached: <install | build | unit | integration | component | e2e-setup | e2e | complete>
+- tooling: <none | note about a missing/placeholder command or reporter; e.g. "dot+junit reporters" or a missing `{scope}` placeholder>
 
 ## Summary
 - total: <n>
@@ -415,5 +419,9 @@ each failure with the canonical coverage id (`.claude/sdd/scot.md` §7.3) it ass
 ```
 
 `exit-status` + `commands` let the gatekeeper confirm the canonical `.sdd/target.md`
-command actually ran; a halted install/build is reported via `phase-reached`, never
-hidden. A failure whose `coverage` is `unknown` is flagged, never invented.
+command actually ran; a halted install/build/e2e-setup is reported via `phase-reached`,
+never hidden. `scope` records whether the run was **filtered to the scope under work**
+(the normal in-loop case — `.sdd/target.md` `{scope}` substitution) or the **whole,
+unscoped suite** (the final arbiter run); a scoped run's coverage/green verdict binds only
+that scope. `suites` records which test types ran (`e2e` appears only for GUI projects). A
+failure whose `coverage` is `unknown` is flagged, never invented.

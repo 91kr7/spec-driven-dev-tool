@@ -114,11 +114,17 @@ for the slice scope from `.sdd/state.md` and advance the affected index rows'
 
 9. **Test** (budget: test = 5) — advances `reviewed → approved`:
    a. Invoke `test-writer` via Task on the slice's behavioral/feature specs (unit
-      from classes, integration from features, constraints from entities). It is
-      the independent oracle — it must NOT read `src/` or `.sdd/impl-notes/`
-      (isolation, §9); it covers every SCoT arm id and every `ACn`.
-   b. Invoke `test-runner` via Task to run the suite and write `tests/REPORT.md`.
-   c. Invoke `test-gatekeeper` via Task to verify coverage and triage failures.
+      from classes, integration from features, constraints from entities, component
+      from gui specs, and — for a **GUI project** — Playwright **e2e** for each in-scope
+      screen's user journeys). It is the independent oracle — it must NOT read `src/` or
+      `.sdd/impl-notes/` (isolation, §9); it covers every SCoT arm id and every `ACn`, and
+      selects e2e elements by accessible role/name from the spec.
+   b. Invoke `test-runner` via Task, **passing the slice ids as the scope**, to run the
+      suite **filtered to the slice** (`{scope}` selector — unit + integration + component,
+      plus e2e for a GUI project; not the whole app) and write `tests/REPORT.md` (recording
+      the `scope` and `suites`). The baked **dot** reporter keeps captured output small.
+   c. Invoke `test-gatekeeper` via Task to verify coverage (incl. the GUI-project e2e
+      journey requirement) and triage failures.
    d. Read the latest test verdict.
       - **PASS (full green + coverage complete)** → advance the slice's rows
         `reviewed → approved`; the slice is done — go to step 10.
@@ -133,10 +139,21 @@ for the slice scope from `.sdd/state.md` and advance the affected index rows'
         to **step 8** so the minimal diff re-passes the **code gate** before
         re-testing; **test bug → `test-writer`** (the test must assert a spec
         AC/branch), loop to **step 9b**. Increment the test count.
+      - **Run-health / e2e-setup failure routed to escalation** (the suite never ran —
+        install/tooling, or the app under test would not launch / browser binaries missing,
+        per §7) → **ESCALATE immediately** (env / `MOD-build` / the `run`/`test-e2e`
+        command); this is **not** a test-budget iteration and does not loop to an author.
       - **Budget overflow (test > 5)** → ESCALATE with this slice id, the failing
         verdict, its reasons; STOP this slice.
 
 10. Move to the next slice and repeat Phase C, until no slices remain.
+
+11. **Final unscoped arbiter run.** Once every slice is `approved`, invoke `test-runner`
+    **with no scope** (whole, unscoped suite — unit + integration + component + e2e) and
+    `test-gatekeeper` over the whole project, to catch **cross-scope regressions** a
+    per-slice scoped run cannot see. On a regression, route per the §7 triage to the owning
+    slice and re-run its step-9 test sub-phase (bounded by the test budget); on green, the
+    project is done.
 
 ### Escalation (the only human touch-point after stack resolution)
 On ANY iteration-budget overflow (analysis > 3, code > 3, or test > 5), STOP that
@@ -178,8 +195,9 @@ triggers a routed re-invocation.
 
 ## Slice loop (auto)
 This command loops Phase C over the slice list until **all** slices are
-`approved`, then reports a final summary: slices processed, their final statuses,
-total iterations per phase, and any escalations raised. There is no manual "next
+`approved`, then runs the **final unscoped arbiter test run** (step 11) over the whole
+project and reports a final summary: slices processed, their final statuses,
+total iterations per phase, the final whole-suite result, and any escalations raised. There is no manual "next
 command" — `/sdd-auto` is the top-level orchestrator and the entire mode-5 flow.
 For a manual, human-in-control run, use the four-command path instead:
 `/sdd-plan` → `/sdd-specify` → `/sdd-implement` → `/sdd-test`. `/sdd-trace` can

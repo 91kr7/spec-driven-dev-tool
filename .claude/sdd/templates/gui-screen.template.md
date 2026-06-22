@@ -129,7 +129,11 @@ END
 
 <!-- ui-schema §5 + conventions §3: Given/When/Then, each with a stable ACn id. Cover every
      non-trivial branch arm above and every visible rule. The test-writer turns these +
-     the SCoT arms into tests. -->
+     the SCoT arms into tests. TWO altitudes (GUI project): a screen's user-JOURNEY ACs —
+     those whose outcome crosses the running stack (navigation-on-success, a persisted/
+     emitted effect, a service-error banner) — are validated end-to-end by a **Playwright
+     e2e** test against the real running app; arm-level, accessibility, and pure-view ACs
+     are covered by in-process **component** tests with the feature call mocked. -->
 
 - **AC1** — Given <context>, When <action>, Then <observable outcome>.
 - **AC2** — Given <context>, When <action>, Then <observable outcome>.

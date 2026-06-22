@@ -87,9 +87,12 @@ END
 
 # Integration acceptance criteria
 <!-- End-to-end Given/When/Then, each with a stable ACn id (.claude/sdd/conventions.md §2).
-     These drive the INTEGRATION tests (one per feature). Each AC should exercise a
-     full cross-class path; together they should cover every orchestration branch arm
-     above. State observable outcomes across collaborators, not internal calls. -->
+     These drive the INTEGRATION tests (one per feature: real in-process collaboration,
+     infrastructure mocked). Each AC should exercise a full cross-class path; together they
+     should cover every orchestration branch arm above. State observable outcomes across
+     collaborators, not internal calls. In a GUI project, the user-facing journeys these
+     features power are ALSO exercised end-to-end through the running app by the screen's
+     Playwright e2e tests (the screen spec owns those journey ACs). -->
 
 - **AC1** — *Given* <initial cross-class state>, *When* `<entryPoint>` is invoked with `<input>`, *Then* <observable end-to-end outcome and persisted/emitted effects>.
 - **AC2** — *Given* <state triggering a branch>, *When* `<entryPoint>` is invoked with `<input>`, *Then* <the alternate outcome, e.g. an error and no side effects>.

@@ -26,7 +26,7 @@
 | Frontend framework| `<React | Angular | Vue | Svelte | none>`         |
 | Build tool        | `<Gradle | Maven | dotnet | npm/pnpm | uv/poetry | go>` |
 | Package manager   | `<…>`                                             |
-| Test framework(s) | `<JUnit | xUnit | Vitest/Jest | pytest | go test>` (unit) + `<…>` (integration) + `<…>` (UI) |
+| Test framework(s) | `<JUnit | xUnit | Vitest/Jest | pytest | go test>` (unit) + `<…>` (integration) + `<…>` (component/UI) + `<Playwright | Cypress | none>` (e2e — **GUI projects only**, drives the running app in a real browser) |
 | DB / persistence  | `<Postgres | MySQL | SQLite | none>` + `<schema-versioning tool, e.g. Flyway | Liquibase | Alembic | Prisma Migrate | EF Core — what most stacks call "migrations">` |
 
 ---
@@ -50,6 +50,9 @@ for new specs). Adapt to the stack:
 
 - File comment syntax for the traceability header: `<// …>`.
 - Design-token names referenced by UI specs resolve here: `<token source / theme file>`.
+- **Test layout (one test target per spec id, so a scoped run resolves mechanically):**
+  `<e.g. unit/component → tests/unit/<id>.* ; integration → tests/integration/<FEAT-id>.* ; constraint → tests/model/<ENT-id>.* ; e2e → tests/e2e/<screen-or-FEAT-id>.spec.*>`. Each
+  test file's name/path carries the spec id it covers so the `test-runner` can map scope ids → test files for the `{scope}` selector.
 
 ---
 
@@ -59,20 +62,33 @@ The `test-runner` and `code-gatekeeper` use exactly these (installing deps as
 needed). Fill them for the stack:
 
 ```
-install:   <e.g. pnpm install>
+install:   <e.g. pnpm install>   # GUI projects: also provision the e2e browser binaries, e.g. `pnpm install && pnpm playwright install --with-deps`
 build:     <e.g. pnpm build>
-test-unit: <e.g. pnpm test:unit>
-test-int:  <e.g. pnpm test:int>
-test-all:  <e.g. pnpm test>
+test-unit: <e.g. pnpm vitest run {scope}>      # unit (classes) + component (gui, mocked); {scope} = in-scope selector — see below
+test-int:  <e.g. pnpm vitest run {scope}>      # integration (features), infrastructure mocked
+test-e2e:  <e.g. pnpm playwright test {scope}> # GUI projects ONLY — real running app in a real browser; the command launches the app under test (e.g. Playwright `webServer`). `n/a` for backend/CLI/library projects.
+test-all:  <e.g. pnpm test>                    # whole suite, UNSCOPED — the final arbiter run
 lint:      <e.g. pnpm lint>
 run:       <e.g. pnpm dev>
 db-schema: <command that applies the entity-derived schema changes, e.g. ./gradlew flywayMigrate | pnpm prisma migrate deploy>
 ```
 
-- Where the test framework supports it, **bake a machine-readable reporter into the
-  `test-*` commands** (JSON / TAP / JUnit-XML) so `tests/REPORT.md` is parsed
-  deterministically. The `test-runner` runs these commands **verbatim** and never
-  adds or alters flags — a parseable reporter belongs here, in the canonical command.
+- **`{scope}` placeholder (scoped runs).** Write each `test-unit` / `test-int` /
+  `test-e2e` command with a `{scope}` token where the framework's test selector goes.
+  The `test-runner` substitutes the in-scope selector for the scope under work (test-file
+  globs, or an id-alternation `--grep`/`--tests` pattern — whichever the command selects
+  by) so **only the scope's tests run during the workflow, never the whole app**. An
+  **empty `{scope}` means the whole suite** (used by `test-all` and the final unscoped
+  arbiter run). Keep the token where a selector validly appears; the runner only fills it
+  — it never adds or alters any other flag.
+- **Two reporters: dot + structured.** Where the framework supports it, bake **both** into
+  each `test-*` command — a compact **`dot`** console reporter (one char per test, so the
+  agent's captured output stays tiny) **and** a machine-readable **file** reporter
+  (JUnit-XML / JSON / TAP written to a file) that the `test-runner` parses deterministically
+  (`xmllint`/`jq`) without reading a huge log. E.g. `vitest run {scope} --reporter=dot
+  --reporter=junit --outputFile=…`; `playwright test {scope} --reporter=dot,junit`. The
+  `test-runner` runs these commands **verbatim** — both reporters belong here, in the
+  canonical command, never added ad-hoc by the runner.
 
 ---
 
