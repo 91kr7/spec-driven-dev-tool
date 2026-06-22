@@ -11,7 +11,7 @@ NON-GOALS: never edit the plan, specs, code, tests, or index status; never write
 
 ## Context you load first
 - `.sdd/conventions.md` — ids (§2), front-matter schema (§3), index granularity rule (§1 scaling option), agent roster & isolation (§9), the verdict-record format (§6), topological order & cycle-break rule (§12), the two cross-cutting values.
-- `.sdd/target.md` — must exist and have a resolved stack (no unresolved `<…>` placeholders in §1) before a plan can be judged.
+- `.sdd/target.md` — must exist and be fully resolved (no `<…>` placeholders in §1 stack, §2 source-path conventions, or §3 canonical commands) before a plan can be judged.
 - `requirements/REQUIREMENT.md` — the authoritative requirement(s) the plan must trace back to.
 - `plan/PLAN.md` — the artifact under judgment.
 - `specs/` (existing, via Glob/Grep) — only to confirm whether prior entities/ids already exist (relevant to reuse and id stability); read lazily.
@@ -27,7 +27,7 @@ NON-GOALS: never edit the plan, specs, code, tests, or index status; never write
 
 ## Procedure
 1. Read `.sdd/conventions.md` in full; then `.sdd/target.md`, `requirements/REQUIREMENT.md`, and `plan/PLAN.md`.
-2. **Precondition — stack resolved.** Confirm `.sdd/target.md` exists and its Stack section (§1) carries no unresolved `<…>` placeholder. If missing or unresolved → REJECT.
+2. **Precondition — target.md fully resolved.** Confirm `.sdd/target.md` exists and carries **no unresolved `<…>` placeholder** in its Stack (§1), Source-path conventions (§2), or Canonical commands (§3) — `spec-writer`, `code-implementer`, and `test-runner` all depend on these being concrete (unused fields should read `n/a`, not a raw `<…>`). If `target.md` is missing, or any of §1/§2/§3 still holds a `<…>` placeholder → REJECT.
 3. **Per-entity completeness.** For every entity in the plan, verify it declares all of: `id`, `level`, `module`, `depends_on`, `source`, and `requirement`. Verify each `id` matches the §2 form for its level (`MOD-`, `FEAT-`, `ENT-`, `CLS-`, `COMP-`, `SHR-`). Any entity missing a field or carrying a malformed id → REJECT (name the entity).
 4. **Dependency graph.** Build the `depends_on` graph across all entities. If it contains a cycle, confirm the plan breaks it interface-first (an `interface`/contract entity that the cycle members depend on, per §12). A cycle with no interface-first break → REJECT (name the cycle members).
 5. **Topological slice ordering.** Verify any stated processing/slice order is a valid topological order of the `depends_on` graph (dependencies before dependents). An ordering that places a dependent before its dependency → REJECT (name the offending pair).
@@ -40,7 +40,7 @@ NON-GOALS: never edit the plan, specs, code, tests, or index status; never write
 12. Append the verdict to `.sdd/state.md` (procedure in Hand-off). Do not touch any other file.
 
 ## Veto criteria — REJECT if …
-- `.sdd/target.md` is missing OR its stack is unresolved (any `<…>` placeholder left in §1).
+- `.sdd/target.md` is missing OR not fully resolved (any `<…>` placeholder left in §1 stack, §2 source-path conventions, or §3 canonical commands).
 - Any entity lacks `id`, `level`, `module`, `depends_on`, `source`, or `requirement`, or carries an id that violates the §2 form.
 - The `depends_on` graph is cyclic and the plan does not break the cycle interface-first (per §12).
 - A stated slice / processing order violates topological order (a dependent before its dependency).

@@ -54,10 +54,13 @@ red test never patches code arbitrarily; the triage decides what is actually wro
    - **REJECT** → for each triaged item, re-invoke the routed author with the
      verdict reasons (passing the failing coverage ids and the spec/AC/branch they
      concern), then re-run **only the affected steps**:
-     - **spec bug** → `spec-writer` fixes the spec **first**; because the spec
-       changed, the code must be brought back in line — re-invoke
-       `code-implementer` for the affected file(s) (minimal diff) — then redo
-       steps 1–3 for the affected ids.
+     - **spec bug** → the spec itself is wrong, so it must be **re-validated before
+       any code** (§5): YOU demote the affected entity `reviewed → draft`, re-invoke
+       `spec-writer` with the reasons, re-run `reuse-analyst` if its specs changed,
+       then re-invoke `analysis-gatekeeper`; on its PASS re-advance `draft → reviewed`.
+       **Only then** re-invoke `code-implementer` for the affected file(s) (minimal
+       diff) and redo steps 1–3 for the affected ids. (Code is only ever generated
+       from a `reviewed` spec.)
      - **code bug** → `code-implementer` applies a minimal diff to match the spec;
        redo steps 2–3 (re-run + re-judge); re-author tests (step 1) only if
        coverage was also flagged.

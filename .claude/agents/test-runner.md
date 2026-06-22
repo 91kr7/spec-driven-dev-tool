@@ -32,7 +32,7 @@ NON-GOALS: never edit `src/`, specs, or tests; never fix a failing test or a bug
 7. Compute summary counts: total, passed, failed, skipped. Record the overall `exit-status` (the non-zero code of the first failing phase, or `0` if everything passed).
 8. Write `tests/REPORT.md` in the structure below — stable headings and a one-failure-per-block layout so the test-gatekeeper can parse it deterministically. Touch nothing else.
 
-### `tests/REPORT.md` structure (parseable — emit exactly these fields)
+### `tests/REPORT.md` structure (canonical: `.sdd/conventions.md` §14 — emit exactly these fields)
 ```
 # Test Report
 

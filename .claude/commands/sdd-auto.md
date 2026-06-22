@@ -45,9 +45,13 @@ first and code is regenerated from it.
 1. Resolve the stack: if `.sdd/target.md` is missing and `$ARGUMENTS` does not
    imply a stack, ask the human the stack question now (the only permitted prompt
    besides escalation); otherwise continue silently.
-2. Invoke `plan-architect` via Task, passing `$ARGUMENTS` (it refines it into
-   `requirements/REQUIREMENT.md`, writes/extends `.sdd/target.md`, and authors
-   `scot.md`/`ui-schema.md` only if they do not exist). Output: `plan/PLAN.md`.
+2. **Capture the requirement yourself first** (`plan-architect` does NOT write
+   `requirements/`): write/refine `requirements/REQUIREMENT.md` from `$ARGUMENTS`
+   (raw + refined), assigning a stable `REQ-001`, `REQ-002`, … id to each atomic,
+   testable requirement (the back-link targets for every spec's `requirements:`).
+   Then invoke `plan-architect` via Task, passing `requirements/REQUIREMENT.md` +
+   the `.sdd/` contracts; it writes/extends `.sdd/target.md`, authors
+   `scot.md`/`ui-schema.md` only if they do not exist, and writes `plan/PLAN.md`.
 3. Invoke `plan-gatekeeper` via Task, passing `plan/PLAN.md`, `requirements/`,
    `.sdd/`. Read the **latest** plan-phase record for the scope from
    `.sdd/state.md`.
@@ -117,11 +121,13 @@ for the slice scope from `.sdd/state.md` and advance the affected index rows'
       - **PASS (full green + coverage complete)** → advance the slice's rows
         `reviewed → approved`; the slice is done — go to step 10.
       - **REJECT** → route per the triage (§7), MD-as-authority:
-        **spec bug → `spec-writer`** (fix the spec, then loop back to step 8 to
-        regenerate code from the corrected spec — a red test never patches code
-        arbitrarily); **code bug → `code-implementer`** (minimal diff);
-        **test bug → `test-writer`** (the test must assert a spec AC/branch).
-        Increment the test count; loop to step 9b (or step 8 for a spec-bug route).
+        **spec bug → `spec-writer`** (the spec is wrong, so re-validate it before
+        code, §5: **demote** the entity `reviewed → draft` and loop back to **step 7**
+        — re-spec → `reuse-analyst` → `analysis-gatekeeper` → re-advance to
+        `reviewed` — then step 8 regenerates code from the corrected spec; a red test
+        never patches code arbitrarily); **code bug → `code-implementer`** (minimal
+        diff); **test bug → `test-writer`** (the test must assert a spec AC/branch).
+        Increment the test count; loop to step 9b (or **step 7** for a spec-bug route).
       - **Budget overflow (test > 5)** → ESCALATE with this slice id, the failing
         verdict, its reasons; STOP this slice.
 
@@ -136,6 +142,15 @@ slice (or Phase A for the plan) and ESCALATE to the human with a concise summary
 - which **author** was last routed to.
 Do not silently retry past budget and do not advance status on an unresolved scope.
 Other slices that already passed remain `approved`; only the overflowing slice halts.
+
+### Resume (from files only)
+Loop state (the current slice and the per-phase iteration counts) lives in this
+session, but it is **reconstructable from files** if the run is interrupted — nothing
+is lost. The latest `.sdd/state.md` record for a scope carries `iteration: <n>/<budget>`,
+and the index `status` columns show which slices are already `reviewed`/`approved`. To
+resume, re-run `/sdd-auto`: skip every slice already `approved`, and re-enter the first
+non-`approved` slice at the sub-phase its latest `.sdd/state.md` record implies,
+continuing that phase's iteration count (do not restart the budget).
 
 ## Status transitions
 You (not any gatekeeper) advance the index `status` from the latest `.sdd/state.md`

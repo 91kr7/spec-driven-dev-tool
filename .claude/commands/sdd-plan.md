@@ -24,7 +24,11 @@ specs — the first of the 5 modes, fully **manual / human-in-control**. It writ
    `requirements/REQUIREMENT.md` so it captures (raw + refined) the requirement
    from `$ARGUMENTS`. If `$ARGUMENTS` is empty and `requirements/REQUIREMENT.md`
    already holds a requirement, use it as-is. If both are empty, ESCALATE: ask the
-   human for the requirement and stop.
+   human for the requirement and stop. When you refine it, **assign a stable id
+   `REQ-001`, `REQ-002`, … to each atomic, testable requirement** in the *Refined*
+   section — these are the back-link targets every spec's `requirements:`
+   front-matter points to (never renumber an existing one). `plan-architect` reads
+   these ids; it does not write `requirements/`.
 2. **Invoke `plan-architect`** via Task. Pass only paths: the input
    `requirements/REQUIREMENT.md` and the contracts under `.sdd/` it must obey.
    It will:

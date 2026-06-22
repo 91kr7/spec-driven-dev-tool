@@ -171,6 +171,17 @@ Per-entity status lives in the **index row**: `draft → reviewed → approved`.
 - `reviewed` — passed the analysis gate (spec is internally sound).
 - `approved` — implemented + code gate PASS + tests green + test gate PASS.
 
+**Backward transitions (a spec change after `reviewed`).** Status moves forward by
+default, but **code is only ever generated from a `reviewed` spec**. So when a gate
+routes a **spec bug** (the spec itself is wrong/ambiguous/incomplete), the spec must
+be corrected and **re-pass the analysis gate** before code is (re)generated: the
+**command** demotes the affected entity `reviewed → draft` (or `approved → draft` if
+it was already approved), `spec-writer` fixes it, then it re-advances the normal
+forward path `draft → reviewed` (analysis gate) → `reviewed → approved` (test gate).
+The command performs every status edit; gatekeepers only judge. A demotion never
+happens for a **code** or **test** bug — those leave the spec and its status untouched
+(only the code or the test is fixed).
+
 **Separation of duties (strict):**
 
 - **Gatekeepers JUDGE only.** They write a structured verdict to `.sdd/state.md`
@@ -251,7 +262,7 @@ single-purpose workers: read inputs from files, write outputs/verdicts to files.
 | Agent | Role | May READ | May WRITE | tools frontmatter | Reads `src/`? |
 |---|---|---|---|---|---|
 | `plan-architect` | requirement → plan of indexes/specs | `requirements/`, `specs/` (existing), `.sdd/` | `plan/`, `.sdd/target.md`, `.sdd/scot.md`*, `.sdd/ui-schema.md`* | `Read, Write, Glob, Grep` | no |
-| `plan-gatekeeper` | judge the plan | `requirements/`, `plan/`, `.sdd/` | `.sdd/state.md` | `Read, Glob, Grep` | no |
+| `plan-gatekeeper` | judge the plan | `requirements/`, `plan/`, `specs/` (existing), `.sdd/` | `.sdd/state.md` | `Read, Glob, Grep` | no |
 | `spec-writer` | write indexes + specs (4 levels + MOD-build) | `plan/`, `requirements/`, `specs/`, `.sdd/{scot,ui-schema,conventions,target}.md` | `specs/` (incl. indexes) | `Read, Write, Glob, Grep` | no |
 | `reuse-analyst` | dedupe + promote shared specs (pure author) | `specs/`, `.sdd/conventions.md` | `specs/` | `Read, Write, Glob, Grep` | no |
 | `analysis-gatekeeper` | judge specs (the only spec-phase blocker) | `specs/`, `requirements/`, `.sdd/` | `.sdd/state.md` | `Read, Glob, Grep` | no |
@@ -334,3 +345,42 @@ Every generated source file carries a header pointing back to its spec, e.g.:
 ```
 
 (comment syntax per the target language).
+
+---
+
+## 14. `tests/REPORT.md` format (test-runner → test-gatekeeper contract)
+
+`test-runner` writes this file (overwritten each run); `test-gatekeeper` parses it.
+It MUST follow this fixed structure so the gatekeeper can read it without heuristics.
+Note the division of labour: **coverage** of the spec (every `ACn` and every SCoT
+branch arm having a test) is verified by the gatekeeper from the tagged test files in
+`tests/**`; this report supplies the **run result** — what ran, pass/fail counts, and
+each failure with the coverage id it asserts.
+
+```
+# Test Report
+
+## Run
+- timestamp: <ISO-8601>
+- commands: install=<cmd> | build=<cmd> | unit=<cmd> | int=<cmd>
+- exit-status: <0 | first non-zero phase code>
+- phase-reached: <install | build | unit | integration | complete>
+- tooling: <none | note about a missing/placeholder command or reporter>
+
+## Summary
+- total: <n>
+- passed: <n>
+- failed: <n>
+- skipped: <n>
+
+## Failures
+### <test name>
+- coverage: <AC/branch coverage id, e.g. CLS-regCtrl AC2 / B1.then | unknown>
+- message: <assertion or error message>
+- excerpt: |
+    <trimmed stack / output excerpt>
+```
+
+`exit-status` + `commands` let the gatekeeper confirm the canonical `.sdd/target.md`
+command actually ran; a halted install/build is reported via `phase-reached`, never
+hidden. A failure whose `coverage` is `unknown` is flagged, never invented.

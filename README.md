@@ -161,7 +161,7 @@ suite.
 | Agent | May READ | May WRITE | Bash / Edit | Reads `src/`? |
 |---|---|---|---|---|
 | `plan-architect` | `requirements/`, existing `specs/`, `.sdd/` | `plan/`, `.sdd/target.md` (+ `scot`/`ui-schema` if absent) | — | no |
-| `plan-gatekeeper` | `requirements/`, `plan/`, `.sdd/` | `.sdd/state.md` | — | no |
+| `plan-gatekeeper` | `requirements/`, `plan/`, `specs/`, `.sdd/` | `.sdd/state.md` | — | no |
 | `spec-writer` | `plan/`, `requirements/`, `specs/`, `.sdd/{scot,ui-schema,conventions,target}.md` | `specs/` (incl. indexes) | — | no |
 | `reuse-analyst` | `specs/`, `.sdd/conventions.md` | `specs/` | — | no |
 | `analysis-gatekeeper` | `specs/`, `requirements/`, `.sdd/` | `.sdd/state.md` | — | no |
@@ -200,6 +200,12 @@ already reflects the stack and your prompt may only extend/override it.
 ---
 
 ## Quick start
+
+**Adopting the workflow:** start a project from this repo, or copy `.claude/`,
+`.sdd/`, `specs/templates/`, and `specs/ui-components/` into it — those are the
+contracts, the spec templates, and the default UI library that every agent reads.
+The requirement (with the **stack**) is the only thing you must supply; if the stack
+isn't stated, the workflow asks once before writing `.sdd/target.md`.
 
 1. `/sdd-plan <describe what to build, and the stack>` — review `plan/PLAN.md` and
    `.sdd/target.md`.
