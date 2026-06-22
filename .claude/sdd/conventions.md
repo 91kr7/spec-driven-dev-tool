@@ -69,8 +69,11 @@ under `specs/indexes/<level>/<MOD-id>.index.md`, keeping `modules.index` and
   next free id. Renames are handled by adding a new id and deprecating the old.
 - A spec file is named after its id: `specs/classes/CLS-userRepo.spec.md`.
 - `MOD-build` is a **mandatory** infra module in every project: it owns build
-  files, dependency manifests, config, CI, and **DB schema changes derived from the
-  entity specs** (schema changes are never hand-authored independently).
+  files, dependency manifests, config, CI, **framework config & build/entry scaffolding**
+  (e.g. `next.config.js`, `vite.config.ts`, `tsconfig.json`, the app entry/bootstrap file —
+  so committed boilerplate has an owning spec and is never an orphan), and **DB schema
+  changes derived from the entity specs** (schema changes are never hand-authored
+  independently; forward-only, append-only once shipped).
 
 ---
 

@@ -103,8 +103,9 @@ for the slice scope from `.sdd/state.md` and advance the affected index rows'
       **regenerate** only by exception (new file / substantially changed spec /
       bad drift); it writes only declared `source:` paths and records
       concretizations in `.sdd/impl-notes/<id>.md` (never in the spec).
-   b. Invoke `code-gatekeeper` via Task (read-only) to judge code ≡ spec for the
-      slice.
+   b. Once the slice's build manifest (`MOD-build`) exists, run the canonical
+      `install` so the compile check is effective, then invoke `code-gatekeeper` via
+      Task (read-only) to judge code ≡ spec for the slice.
    c. Read the latest code verdict. **PASS** → go to step 9. **REJECT** →
       re-invoke `code-implementer` with the verdict reasons (minimal diff to match
       the spec), increment the code count, loop to step 8b.
