@@ -18,6 +18,7 @@ NON-GOALS: never read src/; never inline a component that already exists in ui-c
 - `plan/PLAN.md` — the entities to author, their levels, modules, and `depends_on` edges (the work list and its order).
 - `requirements/REQUIREMENT.md` — the back-link target for each spec's `requirements:` and the source of acceptance intent.
 - `specs/indexes/*.index.md` and existing `specs/**/*.spec.md` — discover-before-create: reuse existing ids; only add what is missing.
+- `specs/REUSE-REPORT.md` (if present) — the reuse-analyst's promotions and any **copy-pasteable edits handed off to you to apply** (entangled de-duplications it could not safely rewrite itself).
 - `.claude/sdd/templates/*.template.md` — the templates each new spec is copied from (one per kind/level).
 
 ## Inputs (files only)
@@ -25,6 +26,7 @@ NON-GOALS: never read src/; never inline a component that already exists in ui-c
 - `requirements/REQUIREMENT.md` — refined requirement and acceptance intent.
 - `.claude/sdd/conventions.md`, `.claude/sdd/scot.md`, `.claude/sdd/ui-schema.md`, `.sdd/target.md` — canonical contracts.
 - `specs/indexes/*.index.md`, `specs/**/*.spec.md`, `specs/ui-components.index` rows — existing artifacts to reuse and extend.
+- `specs/REUSE-REPORT.md` (if present) — apply any de-duplication edits the reuse-analyst handed off to you.
 - `.claude/sdd/templates/*.template.md` — copy source for new specs.
 
 ## Outputs (files only)
@@ -45,7 +47,7 @@ NON-GOALS: never read src/; never inline a component that already exists in ui-c
    - **structural** (`dto`, `enum`, `interface`, `config`) → declarative tables only; an `interface` lists **signatures only, no body**.
    - **module** → a structural **overview** (no SCoT, no field table): `# Purpose`, `# Contained entries` (the FEAT/CLS/ENT/COMP/SHR ids it owns), `# Boundaries & dependencies` (the `MOD-*` it depends on / exposes to).
    - **gui** → **UI schematic** per `.claude/sdd/ui-schema.md`: the five sections (Wireframe, Component tree, State, Events, Acceptance criteria), composing library `COMP-*` by id; non-trivial handlers get a small SCoT snippet with branch ids.
-7. **Author the mandatory MOD-build spec.** Create `specs/modules/MOD-build.spec.md` owning build files, dependency manifests, config, CI, and DB migrations. The migration content is **DERIVED from the entity (`ENT-*`) specs** — each migration traces to its entity's field table/invariants; never invent schema independently. Do **not** write SQL/DDL into the `MOD-build` spec — as a `module` overview it only *declares* ownership of the migration files (listing them under `source:`, each traced to the `ENT-*` it derives from); the **code-implementer** materializes the actual migration files from the entity field tables when it implements `MOD-build`'s `source:` paths. Set `MOD-build.depends_on` to the module(s) that own those entities (e.g. the persistence/model module) so it is ordered after them.
+7. **Author the mandatory MOD-build spec.** Create `specs/modules/MOD-build.spec.md` owning build files, dependency manifests, config, CI, and DB migrations. The migration content is **DERIVED from the entity (`ENT-*`) specs** — each migration traces to its entity's field table/invariants; never invent schema independently. Do **not** write SQL/DDL into the `MOD-build` spec — as a `module` overview it only *declares* ownership of the migration files (listing them under `source:`, each traced to the `ENT-*` it derives from); the **code-implementer** materializes the actual migration files from the entity field tables when it implements `MOD-build`'s `source:` paths. Set `MOD-build.depends_on` to the persistence/model module(s) **and the `ENT-*` entities** whose schema it migrates, so it is ordered after them AND the code-implementer pulls in those entity field tables when materializing the migrations.
 8. **Write acceptance criteria.** In every spec, write `# Acceptance criteria` as Given/When/Then, each with a stable `ACn` id, each testable. Behavioral specs ensure each AC and each SCoT arm id is coverable; gui specs make accessibility/behavior testable as ACs.
 9. **Self-sufficiency check.** Confirm each spec carries enough to regenerate its code from scratch with no `src/` access and no other agent's memory: Purpose, the kind's interface (`# Public interface` for most kinds; Props/Events for a `COMP-*`; Contained entries + Boundaries for a `module`), the invariants/rules, the body form, and ACs.
 10. **Update the indexes.** Add/refresh one row per entity in the matching per-level index with `status: draft`; a shared `SHR-*` abstraction is an implementation unit, so its row goes in **`classes.index.md`** (there is no separate shared index — §4). **Derive** the `source` column from each spec's `source:` front-matter (do not invent it). Keep ui-components rows' `layer` and `variants` columns filled.

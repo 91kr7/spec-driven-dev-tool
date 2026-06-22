@@ -17,11 +17,13 @@ NON-GOALS: never edit specs, indexes, code, tests, or impl-notes; never set or a
 - `.sdd/target.md` — the stack/architecture and canonical source-path conventions you validate each spec's `source:` mapping against; any project-level budget overrides.
 - `requirements/REQUIREMENT.md` — the refined requirement(s), to confirm every requirement is traceable to a spec.
 - `specs/indexes/*.index.md` — all five (or per-module) indexes: the entry roster, `depends_on`, derived `source` column, and `status`.
+- `specs/REUSE-REPORT.md` — the reuse-analyst's record of what it promoted and **why any remaining duplication is justified**; consult it before flagging duplication so a recorded justification is not blocked as "unjustified".
 
 ## Inputs (files only)
 - `specs/indexes/modules.index.md`, `specs/indexes/features.index.md`, `specs/indexes/model.index.md`, `specs/indexes/classes.index.md`, `specs/indexes/ui-components.index.md` (or their per-module splits under `specs/indexes/<level>/`).
 - All `specs/**/<id>.spec.md` in scope (modules incl. `MOD-build`, features, model, classes, ui-components, shared).
 - `requirements/REQUIREMENT.md`.
+- `specs/REUSE-REPORT.md` (if present) — the reuse-analyst's promotions and duplication justifications.
 - The canonical contracts listed under "Context you load first".
 
 ## Outputs (files only)
@@ -43,7 +45,7 @@ NON-GOALS: never edit specs, indexes, code, tests, or impl-notes; never set or a
 9. **Source-mapping well-formedness.** Each `source:` path conforms to `.sdd/target.md` path conventions; one-file-one-spec by default; shared/aggregator ownership is declared on every co-owner with `owns_sections:`; undeclared shared ownership is blocking; `MOD-build` is present and its DB migrations are **derived from the entity specs** (not hand-authored independently).
 10. **Dependency graph & cycles.** Build the `depends_on` graph for the scope; topologically order it. If a cycle exists, it must be broken **interface-first** (an `interface`/contract spec the implementations depend on); an unbroken cycle is blocking.
 11. **Requirement traceability.** Every requirement in `requirements/REQUIREMENT.md` is reachable through some spec's `requirements:` back-link (REQ → FEAT → CLS → SOURCE chain reconstructable per §13). An orphan requirement is blocking.
-12. **Unjustified duplication.** Scan in-scope specs for duplicated logic/markup/structure above the small threshold that the reuse-analyst should have promoted into a `SHR-*`/`COMP-*` spec. Duplication above threshold with no justification is blocking and routes to `reuse-analyst`.
+12. **Unjustified duplication.** Scan in-scope specs for duplicated logic/markup/structure above the small threshold that the reuse-analyst should have promoted into a `SHR-*`/`COMP-*` spec. Duplication above threshold with no justification **recorded in `specs/REUSE-REPORT.md`** is blocking and routes to `reuse-analyst`.
 13. **Decide and record.** If any veto criterion fires, verdict = REJECT; otherwise PASS. Append exactly one verdict record to `.sdd/state.md` per the Hand-off section. Do not touch anything else.
 
 ## Veto criteria — REJECT if …

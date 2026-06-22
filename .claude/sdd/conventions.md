@@ -233,7 +233,7 @@ red test never patches code arbitrarily*:
 - **spec bug** → `spec-writer` (fix spec first, then regenerate code).
 - **code bug** → `code-implementer` (minimal diff to match the spec).
 - **test bug** → `test-writer` (fix the test; it must assert a spec AC/branch).
-- **build / setup failure** (the suite never ran — non-zero `install`/`build` phase in `tests/REPORT.md`) → `code-implementer` for a compile/build error, or **escalate** for a missing dependency / tooling (env / `MOD-build`). Judge run-health *before* coverage; a non-running suite is never a `test-writer` coverage gap.
+- **build / setup failure** (the suite never ran — non-zero `install`/`build` phase in `tests/REPORT.md`) → route by the offending file: a compile error in `src/**` → `code-implementer`, in `tests/**` → `test-writer`; a missing dependency / tooling → **escalate** (env / `MOD-build`). Judge run-health *before* coverage; a non-running suite is never an automatic `test-writer` coverage gap.
 
 ---
 
@@ -300,7 +300,7 @@ downstream gate) already constrains. A project MAY override any agent's `model:`
 | `analysis-gatekeeper` | `opus` | the only spec-phase blocker; judges self-sufficiency & testability |
 | `test-gatekeeper` | `opus` | triages spec/code/test bug — a mis-route costs a whole iteration |
 | `plan-gatekeeper` | `sonnet` | structural checklist on the plan; backstopped by the analysis gate |
-| `code-gatekeeper` | `sonnet` | verifies code vs a concrete spec; backstopped by the test suite |
+| `code-gatekeeper` | `opus` | behavioral-equivalence of multi-branch SCoT→code is deep verification, not a checklist — the primary semantic-correctness gate |
 | `test-writer` | `sonnet` | mechanical coverage — one test per `ACn`/arm from concrete specs |
 | `test-runner` | `sonnet` | runs canonical commands, parses, emits the fixed REPORT format |
 
