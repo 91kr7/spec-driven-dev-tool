@@ -35,7 +35,7 @@ plan/PLAN.md                         # output of the Plan mode
 .sdd/state.md                        # append-only gatekeeper verdict / audit log
 .sdd/impl-notes/<spec-id>.md         # implementer-owned concretization notes (NOT part of the gated spec)
 specs/indexes/{modules,features,model,classes,ui-components}.index.md   # one index PER LEVEL
-specs/modules/<id>.spec.md           # incl. MOD-build (build/config/CI/migrations)
+specs/modules/<id>.spec.md           # incl. MOD-build (build/config/CI/schema changes)
 specs/features/<id>.spec.md          # use-case: orchestration + integration acceptance
 specs/model/<id>.spec.md             # domain entities: fields, types, relations, constraints
 specs/classes/<id>.spec.md           # per-method SCoT (and feature-specific gui screens)
@@ -69,8 +69,8 @@ under `specs/indexes/<level>/<MOD-id>.index.md`, keeping `modules.index` and
   next free id. Renames are handled by adding a new id and deprecating the old.
 - A spec file is named after its id: `specs/classes/CLS-userRepo.spec.md`.
 - `MOD-build` is a **mandatory** infra module in every project: it owns build
-  files, dependency manifests, config, CI, and **DB migrations derived from the
-  entity specs** (migrations are never hand-authored independently).
+  files, dependency manifests, config, CI, and **DB schema changes derived from the
+  entity specs** (schema changes are never hand-authored independently).
 
 ---
 

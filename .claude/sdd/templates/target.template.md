@@ -27,7 +27,7 @@
 | Build tool        | `<Gradle | Maven | dotnet | npm/pnpm | uv/poetry | go>` |
 | Package manager   | `<…>`                                             |
 | Test framework(s) | `<JUnit | xUnit | Vitest/Jest | pytest | go test>` (unit) + `<…>` (integration) + `<…>` (UI) |
-| DB / persistence  | `<Postgres | MySQL | SQLite | none>` + `<migration tool>` |
+| DB / persistence  | `<Postgres | MySQL | SQLite | none>` + `<schema-versioning tool, e.g. Flyway | Liquibase | Alembic | Prisma Migrate | EF Core — what most stacks call "migrations">` |
 
 ---
 
@@ -46,7 +46,7 @@ for new specs). Adapt to the stack:
 | `config`             | `<repo-root config path>`                | `src/config/app.config.ts`               |
 | `gui` screen         | `src/<module>/screens/<Name>.<ext>`      | `src/web/screens/RegisterScreen.tsx`     |
 | `COMP-*` component   | `src/ui/<layer>/<Name>.<ext>`            | `src/ui/atoms/Button.tsx`                |
-| migrations           | owned by `MOD-build`, derived from entities | `db/migrations/<n>_<name>.sql`        |
+| schema changes           | owned by `MOD-build`, derived from entities | `db/schema/<n>_<name>.sql`        |
 
 - File comment syntax for the traceability header: `<// …>`.
 - Design-token names referenced by UI specs resolve here: `<token source / theme file>`.
@@ -66,7 +66,7 @@ test-int:  <e.g. pnpm test:int>
 test-all:  <e.g. pnpm test>
 lint:      <e.g. pnpm lint>
 run:       <e.g. pnpm dev>
-migrate:   <e.g. pnpm migrate>
+db-schema: <command that applies the entity-derived schema changes, e.g. ./gradlew flywayMigrate | pnpm prisma migrate deploy>
 ```
 
 - Where the test framework supports it, **bake a machine-readable reporter into the

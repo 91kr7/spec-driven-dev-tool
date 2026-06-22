@@ -264,7 +264,7 @@ units the test-writer must cover.
 - No concrete library or framework names (`Spring`, `Express`, `JPA`, `axios`…).
 - No language syntax (`@Annotations`, `public static`, semicolons, decorators).
 - No SQL / ORM specifics — persistence is expressed as `CALL repo.method(...)`;
-  the schema/migration derives from the **entity** spec, not from SCoT.
+  the schema derives from the **entity** spec, not from SCoT.
 - No exact API signatures of third-party calls — express the *intent* of the call.
 
 If behavior cannot be expressed without naming a concrete mechanism, that detail

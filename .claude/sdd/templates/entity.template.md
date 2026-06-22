@@ -10,7 +10,7 @@
     - id MUST be ENT-<kebab> and MUST match the filename and a row in
       specs/indexes/model.index.md (conventions §2, §5).
     - An entity is STRUCTURAL: describe WHAT data it holds and the rules that bind
-      it — never HOW it is stored or how migrations run. The DB migration and the
+      it — never HOW it is stored or how schema changes run. The DB schema change and the
       code entity both DERIVE from this spec (see "Derivation note").
     - status MIRRORS the index row; the index is canonical (conventions §5).
     - depends_on lists ONLY other entity ids this one references (relations).
@@ -81,7 +81,7 @@ owns_sections: []                    # only for a co-owned aggregator file; othe
 # Invariants & rules
 
 <!-- The constraints that MUST always hold for a valid instance. These are the
-     truths the DB migration (CHECK/UNIQUE/NOT NULL/FK) and the code entity
+     truths the DB schema change (CHECK/UNIQUE/NOT NULL/FK) and the code entity
      validation BOTH derive from. Make each one testable; give it a short tag so an
      acceptance criterion can reference it. -->
 
@@ -102,10 +102,10 @@ hand-authored independently** (conventions §1, §2):
 1. **Code entity** at `<source path>` — derived by `code-implementer`; field types
    map to the target language via `.sdd/target.md`; invariants become construction
    /mutation validation.
-2. **DB migration** — owned by **MOD-build**, derived from this spec. NOT NULL /
+2. **DB schema change** — owned by **MOD-build**, derived from this spec. NOT NULL /
    UNIQUE / CHECK / FK constraints come straight from the Fields, Relations and
-   Invariants tables. If this entity changes, the migration is re-derived; the spec
-   is corrected first and the migration follows (spec wins).
+   Invariants tables. If this entity changes, the schema change is re-derived; the spec
+   is corrected first and the schema change follows (spec wins).
 
 Constraint/validation tests are derived from the invariants by `test-writer`
 (conventions §1: `tests/` constraints from entities).
@@ -195,11 +195,11 @@ hand-authored independently** (conventions §1, §2):
 1. **Code entity** at `src/domain/order/Order.ts` — derived by `code-implementer`;
    field types map to the target language via `.sdd/target.md`; invariants become
    construction/mutation validation (e.g. `EmptyOrder`, `TotalMismatch`).
-2. **DB migration** — owned by **MOD-build**, derived from this spec. NOT NULL comes
+2. **DB schema change** — owned by **MOD-build**, derived from this spec. NOT NULL comes
    from required fields, UNIQUE from `id`, the FK on `customerId` from the `placedBy`
    relation (ON DELETE RESTRICT), and CHECK constraints from INV-positiveQty,
    INV-totalDerived (`total >= 0`) and INV-statusEnum. If Order changes, the
-   migration is re-derived; the spec is corrected first and the migration follows.
+   schema change is re-derived; the spec is corrected first and the schema change follows.
 
 Constraint/validation tests are derived from the invariants by `test-writer`.
 

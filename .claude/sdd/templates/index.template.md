@@ -71,11 +71,11 @@ level). They are gathered here only so the template shows every column variant.
 ### `specs/indexes/modules.index.md` — modules
 
 <!-- The modules index partitions the system. `module` repeats the id (a module is its own home).
-     MOD-build is the mandatory infra module (build files, manifests, config, CI, derived migrations). -->
+     MOD-build is the mandatory infra module (build files, manifests, config, CI, derived schema changes). -->
 
 | id | name | description (WHAT, one line) | module | depends_on | spec | source | status |
 |----|------|------------------------------|--------|------------|------|--------|--------|
-| `MOD-build` | Build & Infra | Build files, dependency manifests, config, CI, and entity-derived DB migrations | `MOD-build` | — | `specs/modules/MOD-build.spec.md` | `package.json, db/migrations/` | approved |
+| `MOD-build` | Build & Infra | Build files, dependency manifests, config, CI, and entity-derived DB schema changes | `MOD-build` | — | `specs/modules/MOD-build.spec.md` | `package.json, db/schema/` | approved |
 | `MOD-api` | API | HTTP controllers and request/response wiring for the public API | `MOD-api` | `MOD-domain` | `specs/modules/MOD-api.spec.md` | `src/api/` | reviewed |
 | `MOD-domain` | Domain | Core entities, services, and business rules of the application | `MOD-domain` | — | `specs/modules/MOD-domain.spec.md` | `src/domain/` | reviewed |
 
@@ -93,7 +93,7 @@ level). They are gathered here only so the template shows every column variant.
 ### `specs/indexes/model.index.md` — domain model (entities)
 
 <!-- Structural entities: fields/relations/invariants. Entities map to model files; MOD-build derives
-     migrations from these specs (migrations are never hand-authored). -->
+     schema changes from these specs (schema changes are never hand-authored). -->
 
 | id | name | description (WHAT, one line) | module | depends_on | spec | source | status |
 |----|------|------------------------------|--------|------------|------|--------|--------|

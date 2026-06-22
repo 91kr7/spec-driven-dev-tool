@@ -155,7 +155,7 @@ plan/PLAN.md                         output of the Plan mode
   impl-notes/<spec-id>.md            implementer-owned concretization (NOT part of the gated spec)
 specs/
   indexes/{modules,features,model,classes,ui-components}.index.md   one index PER LEVEL
-  modules/<id>.spec.md               incl. MOD-build (build/config/CI/migrations)
+  modules/<id>.spec.md               incl. MOD-build (build/config/CI/schema changes)
   features/<id>.spec.md              use-cases (orchestration + integration acceptance)
   model/<id>.spec.md                 domain entities (fields, types, relations, constraints)
   classes/<id>.spec.md               per-method SCoT services/controllers AND feature gui screens
@@ -182,8 +182,8 @@ Stable, never renumbered/renamed (a rename = a new id + deprecation of the old).
 | `B` | SCoT branch (in-spec) | `B<n>` + arm | `B1.then`, `B3.empty` |
 
 `MOD-build` is **mandatory in every project**: it owns build files, dependency
-manifests, config, CI, and the **DB migrations derived from the entity specs**
-(migrations are never hand-authored independently).
+manifests, config, CI, and the **DB schema changes derived from the entity specs**
+(schema changes are never hand-authored independently).
 
 ### 3.3 Spec levels and the `kind:` → form mapping
 
@@ -205,7 +205,7 @@ The **four spec levels** map onto these kinds:
   coordinator code it declares a `source:` file; otherwise `source: []` (purely
   compositional — it only drives integration tests).
 - **Entity** (`entity`) — the single source from which both the code entity **and** the
-  DB migration derive. Declarative, no SCoT.
+  DB schema change derive. Declarative, no SCoT.
 - **Class/service** (`service`/`controller`) — the detailed per-method SCoT + invariants.
 - **UI** (`gui`) — the schematic form: wireframe + component tree (by id) + state/events.
 
@@ -479,7 +479,7 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
   front-matter; pick the body by kind (behavioral → SCoT; entity → field table +
   invariants; structural → declarative; **module → overview**; gui → schematic
   composing `COMP-*` by id — for a GUI project, FIRST materialize the guaranteed
-  **baseline UI library** (ui-schema §9) from the template); create `MOD-build` (migrations derived from entity specs;
+  **baseline UI library** (ui-schema §9) from the template); create `MOD-build` (schema changes derived from entity specs;
   `MOD-build.depends_on` the entity-owning modules); write `ACn` in Given/When/Then;
   ensure each spec is regenerable; derive each index `source` column from `source:`
   front-matter. **For feature evolution, the command demotes an already-passed entity
@@ -516,7 +516,7 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
   component; the source mapping is malformed (paths violate `target.md`; undeclared
   shared ownership; index `source` ≠ spec `source:`); a requirement is untraceable;
   unjustified duplication above threshold (→ route `reuse-analyst`); a dependency cycle
-  without an interface-first break; `MOD-build` missing or migrations not derived from
+  without an interface-first break; `MOD-build` missing or schema changes not derived from
   entities.
 - **Routing on REJECT:** `spec-writer` (default) or `reuse-analyst` (duplication).
 
@@ -803,7 +803,7 @@ modular, Express + React, pnpm, Postgres).
    `reviewed`.
 3. **`/sdd-implement`** → `code-implementer` generates, in `depends_on` order,
    `ENT-user` → `CLS-userRepo` (interface) → `SHR-passwordHasher` → `CLS-regCtrl` →
-   `CLS-registerScreen`, plus `MOD-build`'s users-table migration; each file carries
+   `CLS-registerScreen`, plus `MOD-build`'s users-table schema change; each file carries
    its `// spec:` header; concretizations (argon2, the ORM call, the Result mapping)
    go into `.sdd/impl-notes/`; `code-gatekeeper` PASS.
 4. **`/sdd-test`** → `test-writer` derives the suite from the behavioral specs
@@ -831,7 +831,7 @@ re-implement (code gate) → re-test.
 To change `ENT-user` (add a `displayName`): `/sdd-specify ENT-user` demotes the touched
 entities `approved → draft`, the `spec-writer` edits the entity spec, the analysis gate
 re-passes (`reviewed`), `/sdd-implement` applies a minimal diff to the entity + the
-`MOD-build` migration (code gate), `/sdd-test` re-derives constraint tests and
+`MOD-build` schema change (code gate), `/sdd-test` re-derives constraint tests and
 re-approves. The blast radius is the touched entity, not the project.
 
 ---
