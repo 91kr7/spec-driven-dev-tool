@@ -27,7 +27,7 @@
 
 ## Language idioms / mapping decisions
 
-- `<e.g. error-style: result → mapped to a sealed Result type / Either>`
+- `<e.g. error_style: result → mapped to a sealed Result type / Either>`
 
 ## Edge-case handling (beyond the SCoT)
 

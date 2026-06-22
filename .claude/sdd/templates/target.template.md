@@ -1,111 +1,69 @@
 # Target — stack, architecture & canonical commands
 
-> **TEMPLATE / per-project file.** The `plan-architect` (via `/sdd-plan`) **writes
-> this file from the user prompt** at the start of a new project or feature. If the
-> user prompt does not state the stack, the `plan-architect` leaves the unresolved
-> fields as explicit `<…>` placeholders (it never silently assumes a default); the
-> `plan-gatekeeper` REJECTs on any placeholder and the driving command escalates the
-> stack question to the human — a subagent never prompts interactively. For an existing SDD project this file
-> already reflects the established stack; a new feature may only extend/override it.
->
-> This is a Markdown file and therefore **part of the source of truth**. Every
-> code-writing agent reads it to know which language/framework to emit, where files
-> go, and which commands to run. Replace every `<…>` placeholder.
-
----
+> **Per-project file.** The `plan-architect` (in `/sdd-auto` Phase A) writes this from the
+> user prompt. If the stack is unstated it leaves explicit `<…>` placeholders (never a silent
+> default); the `plan-gatekeeper` REJECTs on any placeholder and the command escalates the stack
+> question to the human. On an existing project it reflects the established stack; a feature may
+> only extend/override it. **Part of the source of truth** — every code-writing agent reads it.
+> Replace every `<…>`; unused fields read `n/a`, never a bare `<…>`.
 
 ## 1. Stack
 
-| Aspect            | Value                                             |
-|-------------------|---------------------------------------------------|
-| Project type      | `<new app | feature on existing SDD project>`     |
-| Architecture      | `<monolith | modular | microservices | library | CLI>` |
-| Primary language  | `<Java | Kotlin | C# | TypeScript | Python | Go | …>` + version |
-| Runtime           | `<JVM 21 | .NET 8 | Node 20 | Python 3.12 | …>`    |
-| Backend framework | `<Spring Boot | Jakarta | ASP.NET | Express/Nest | FastAPI | Gin | none>` |
-| Frontend framework| `<React | Angular | Vue | Svelte | none>`         |
-| Build tool        | `<Gradle | Maven | dotnet | npm/pnpm | uv/poetry | go>` |
-| Package manager   | `<…>`                                             |
-| Test framework(s) | `<JUnit | xUnit | Vitest/Jest | pytest | go test>` (unit) + `<…>` (integration) + `<…>` (component/UI) + `<Playwright | Cypress | none>` (e2e — **GUI projects only**, drives the running app in a real browser) |
-| DB / persistence  | `<Postgres | MySQL | SQLite | none>` + `<schema-versioning tool, e.g. Flyway | Liquibase | Alembic | Prisma Migrate | EF Core — what most stacks call "migrations">` |
-
----
+| Aspect | Value |
+|--------|-------|
+| Project type | `<new app | feature on existing SDD project>` |
+| Architecture | `<monolith | modular | microservices | library | CLI>` |
+| Primary language | `<Java | Kotlin | C# | TypeScript | Python | Go | …>` + version |
+| Runtime | `<JVM 21 | .NET 8 | Node 20 | Python 3.12 | …>` |
+| Backend framework | `<Spring | ASP.NET | Express/Nest | FastAPI | Gin | none>` |
+| Frontend framework | `<React | Angular | Vue | Svelte | none>` (≠ `none` ⇒ GUI project) |
+| Build tool / package manager | `<Gradle | Maven | dotnet | npm/pnpm | uv/poetry | go>` |
+| Test framework(s) | `<unit>` + `<integration>` + `<component/UI>` + `<Playwright | Cypress | none>` (e2e — GUI only) |
+| DB / persistence | `<Postgres | MySQL | SQLite | none>` + `<schema-versioning tool, e.g. Flyway | Prisma Migrate | EF Core>` |
 
 ## 2. Source path & naming conventions
 
-How each spec `kind` maps to a file path and extension (used to propose `source:`
-for new specs). Adapt to the stack:
+How each spec `kind` maps to a path (used to propose `source:` for new specs):
 
-| Spec kind            | Path convention                          | Example                                  |
-|----------------------|------------------------------------------|------------------------------------------|
-| `service`/`controller`| `src/<module>/<Name>.<ext>`             | `src/api/RegistrationController.ts`      |
-| `use-case` coordinator| `src/<module>/<Name>.<ext>`             | `src/app/RegisterUser.ts`                |
-| `entity`             | `src/<module>/model/<Name>.<ext>`        | `src/db/model/User.ts`                   |
-| `dto`/`enum`         | `src/<module>/types/<Name>.<ext>`        | `src/api/types/RegisterCmd.ts`           |
-| `interface`          | `src/<module>/<Name>.<ext>`              | `src/db/UserRepository.ts`               |
-| `config`             | `<repo-root config path>`                | `src/config/app.config.ts`               |
-| `gui` screen         | `src/<module>/screens/<Name>.<ext>`      | `src/web/screens/RegisterScreen.tsx`     |
-| `COMP-*` component   | `src/ui/<layer>/<Name>.<ext>`            | `src/ui/atoms/Button.tsx`                |
-| schema changes           | owned by `MOD-build`, derived from entities | `db/schema/<n>_<name>.sql`        |
+| Spec kind | Path convention | Example |
+|-----------|-----------------|---------|
+| `service`/`controller` | `src/<module>/<Name>.<ext>` | `src/api/RegistrationController.ts` |
+| `use-case` coordinator | `src/<module>/<Name>.<ext>` | `src/app/RegisterUser.ts` |
+| `entity` | `src/<module>/model/<Name>.<ext>` | `src/db/model/User.ts` |
+| `dto`/`enum` | `src/<module>/types/<Name>.<ext>` | `src/api/types/RegisterCmd.ts` |
+| `interface`/`config` | `src/<module>/<Name>.<ext>` | `src/db/UserRepository.ts` |
+| `gui` screen | `src/<module>/screens/<Name>.<ext>` | `src/web/screens/RegisterScreen.tsx` |
+| `COMP-*` | `src/ui/<layer>/<Name>.<ext>` | `src/ui/atoms/Button.tsx` |
+| schema changes | owned by `MOD-build`, derived from entities | `db/schema/<n>_<name>.sql` |
 
-- File comment syntax for the traceability header: `<// …>`.
-- Design-token names referenced by UI specs resolve here: `<token source / theme file>`.
-- **Test layout (one test target per spec id, so a scoped run resolves mechanically):**
-  `<e.g. unit/component → tests/unit/<id>.* ; integration → tests/integration/<FEAT-id>.* ; constraint → tests/model/<ENT-id>.* ; e2e → tests/e2e/<CLS-screen-id>.spec.*>`. Each
-  test file's name/path carries the spec id it covers so the `test-runner` can map scope ids → test files for the `{scope}` selector. **Name each e2e file after the screen id (`CLS-*` gui)** it drives — not the feature id — so a screen-scoped run resolves its own e2e (a feature's scope closure already includes its screens).
-
----
+- Traceability-header comment syntax: `<// …>`. Design-token source: `<theme/token file>`.
+- **Test layout (one target per spec id, so a scoped run resolves mechanically):** `<unit/component → tests/unit/<id>.* ; integration → tests/integration/<FEAT-id>.* ; constraint → tests/model/<ENT-id>.* ; e2e → tests/e2e/<CLS-screen-id>.spec.*>`. Name each e2e file after the **screen id** (`CLS-*` gui), not the feature.
 
 ## 3. Canonical commands
 
-The `test-runner` and `code-gatekeeper` use exactly these (installing deps as
-needed). Fill them for the stack:
+The `test-runner` and `code-gatekeeper` use exactly these (the runner fills only `{scope}`).
 
 ```
-install:   <e.g. pnpm install>   # GUI projects: also provision the e2e browser binaries, e.g. `pnpm install && pnpm playwright install --with-deps`
+install:   <e.g. pnpm install>          # GUI: also `pnpm playwright install --with-deps`
 build:     <e.g. pnpm build>
-test-unit: <e.g. pnpm vitest run {scope}>      # unit (classes) + component (gui, mocked); {scope} = in-scope selector — see below
-test-int:  <e.g. pnpm vitest run {scope}>      # integration (features), infrastructure mocked
-test-e2e:  <e.g. pnpm playwright test {scope}> # GUI projects ONLY — real running app in a real browser; the command launches the app under test (e.g. Playwright `webServer`). `n/a` for backend/CLI/library projects.
-test-all:  <e.g. pnpm test>                    # whole suite, UNSCOPED — the final arbiter run
+test-unit: <e.g. pnpm vitest run {scope} --reporter=dot --reporter=junit --outputFile=…>   # unit + component (mocked)
+test-int:  <e.g. pnpm vitest run {scope} --reporter=dot --reporter=junit --outputFile=…>   # integration, infra mocked
+test-e2e:  <e.g. pnpm playwright test {scope} --reporter=dot,junit>   # GUI ONLY — launches the running app; `n/a` otherwise
+test-all:  <e.g. pnpm test>             # whole suite, UNSCOPED — the final arbiter run
 lint:      <e.g. pnpm lint>
 run:       <e.g. pnpm dev>
-db-schema: <command that applies the entity-derived schema changes, e.g. ./gradlew flywayMigrate | pnpm prisma migrate deploy>
+db-schema: <e.g. pnpm prisma migrate deploy>   # applies the entity-derived schema changes
 ```
 
-- **`{scope}` placeholder (scoped runs).** Write each `test-unit` / `test-int` /
-  `test-e2e` command with a `{scope}` token where the framework's test selector goes.
-  The `test-runner` substitutes the in-scope selector for the scope under work (test-file
-  globs, or an id-alternation `--grep`/`--tests` pattern — whichever the command selects
-  by) so **only the scope's tests run during the workflow, never the whole app**. An
-  **empty `{scope}` means the whole suite** (used by `test-all` and the final unscoped
-  arbiter run). Keep the token where a selector validly appears; the runner only fills it
-  — it never adds or alters any other flag.
-- **Two reporters: dot + structured.** Where the framework supports it, bake **both** into
-  each `test-*` command — a compact **`dot`** console reporter (one char per test, so the
-  agent's captured output stays tiny) **and** a machine-readable **file** reporter
-  (JUnit-XML / JSON / TAP written to a file) that the `test-runner` parses deterministically
-  (`xmllint`/`jq`) without reading a huge log. E.g. `vitest run {scope} --reporter=dot
-  --reporter=junit --outputFile=…`; `playwright test {scope} --reporter=dot,junit`. The
-  `test-runner` runs these commands **verbatim** — both reporters belong here, in the
-  canonical command, never added ad-hoc by the runner.
+- **`{scope}`** — put the token where the framework's test selector goes; the runner substitutes the in-scope selector (file globs or an id-alternation `--grep`/`--tests`). Empty `{scope}` = whole suite. The runner fills it only — never adds/alters any other flag.
+- **Two reporters baked in:** a compact **`dot`** console reporter (tiny captured output) **and** a machine-readable **file** reporter (JUnit-XML/JSON/TAP) the runner parses with `xmllint`/`jq`. Both belong here, in the canonical command — never added ad-hoc.
 
----
-
-## 4. Iteration budgets (optional override)
-
-Override the defaults from `.claude/sdd/conventions.md` §7 if needed:
-
+## 4. Iteration budgets (optional override of conventions §7)
 ```
 analysis: 3
 code: 3
 test: 5
 ```
 
----
-
 ## 5. Notes / constraints
-
-`<Non-functional constraints expressible as testable acceptance criteria
-(performance budgets, security rules, accessibility level). Anything not testable
-is recorded here as context but does not gate.>`
+`<Non-functional constraints expressible as testable ACs (performance budgets, security, accessibility level). Anything not testable is context only and does not gate.>`
