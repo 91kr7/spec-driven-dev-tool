@@ -168,7 +168,7 @@ triggers a routed re-invocation.
 
 ## Outputs
 - `requirements/REQUIREMENT.md`, `plan/PLAN.md`.
-- `.sdd/target.md` (and `.claude/sdd/scot.md` / `.claude/sdd/ui-schema.md` if newly authored).
+- `.sdd/target.md` (the `.claude/sdd/` contracts ship with the tool, read-only — never authored at runtime).
 - Slice-by-slice: `specs/indexes/*.index.md` rows + `specs/**/*.spec.md`,
   `src/**` (declared paths), `.sdd/impl-notes/<id>.md`, `tests/**`,
   `tests/REPORT.md`.

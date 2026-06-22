@@ -52,5 +52,5 @@ NON-GOALS: never write specs or code; never invent or infer requirements that th
 - Never invent requirements: if the requirement is silent or ambiguous on the stack or on what to build, STOP and ask the human; do not fill the gap with a default.
 - Never assume a stack silently; for existing-SDD, never contradict the established `.sdd/target.md` — only extend/override with a recorded reason.
 - Never edit `.sdd/state.md`, any index `status`, or advance any entity's lifecycle (`draft → reviewed → approved`).
-- Never overwrite an existing `.claude/sdd/scot.md` or `.claude/sdd/ui-schema.md`; author them only when truly absent.
+- Never author or edit the `.claude/sdd/` contracts (`conventions`/`scot`/`ui-schema`/templates) — they ship with the tool and are read-only; read them only to plan correctly.
 - Reuse over repetition: surface shared candidates for the reuse-analyst and reference existing UI components by id instead of re-specifying them.

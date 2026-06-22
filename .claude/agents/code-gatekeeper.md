@@ -12,6 +12,7 @@ NON-GOALS: never edit code, specs, tests, impl-notes, or index status; never set
 ## Context you load first
 - `.claude/sdd/conventions.md` — ids, front-matter schema (esp. `source:`, `owns_sections:`), status rules, the §6 verdict format + routing, change policy (§8), traceability headers (§13). Authority.
 - `.claude/sdd/scot.md` — the behavioral grammar; the SCoT block in a behavioral spec is the contract the code must realize (branch arms, error-style, invariants).
+- `.claude/sdd/ui-schema.md` — the UI-schematic convention; read it when a scoped spec is `kind: gui` to judge composition-by-id, Props/variants, and accessibility against the canonical form.
 - `.sdd/target.md` — the stack/architecture and the canonical build/lint commands you may invoke read-only, plus target-language traceability-header comment syntax.
 - The gated spec(s) for the scope (`specs/**/<id>.spec.md`) — front-matter (`source:`, `depends_on`, `status`) + body (SCoT / declarative tables / invariants / acceptance criteria).
 - `.sdd/impl-notes/<id>.md` for each scoped id — the implementer's concretizations (allowed to add detail SCoT omits; must NOT contradict the spec).
@@ -22,7 +23,7 @@ NON-GOALS: never edit code, specs, tests, impl-notes, or index status; never set
 - `specs/**/<id>.spec.md` — the authoritative spec(s); `specs/indexes/*.index.md` for the derived `source` column and cross-references.
 - `.sdd/impl-notes/<id>.md` — implementer concretization notes.
 - `src/**` — the generated/edited source files.
-- `.claude/sdd/{conventions,scot}.md`, `.sdd/target.md` — the contracts above.
+- `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md` — the contracts above.
 
 ## Outputs (files only)
 - Exactly one verdict record appended to `.sdd/state.md`, `phase: code`, in the §6 format (see Hand-off). Nothing else is written.

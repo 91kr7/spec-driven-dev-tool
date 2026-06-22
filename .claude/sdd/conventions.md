@@ -266,12 +266,12 @@ single-purpose workers: read inputs from files, write outputs/verdicts to files.
 | `plan-architect` | requirement → plan of indexes/specs | `requirements/`, `specs/` (existing), `.claude/sdd/`, `.sdd/target.md` | `plan/`, `.sdd/target.md` | `Read, Write, Glob, Grep` | no |
 | `plan-gatekeeper` | judge the plan | `requirements/`, `plan/`, `specs/` (existing), `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | `Read, Glob, Grep` | no |
 | `spec-writer` | write indexes + specs (4 levels + MOD-build) | `plan/`, `requirements/`, `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.claude/sdd/templates/` | `specs/` (incl. indexes) | `Read, Write, Glob, Grep` | no |
-| `reuse-analyst` | dedupe + promote shared specs (pure author) | `specs/`, `.claude/sdd/conventions.md` | `specs/` | `Read, Write, Glob, Grep` | no |
+| `reuse-analyst` | dedupe + promote shared specs (pure author) | `specs/`, `.claude/sdd/{conventions,ui-schema}.md` | `specs/` | `Read, Write, Glob, Grep` | no |
 | `analysis-gatekeeper` | judge specs (the only spec-phase blocker) | `specs/`, `requirements/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | `Read, Glob, Grep` | no |
 | `code-implementer` | specs → source (create / minimal diff) | `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.sdd/impl-notes/`, `src/` | `src/` (declared paths), `.sdd/impl-notes/<id>.md` | `Read, Write, Edit, Glob, Grep` | yes (edit) |
 | `code-gatekeeper` | judge code ≡ spec | `specs/`, `.sdd/impl-notes/`, `src/`, `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | `Read, Glob, Grep, Bash` (read-only) | yes (review) |
 | `test-writer` | specs → tests (independent oracle) | behavioral spec sections, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md` | `tests/` | `Read, Write, Glob` | **no — by role** |
-| `test-runner` | run tests, write report | `tests/`, `src/`, `.sdd/target.md` | `tests/REPORT.md` | `Read, Write, Glob, Bash` | yes |
+| `test-runner` | run tests, write report | `tests/`, `src/`, `.claude/sdd/conventions.md`, `.sdd/target.md` | `tests/REPORT.md` | `Read, Write, Glob, Bash` | yes |
 | `test-gatekeeper` | verify coverage + triage failures | `tests/REPORT.md`, `specs/`, `src/`, `tests/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | `Read, Glob, Grep` | yes |
 
 The `.claude/sdd/` contracts (`conventions`/`scot`/`ui-schema`) and the templates ship

@@ -31,8 +31,8 @@ Every `gui` spec contains these sections, in order:
 4. **Events** — a table mapping user/system events to handlers and effects.
 5. **Acceptance criteria** — Given/When/Then, each with a stable `ACn` id.
 
-Shared-component specs add **Props**, **Variants**, **Visual states**, and
-**Accessibility** sections (see §6).
+Shared-component specs add **Props**, **Variants**, **Visual states**, **Events**,
+and **Accessibility** sections — plus **Slots / children** where they compose (see §6).
 
 ---
 
