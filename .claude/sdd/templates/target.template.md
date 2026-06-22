@@ -2,8 +2,10 @@
 
 > **TEMPLATE / per-project file.** The `plan-architect` (via `/sdd-plan`) **writes
 > this file from the user prompt** at the start of a new project or feature. If the
-> user prompt does not state the stack, the AI **asks the human** before writing it
-> — it never silently assumes a default. For an existing SDD project this file
+> user prompt does not state the stack, the `plan-architect` leaves the unresolved
+> fields as explicit `<…>` placeholders (it never silently assumes a default); the
+> `plan-gatekeeper` REJECTs on any placeholder and the driving command escalates the
+> stack question to the human — a subagent never prompts interactively. For an existing SDD project this file
 > already reflects the established stack; a new feature may only extend/override it.
 >
 > This is a Markdown file and therefore **part of the source of truth**. Every
@@ -66,6 +68,11 @@ lint:      <e.g. pnpm lint>
 run:       <e.g. pnpm dev>
 migrate:   <e.g. pnpm migrate>
 ```
+
+- Where the test framework supports it, **bake a machine-readable reporter into the
+  `test-*` commands** (JSON / TAP / JUnit-XML) so `tests/REPORT.md` is parsed
+  deterministically. The `test-runner` runs these commands **verbatim** and never
+  adds or alters flags — a parseable reporter belongs here, in the canonical command.
 
 ---
 

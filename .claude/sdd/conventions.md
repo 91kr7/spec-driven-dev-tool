@@ -233,6 +233,7 @@ red test never patches code arbitrarily*:
 - **spec bug** → `spec-writer` (fix spec first, then regenerate code).
 - **code bug** → `code-implementer` (minimal diff to match the spec).
 - **test bug** → `test-writer` (fix the test; it must assert a spec AC/branch).
+- **build / setup failure** (the suite never ran — non-zero `install`/`build` phase in `tests/REPORT.md`) → `code-implementer` for a compile/build error, or **escalate** for a missing dependency / tooling (env / `MOD-build`). Judge run-health *before* coverage; a non-running suite is never a `test-writer` coverage gap.
 
 ---
 
