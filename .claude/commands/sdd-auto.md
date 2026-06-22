@@ -1,0 +1,166 @@
+---
+description: Mode 5 — run plan→specs→implement→test end-to-end, automatic gates, no manual approval; escalate only on budget overflow.
+argument-hint: "<free-text requirement or feature description>"
+---
+
+# /sdd-auto — Mode 5 (Automatic)
+
+Run the WHOLE SDD flow end-to-end for the requirement in `$ARGUMENTS` —
+Plan → Specify → Implement → Test — with automatic gates and feedback loops and
+the human OUT of the loop. You (the main session) ARE the orchestrator: you
+invoke every subagent via Task, read each verdict from `.sdd/state.md`, advance
+index `status` yourself, and loop on REJECT. You never stop for manual approval.
+You escalate to the human in exactly ONE case beyond an absent stack: an
+iteration-budget overflow. This is mode 5 of the 5-mode flow (modes 1–4 are the
+manual, human-in-control path `/sdd-plan` → `/sdd-specify` → `/sdd-implement` →
+`/sdd-test`; this command fuses all four and runs them unattended).
+
+Honor `.sdd/conventions.md` as canonical throughout: ids (§2), front-matter (§3),
+index rows (§4), status lifecycle and separation of duties (§5), the verdict
+record format (§6), budgets and failure routing (§7), the change policy (§8), the
+agent roster + isolation matrix (§9), and topological / vertical-slice processing
+(§12). The two cross-cutting values bind every step:
+**Markdown is the source of truth (authority); reuse over repetition (DRY).** A red
+test NEVER makes code authoritative — when a spec is wrong, the spec is fixed
+first and code is regenerated from it.
+
+## Preconditions
+- A requirement is provided in `$ARGUMENTS` (raw free text is acceptable; the Plan
+  phase refines it into `requirements/REQUIREMENT.md`).
+- A **resolvable stack**. If `.sdd/target.md` does not exist AND the stack cannot
+  be inferred from `$ARGUMENTS`, this is the **one and only** place this automatic
+  command MUST still ask the human — it cannot assume a default stack. Ask the
+  single stack question, capture the answer, then proceed unattended. (After this,
+  the human is out of the loop until an escalation.)
+- The canonical contracts exist and are obeyed: `.sdd/conventions.md`,
+  `.sdd/scot.md`, `.sdd/ui-schema.md`. `plan-architect` authors `scot.md` /
+  `ui-schema.md` only if absent (a brand-new project); otherwise they are left
+  untouched.
+- No human approval gate is required to run — that is the defining property of
+  mode 5.
+
+## Steps (you, the main session, perform these)
+
+### Phase A — Plan (budget: analysis = 3; no approval stop)
+1. Resolve the stack: if `.sdd/target.md` is missing and `$ARGUMENTS` does not
+   imply a stack, ask the human the stack question now (the only permitted prompt
+   besides escalation); otherwise continue silently.
+2. Invoke `plan-architect` via Task, passing `$ARGUMENTS` (it refines it into
+   `requirements/REQUIREMENT.md`, writes/extends `.sdd/target.md`, and authors
+   `scot.md`/`ui-schema.md` only if they do not exist). Output: `plan/PLAN.md`.
+3. Invoke `plan-gatekeeper` via Task, passing `plan/PLAN.md`, `requirements/`,
+   `.sdd/`. Read the **latest** plan-phase record for the scope from
+   `.sdd/state.md`.
+4. Decide on that verdict:
+   - **PASS** → continue automatically to Phase B (DO NOT stop for approval; this
+     is the key difference from `/sdd-plan` + `/sdd-specify`).
+   - **REJECT** → re-invoke `plan-architect` with the verdict reasons; increment
+     the analysis-iteration count for the plan scope; loop back to step 3.
+   - **Budget overflow (analysis > 3)** → **ESCALATE** (see Escalation) with
+     scope `PLAN`, the failing verdict, and its reasons; STOP. Do not enter
+     Phase B.
+
+### Phase B — Build the slice list
+5. From the approved `plan/PLAN.md` and the indexes under `specs/indexes/`,
+   compute the processing order by `depends_on` (`.sdd/conventions.md` §12):
+   topological, dependencies first. On a dependency **cycle**, schedule the
+   `interface`/`contract` specs first and let implementations depend on the
+   interface (stubs derive from the interface meanwhile).
+6. Form the **slice list**: process ONE VERTICAL SLICE at a time — a feature/module
+   plus its `depends_on` closure — to bound context and token cost. Order slices
+   so that every slice's dependencies belong to an already-approved earlier slice.
+
+### Phase C — Per-slice loop (for EACH slice, in order)
+For the current slice, run the three sub-phases in sequence, each as a closed
+feedback loop with its own budget. After every gate, read the **latest** record
+for the slice scope from `.sdd/state.md` and advance the affected index rows'
+`status` yourself (gatekeepers judge only; you advance — §5).
+
+7. **Specify** (budget: analysis = 3) — advances `draft → reviewed`:
+   a. Invoke `spec-writer` via Task, passing `plan/PLAN.md`, the slice ids, and the
+      contracts; it writes the index rows + specs for the slice (4 levels +
+      `MOD-build` where relevant) at `status: draft`.
+   b. Invoke `reuse-analyst` via Task on the slice's specs to dedupe and promote
+      shared `SHR-*` / `COMP-*` abstractions (DRY) before judging.
+   c. Invoke `analysis-gatekeeper` via Task (the only spec-phase blocker), passing
+      the slice's specs + `requirements/` + `.sdd/`.
+   d. Read the latest analysis verdict. **PASS** → advance the slice's spec rows
+      `draft → reviewed`; go to step 8. **REJECT** → route per the verdict
+      (`spec-writer` for spec defects, `reuse-analyst` for duplication/ownership
+      findings), increment the analysis count, loop to step 7b/7c.
+   e. **Budget overflow (analysis > 3)** → ESCALATE with this slice id, the failing
+      verdict, its reasons; STOP this slice (do not implement it).
+
+8. **Implement** (budget: code = 3) — works in `depends_on` order within the slice:
+   a. For each spec in the slice, in topological order, invoke `code-implementer`
+      via Task, passing the spec id(s) + `.sdd/impl-notes/` + `.sdd/target.md`. It
+      applies the change policy (§8): minimal **Edit** by default, whole-file
+      **regenerate** only by exception (new file / substantially changed spec /
+      bad drift); it writes only declared `source:` paths and records
+      concretizations in `.sdd/impl-notes/<id>.md` (never in the spec).
+   b. Invoke `code-gatekeeper` via Task (read-only) to judge code ≡ spec for the
+      slice.
+   c. Read the latest code verdict. **PASS** → go to step 9. **REJECT** →
+      re-invoke `code-implementer` with the verdict reasons (minimal diff to match
+      the spec), increment the code count, loop to step 8b.
+   d. **Budget overflow (code > 3)** → ESCALATE with this slice id, the failing
+      verdict, its reasons; STOP this slice.
+
+9. **Test** (budget: test = 5) — advances `reviewed → approved`:
+   a. Invoke `test-writer` via Task on the slice's behavioral/feature specs (unit
+      from classes, integration from features, constraints from entities). It is
+      the independent oracle — it must NOT read `src/` or `.sdd/impl-notes/`
+      (isolation, §9); it covers every SCoT arm id and every `ACn`.
+   b. Invoke `test-runner` via Task to run the suite and write `tests/REPORT.md`.
+   c. Invoke `test-gatekeeper` via Task to verify coverage and triage failures.
+   d. Read the latest test verdict.
+      - **PASS (full green + coverage complete)** → advance the slice's rows
+        `reviewed → approved`; the slice is done — go to step 10.
+      - **REJECT** → route per the triage (§7), MD-as-authority:
+        **spec bug → `spec-writer`** (fix the spec, then loop back to step 8 to
+        regenerate code from the corrected spec — a red test never patches code
+        arbitrarily); **code bug → `code-implementer`** (minimal diff);
+        **test bug → `test-writer`** (the test must assert a spec AC/branch).
+        Increment the test count; loop to step 9b (or step 8 for a spec-bug route).
+      - **Budget overflow (test > 5)** → ESCALATE with this slice id, the failing
+        verdict, its reasons; STOP this slice.
+
+10. Move to the next slice and repeat Phase C, until no slices remain.
+
+### Escalation (the only human touch-point after stack resolution)
+On ANY iteration-budget overflow (analysis > 3, code > 3, or test > 5), STOP that
+slice (or Phase A for the plan) and ESCALATE to the human with a concise summary:
+- the **scope** (the slice id, e.g. `FEAT-001`, or `PLAN`);
+- the **phase** (`analysis | code | test`) and the iteration count vs budget;
+- the **failing verdict** verbatim and its **blocking reasons** from `.sdd/state.md`;
+- which **author** was last routed to.
+Do not silently retry past budget and do not advance status on an unresolved scope.
+Other slices that already passed remain `approved`; only the overflowing slice halts.
+
+## Status transitions
+You (not any gatekeeper) advance the index `status` from the latest `.sdd/state.md`
+verdict (§5):
+- `analysis` PASS → slice's spec rows `draft → reviewed`.
+- `test` PASS (full green + full coverage; implies a prior `code` PASS) →
+  `reviewed → approved`.
+A `code` PASS alone advances no index status (it is a precondition for the test
+gate). No verdict ever regresses a status; REJECT leaves status unchanged and
+triggers a routed re-invocation.
+
+## Outputs
+- `requirements/REQUIREMENT.md`, `plan/PLAN.md`.
+- `.sdd/target.md` (and `.sdd/scot.md` / `.sdd/ui-schema.md` if newly authored).
+- Slice-by-slice: `specs/indexes/*.index.md` rows + `specs/**/*.spec.md`,
+  `src/**` (declared paths), `.sdd/impl-notes/<id>.md`, `tests/**`,
+  `tests/REPORT.md`.
+- `.sdd/state.md` — the append-only audit trail of every gate verdict.
+- Index `status` advanced to `approved` for every completed slice.
+
+## Slice loop (auto)
+This command loops Phase C over the slice list until **all** slices are
+`approved`, then reports a final summary: slices processed, their final statuses,
+total iterations per phase, and any escalations raised. There is no manual "next
+command" — `/sdd-auto` is the top-level orchestrator and the entire mode-5 flow.
+For a manual, human-in-control run, use the four-command path instead:
+`/sdd-plan` → `/sdd-specify` → `/sdd-implement` → `/sdd-test`. `/sdd-trace` can
+reconstruct REQ→FEAT→CLS→SOURCE→TEST at any point.
