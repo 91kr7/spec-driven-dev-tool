@@ -47,16 +47,16 @@ are derived from it.
 The single source of truth for how this project is built, tested and run. Agents
 (`code-implementer`, `test-runner`, `code-gatekeeper`) use these verbatim.
 
-| Purpose             | Command          |
-|---------------------|------------------|
-| Install deps        | `pnpm install`   |
-| Build               | `pnpm build`     |
-| Unit tests          | `pnpm test:unit` |
-| Integration tests   | `pnpm test:int`  |
-| All tests           | `pnpm test`      |
-| Lint                | `pnpm lint`      |
-| Run (dev)           | `pnpm dev`       |
-| DB migrate          | `pnpm migrate`   |
+```
+install:   pnpm install
+build:     pnpm build
+test-unit: pnpm test:unit
+test-int:  pnpm test:int
+test-all:  pnpm test
+lint:      pnpm lint
+run:       pnpm dev
+migrate:   pnpm migrate
+```
 
 ## Source-file traceability header
 

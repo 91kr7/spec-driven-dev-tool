@@ -58,12 +58,15 @@ red test never patches code arbitrarily; the triage decides what is actually wro
        any code** (§5): YOU demote the affected entity `reviewed → draft`, re-invoke
        `spec-writer` with the reasons, re-run `reuse-analyst` if its specs changed,
        then re-invoke `analysis-gatekeeper`; on its PASS re-advance `draft → reviewed`.
-       **Only then** re-invoke `code-implementer` for the affected file(s) (minimal
-       diff) and redo steps 1–3 for the affected ids. (Code is only ever generated
-       from a `reviewed` spec.)
-     - **code bug** → `code-implementer` applies a minimal diff to match the spec;
-       redo steps 2–3 (re-run + re-judge); re-author tests (step 1) only if
-       coverage was also flagged.
+       **Only then** re-run the implement step for the affected id(s) —
+       `code-implementer` (minimal diff) → `code-gatekeeper`, iterating until the
+       code gate PASSes — and redo steps 1–3 for the affected ids. (Code is only ever
+       generated from a `reviewed` spec.)
+     - **code bug** → re-run the implement step for the affected id(s):
+       `code-implementer` (minimal diff) → `code-gatekeeper`, **iterating that pair
+       until the code gate PASSes** (as in `/sdd-implement`, bounded by the test
+       budget; escalate on overflow); only then redo steps 2–3 (re-run + re-judge),
+       re-authoring tests (step 1) only if coverage was also flagged.
      - **test bug** → `test-writer` fixes the offending test (it must still assert
        a real `ACn`/branch arm); redo steps 2–3.
    - Increment the **test iteration** count for the scope and record it as

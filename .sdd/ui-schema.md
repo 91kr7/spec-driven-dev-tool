@@ -142,6 +142,14 @@ END
 Trivial handlers (a single assignment or a navigation) need no SCoT — the table
 row is enough.
 
+**Handler snippet notes.** (1) *Call target:* a screen invokes its feature **by id**
+— call the feature's coordinator if it owns one, otherwise the **controller** the
+feature orchestrates (e.g. `CLS-regCtrl.register`). A purely-compositional feature
+(`source: []`) has **no callable code of its own**, so the screen calls its
+controller, not the feature id. (2) *Error style:* if a handler's own SCoT
+returns/raises errors, declare `error-style:` at its top (`.sdd/scot.md` §6); a
+trivial result check like the one above needs none.
+
 ---
 
 ## 6. Extra sections for shared components (`COMP-*`)

@@ -205,8 +205,12 @@ error cases regardless of style.
    renumber existing branches; new branches take the next free number.
 2. A branch's **arms** are enumerated by the rules in §4. The complete set of arm
    ids for a function is its **coverage set**.
-3. The fully-qualified coverage id used by tests is
-   `<spec-id>::<function>#<arm-id>` — e.g. `CLS-regCtrl::register#B1.else`.
+3. The fully-qualified coverage id used by tests is, for a **branch arm**,
+   `<spec-id>::<function>#<arm-id>` (e.g. `CLS-regCtrl::register#B1.else`) and, for an
+   **acceptance criterion**, `<spec-id>#ACn` (e.g. `CLS-regCtrl#AC2`). The test-writer
+   tags each test with this id, the test-runner echoes it **verbatim** in
+   `tests/REPORT.md`, and the test-gatekeeper joins on it — use **exactly** this
+   notation everywhere (no other spelling).
 4. The **test-writer** must create **at least one test per arm id** (and one per
    acceptance criterion `ACn`). The **test-gatekeeper** REJECTs if any arm or any
    `ACn` is uncovered.

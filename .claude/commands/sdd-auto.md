@@ -83,7 +83,10 @@ for the slice scope from `.sdd/state.md` and advance the affected index rows'
 7. **Specify** (budget: analysis = 3) — advances `draft → reviewed`:
    a. Invoke `spec-writer` via Task, passing `plan/PLAN.md`, the slice ids, and the
       contracts; it writes the index rows + specs for the slice (4 levels +
-      `MOD-build` where relevant) at `status: draft`.
+      `MOD-build` where relevant) at `status: draft`. (Feature-evolution run on an
+      existing project: first **demote** any in-scope entity already at
+      `reviewed`/`approved` to `draft` — §5 — so its modified spec re-flows through
+      the gate.)
    b. Invoke `reuse-analyst` via Task on the slice's specs to dedupe and promote
       shared `SHR-*` / `COMP-*` abstractions (DRY) before judging.
    c. Invoke `analysis-gatekeeper` via Task (the only spec-phase blocker), passing
@@ -120,14 +123,17 @@ for the slice scope from `.sdd/state.md` and advance the affected index rows'
    d. Read the latest test verdict.
       - **PASS (full green + coverage complete)** → advance the slice's rows
         `reviewed → approved`; the slice is done — go to step 10.
-      - **REJECT** → route per the triage (§7), MD-as-authority:
+      - **REJECT** → route per the triage (§7), MD-as-authority. Each route loops
+        back to the sub-phase that re-gates the fix, so a regenerated artifact never
+        skips its gate:
         **spec bug → `spec-writer`** (the spec is wrong, so re-validate it before
         code, §5: **demote** the entity `reviewed → draft` and loop back to **step 7**
         — re-spec → `reuse-analyst` → `analysis-gatekeeper` → re-advance to
         `reviewed` — then step 8 regenerates code from the corrected spec; a red test
-        never patches code arbitrarily); **code bug → `code-implementer`** (minimal
-        diff); **test bug → `test-writer`** (the test must assert a spec AC/branch).
-        Increment the test count; loop to step 9b (or **step 7** for a spec-bug route).
+        never patches code arbitrarily); **code bug → `code-implementer`**, loop back
+        to **step 8** so the minimal diff re-passes the **code gate** before
+        re-testing; **test bug → `test-writer`** (the test must assert a spec
+        AC/branch), loop to **step 9b**. Increment the test count.
       - **Budget overflow (test > 5)** → ESCALATE with this slice id, the failing
         verdict, its reasons; STOP this slice.
 

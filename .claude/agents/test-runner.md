@@ -27,7 +27,7 @@ NON-GOALS: never edit `src/`, specs, or tests; never fix a failing test or a bug
 2. Run `install` to provision dependencies. Capture stdout/stderr and the exit code. If install fails, write the report with the install error captured and stop (no tests could run) — record `exit-status` as the install command's non-zero code.
 3. Run `build`. Capture output and exit code. If the build fails, write the report with the build error captured and stop — a red build means the suite cannot be trusted; record the build's non-zero `exit-status`.
 4. Run the unit command, then the integration command (or `test-all` if the project consolidates them), preferring a machine-readable reporter where the framework supports one. Capture full output and the exit code of each.
-5. Parse the runner output into per-test results: test name, pass/fail/skip, and its coverage id. Recover the coverage id from the test name or a tag emitted by the test (the test-writer tags each test with the `AC`/`B` id it asserts); where derivable, also note the `AC` or `B` branch it maps to. If a coverage id cannot be recovered for a failing test, mark it `coverage: unknown` rather than inventing one.
+5. Parse the runner output into per-test results: test name, pass/fail/skip, and its **coverage id**. Recover the coverage id from the test name or a tag emitted by the test — the test-writer tags each test with its **canonical** coverage id (`.sdd/scot.md` §7.3: `<spec-id>::<function>#<arm-id>` for a branch arm, `<spec-id>#ACn` for an AC) — and echo it **verbatim** (do not re-spell it into another form). If a coverage id cannot be recovered for a failing test, mark it `coverage: unknown` rather than inventing one.
 6. For every failure, capture the assertion/error message plus a stack trace or output excerpt (trimmed to the relevant frames — enough to triage, not the whole log).
 7. Compute summary counts: total, passed, failed, skipped. Record the overall `exit-status` (the non-zero code of the first failing phase, or `0` if everything passed).
 8. Write `tests/REPORT.md` in the structure below — stable headings and a one-failure-per-block layout so the test-gatekeeper can parse it deterministically. Touch nothing else.
@@ -51,7 +51,7 @@ NON-GOALS: never edit `src/`, specs, or tests; never fix a failing test or a bug
 
 ## Failures
 ### <test name>
-- coverage: <AC/branch id, e.g. CLS-regCtrl AC2 / B1.then | unknown>
+- coverage: <the test's canonical coverage id(s), scot.md §7.3 — e.g. CLS-regCtrl::register#B1.then and/or CLS-regCtrl#AC2 | unknown>
 - message: <assertion or error message, one block>
 - excerpt: |
     <trimmed stack/output excerpt>
@@ -76,7 +76,7 @@ NON-GOALS: never edit `src/`, specs, or tests; never fix a failing test or a bug
 
 ## Failures
 ### CLS-regCtrl > rejects a duplicate email
-- coverage: CLS-regCtrl AC2 / B1.then
+- coverage: CLS-regCtrl#AC2, CLS-regCtrl::register#B1.then
 - message: AssertionError: expected status 409 but received 500
 - excerpt: |
     at RegistrationController.register (src/api/RegistrationController.ts:48:13)
@@ -88,7 +88,7 @@ NON-GOALS: never edit `src/`, specs, or tests; never fix a failing test or a bug
 - `tests/REPORT.md` exists and reflects only the latest run.
 - The `## Run`, `## Summary`, and `## Failures` blocks all follow the fixed structure above (parseable by the test-gatekeeper without heuristics).
 - Summary counts are accurate and internally consistent (passed + failed + skipped = total).
-- Every failure block carries a test name, a coverage id (`AC`/`B` id or `unknown`), a message, and a trimmed excerpt.
+- Every failure block carries a test name, a canonical coverage id (`.sdd/scot.md` §7.3, or `unknown`), a message, and a trimmed excerpt.
 - The overall `exit-status` and `phase-reached` of the run are recorded; a halted install/build is reported, not hidden.
 - No file other than `tests/REPORT.md` was created or modified.
 

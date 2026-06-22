@@ -172,9 +172,10 @@ Per-entity status lives in the **index row**: `draft → reviewed → approved`.
 - `approved` — implemented + code gate PASS + tests green + test gate PASS.
 
 **Backward transitions (a spec change after `reviewed`).** Status moves forward by
-default, but **code is only ever generated from a `reviewed` spec**. So when a gate
-routes a **spec bug** (the spec itself is wrong/ambiguous/incomplete), the spec must
-be corrected and **re-pass the analysis gate** before code is (re)generated: the
+default, but **code is only ever generated from a `reviewed` spec**. So whenever a
+spec changes after it reached `reviewed`/`approved` — a gate routing a **spec bug**,
+or a deliberate **feature evolution** — it must **re-pass the analysis gate** before
+code is (re)generated: the
 **command** demotes the affected entity `reviewed → draft` (or `approved → draft` if
 it was already approved), `spec-writer` fixes it, then it re-advances the normal
 forward path `draft → reviewed` (analysis gate) → `reviewed → approved` (test gate).
@@ -355,7 +356,7 @@ It MUST follow this fixed structure so the gatekeeper can read it without heuris
 Note the division of labour: **coverage** of the spec (every `ACn` and every SCoT
 branch arm having a test) is verified by the gatekeeper from the tagged test files in
 `tests/**`; this report supplies the **run result** — what ran, pass/fail counts, and
-each failure with the coverage id it asserts.
+each failure with the canonical coverage id (`.sdd/scot.md` §7.3) it asserts.
 
 ```
 # Test Report
@@ -375,7 +376,7 @@ each failure with the coverage id it asserts.
 
 ## Failures
 ### <test name>
-- coverage: <AC/branch coverage id, e.g. CLS-regCtrl AC2 / B1.then | unknown>
+- coverage: <canonical coverage id(s), .sdd/scot.md §7.3 — e.g. CLS-regCtrl::register#B1.then and/or CLS-regCtrl#AC2 | unknown>
 - message: <assertion or error message>
 - excerpt: |
     <trimmed stack / output excerpt>

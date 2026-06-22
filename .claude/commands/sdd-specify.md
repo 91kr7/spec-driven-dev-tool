@@ -20,7 +20,7 @@ Authority reminder (per `.sdd/conventions.md`): **Markdown is the source of trut
 
 1. **Capture human approval (gate of this mode).** Confirm the human approves `plan/PLAN.md`. This command *represents* that approval — **do not proceed without an explicit go-ahead**. If the human has changes, stop and send them back to `/sdd-plan`.
 
-2. **Write indexes + specs.** Invoke `spec-writer` via Task. Pass the input paths/ids it needs: `plan/PLAN.md`, `requirements/REQUIREMENT.md`, the scope (`$ARGUMENTS` or "full plan"), and the canonical contracts (`.sdd/conventions.md`, `.sdd/scot.md`, `.sdd/ui-schema.md`, `.sdd/target.md`). It writes the per-level indexes under `specs/indexes/` and the `*.spec.md` files (modules incl. `MOD-build`, features, model, classes, ui-components) — **every new index row starts `status: draft`** and each spec's front-matter `status:` mirrors it.
+2. **Write indexes + specs.** Invoke `spec-writer` via Task. Pass the input paths/ids it needs: `plan/PLAN.md`, `requirements/REQUIREMENT.md`, the scope (`$ARGUMENTS` or "full plan"), and the canonical contracts (`.sdd/conventions.md`, `.sdd/scot.md`, `.sdd/ui-schema.md`, `.sdd/target.md`). It writes the per-level indexes under `specs/indexes/` and the `*.spec.md` files (modules incl. `MOD-build`, features, model, classes, ui-components) — **every new index row starts `status: draft`** and each spec's front-matter `status:` mirrors it. For **feature evolution** on an existing SDD project, before an entity already at `reviewed`/`approved` has its spec modified, YOU demote its index row to `draft` (§5) so the changed spec re-flows through the gate.
 
 3. **Dedupe + promote shared specs.** Invoke `reuse-analyst` via Task (pure author — judges nothing, writes no verdict). Pass `specs/` and `.sdd/conventions.md`. It removes duplication, promotes recurring abstractions into `specs/shared/` (`SHR-*`) and `specs/ui-components/` (`COMP-*`), rewires `depends_on`/component-tree references to the promoted ids, and writes `specs/REUSE-REPORT.md`. Promoted specs are also `status: draft`.
 
@@ -33,6 +33,7 @@ Authority reminder (per `.sdd/conventions.md`): **Markdown is the source of trut
 6. **Track the loop against the analysis budget (3).** Count each REJECT→re-author→re-judge cycle as one iteration. On the **4th** would-be iteration (budget overflow), **ESCALATE to the human** with a concise summary — the unresolved blocking reasons, the spec ids involved, and the iteration count — and **stop the loop**. Do not advance status on overflow.
 
 ## Status transitions
+- **`reviewed`/`approved` → `draft`** (feature evolution) — before re-writing an entity whose spec already passed a gate, YOU demote it so it re-earns `reviewed` through the analysis gate (§5).
 - **`draft → reviewed`** on an analysis-gate **PASS**, for every in-scope spec's index row. **You (the command) write this**; the `analysis-gatekeeper` only judges and records *why* in `.sdd/state.md`. `reviewed → approved` is owned later by `/sdd-test`, not here.
 
 ## Outputs
