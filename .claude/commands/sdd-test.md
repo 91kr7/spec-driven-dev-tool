@@ -80,8 +80,13 @@ red test never patches code arbitrarily; the triage decides what is actually wro
        re-authoring tests (step 1) only if coverage was also flagged.
      - **test bug** → `test-writer` fixes the offending test (it must still assert
        a real `ACn`/branch arm); redo steps 2–3.
-   - Increment the **test iteration** count for the scope and record it as
-     `iteration: <n>/5` in the next verdict cycle.
+     - **`routing: escalate`** (run-health / e2e-setup — the suite never ran: a missing
+       dependency or tooling, the app under test won't boot, or a GUI scope whose `e2e`
+       suite never executed — §7) → **ESCALATE to the human immediately** (env / `MOD-build`
+       / the `run`/`test-e2e` command). This is **not** a test-budget iteration and does
+       **not** loop back to an author; stop the loop and surface the blocker.
+   - Increment the **test iteration** count for the scope (author-routed REJECTs only,
+     not an `escalate`) and record it as `iteration: <n>/5` in the next verdict cycle.
 6. **Budget & escalation.** The **test budget is 5** iterations. On the 6th would-be
    iteration (budget overflow) → **ESCALATE to the human**: stop the loop and print
    a concise summary (scope, remaining uncovered `ACn`/arms, persistently failing
