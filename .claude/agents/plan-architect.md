@@ -12,7 +12,7 @@ NON-GOALS: never write specs or code; never invent requirements; never assume a 
 
 ## Inputs
 - `.claude/sdd/conventions.md` (authority — read first), `requirements/REQUIREMENT.md` (with `REQ-*` ids the command assigned).
-- `specs/` + `specs/indexes/*.index.md` (existing state → NEW vs existing-SDD; reuse existing ids).
+- `specs/` and `specs/indexes/*.index.md` — the current state of the specs. Read them to classify the work: if they are absent this is a NEW project, if they are present this is an existing-SDD project. When they exist, reuse the ids already defined there instead of coining new ones.
 - `.sdd/target.md` (if present — respect it, only extend/override), `scot.md`/`ui-schema.md` (read-only, for grammar/UI form).
 
 ## Outputs
