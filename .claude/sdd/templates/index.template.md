@@ -76,7 +76,7 @@ level). They are gathered here only so the template shows every column variant.
 
 | id | name | description (WHAT, one line) | module | depends_on | spec | source | status |
 |----|------|------------------------------|--------|------------|------|--------|--------|
-| `MOD-build` | Build & Infra | Build files, dependency manifests, config, CI, and entity-derived DB schema changes | `MOD-build` | — | `specs/modules/MOD-build.spec.md` | `package.json, db/schema/` | approved |
+| `MOD-build` | Build & Infra | Build files, dependency manifests, config, CI, and entity-derived DB schema changes | `MOD-build` | `MOD-domain`, `ENT-user` | `specs/modules/MOD-build.spec.md` | `package.json, db/schema/` | approved |
 | `MOD-api` | API | HTTP controllers and request/response wiring for the public API | `MOD-api` | `MOD-domain` | `specs/modules/MOD-api.spec.md` | `src/api/` | reviewed |
 | `MOD-domain` | Domain | Core entities, services, and business rules of the application | `MOD-domain` | — | `specs/modules/MOD-domain.spec.md` | `src/domain/` | reviewed |
 
@@ -112,7 +112,7 @@ level). They are gathered here only so the template shows every column variant.
 | `CLS-userService` | UserService | Owns the user lifecycle use cases (create, fetch, validate) | `MOD-domain` | `CLS-userRepo`, `SHR-passwordHasher`, `ENT-user` | `specs/classes/CLS-userService.spec.md` | `src/domain/UserService.ts` | approved |
 | `CLS-regCtrl` | RegistrationController | Handles the HTTP registration request and maps it to the use case | `MOD-api` | `CLS-userService` | `specs/classes/CLS-regCtrl.spec.md` | `src/api/RegistrationController.ts` | reviewed |
 | `SHR-passwordHasher` | PasswordHasher | Hashes and verifies passwords behind a stable interface | `MOD-domain` | — | `specs/shared/SHR-passwordHasher.spec.md` | `src/domain/PasswordHasher.ts` | approved |
-| `CLS-registerScreen` | RegisterScreen | The registration screen composing library components for FEAT-001 | `MOD-api` | `COMP-formField`, `COMP-button` | `specs/classes/CLS-registerScreen.spec.md` | `src/web/screens/RegisterScreen.tsx` | draft |
+| `CLS-registerScreen` | RegisterScreen | The registration screen composing library components and calling registration for FEAT-001 | `MOD-api` | `COMP-formField`, `COMP-button`, `CLS-regCtrl` | `specs/classes/CLS-registerScreen.spec.md` | `src/web/screens/RegisterScreen.tsx` | draft |
 
 ### `specs/indexes/ui-components.index.md` — shared UI component library
 

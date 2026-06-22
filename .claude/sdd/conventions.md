@@ -153,7 +153,7 @@ Two kinds shape their sections differently: a **`module`** spec uses `# Purpose`
 `# Contained entries` · `# Boundaries & dependencies` (no Public-interface/Invariants
 pair); a **shared UI component** (`COMP-*`, `kind: gui`) replaces `# Public interface`
 and `# Invariants & rules` with the `.claude/sdd/ui-schema.md` §6 sections (Props · Variants ·
-Visual states · Events · Accessibility), which carry its interface and rules.
+Visual states · Events · Slots/children · Accessibility), which carry its interface and rules.
 
 ---
 

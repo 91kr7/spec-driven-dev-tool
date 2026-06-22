@@ -215,5 +215,6 @@ Constraint/validation tests are derived from the invariants by `test-writer`.
 - **AC4** — Given `currency="US"`, When construction is attempted, Then it fails with
   `InvalidCurrency` (INV-currencyFormat).
 - **AC5** — Given a `customerId` that no `ENT-user` matches, When the Order is
-  persisted, Then it is rejected by the `placedBy` FK (INV-customerExists).
+  validated, Then it is rejected with `UnknownCustomer` (INV-customerExists; the
+  `placedBy` referential rule, realized as an FK in the MOD-build-derived schema).
 ```

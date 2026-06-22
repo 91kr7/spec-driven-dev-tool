@@ -51,9 +51,11 @@ coverage gaps): `/sdd-status` answers *"where does each thing stand and what's n
 5. **Compute the resume point** (matches `/sdd-auto`'s *Resume* note): order the
    in-scope slices by `depends_on`; the resume point is the **first non-`approved`**
    slice, at the sub-phase its latest `.sdd/state.md` record implies — *Specify* if it
-   is `draft` (or its last verdict is `analysis`), *Implement* if it is `reviewed` with
-   a `code` verdict, *Test* if a `code` PASS exists but no `test` PASS — continuing that
-   phase's iteration count (not restarting the budget).
+   is `draft` (or its latest record is an `analysis` verdict), *Implement* if it is
+   `reviewed` and its latest `code` record is a **REJECT** (or it has no `code` record
+   yet), *Test* if a `code` **PASS** exists but no `test` PASS — continuing that phase's
+   iteration count (not restarting the budget). (A bare `code` PASS leaves status at
+   `reviewed` — §5 — so PASS→*Test*, REJECT/none→*Implement* disambiguates that state.)
 
 6. **Print** (output only — write nothing):
    - a **table**, one row per in-scope entity:

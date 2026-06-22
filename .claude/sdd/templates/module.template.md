@@ -13,7 +13,7 @@ module: MOD-<kebab>             # required — self-reference (a module IS its o
 status: draft                   # draft|reviewed|approved — MIRRORS modules.index.md (the index is canonical)
 depends_on: [MOD-<other>, ...]  # other MODULE ids this module depends on — topological order; [] if none
 requirements: [REQ-<nnn>, ...]  # requirement id(s) this module serves (back-link); [] if purely infra
-source: []                      # a module is a logical grouping, not a single file → usually [] (no 1:1 file)
+source: []                      # a module is a logical grouping, not a single file → usually []. EXCEPTION: MOD-build owns its infra FILES directly here (build manifest, config, CI, framework/e2e config, forward schema scripts) — see the filled example (conventions §2).
 owns_sections: []               # modules do not co-own aggregator files → []
 ---
 
@@ -91,8 +91,14 @@ an isolation rule, a derivation rule. If the module has no special rules, write
 
 > A complete, valid instance of the template above for the **mandatory**
 > `MOD-build` infra module (conventions §2: present in every project). It owns
-> build files, dependency manifests, config, CI, and **DB schema changes DERIVED from
-> the entity specs** — schema changes are never hand-authored independently.
+> build files, dependency manifests, config, CI, framework/e2e config, and **DB schema
+> changes DERIVED from the entity specs** — schema changes are never hand-authored
+> independently. `MOD-build` is the **documented exception** to the module-overview
+> `source: []` rule: it owns its infra FILES **directly** in its own `source:` (each
+> forward schema script is its own append-only file traced to an `ENT-*`; the
+> code-implementer materializes them from the entity field tables). The DB row below
+> is the backend variant; a **GUI project** additionally lists `playwright.config.ts`
+> (the e2e harness) in `source:` and sets `.sdd/target.md`'s `test-e2e` to a real command.
 
 ```markdown
 ---
@@ -101,9 +107,9 @@ name: Build & Infrastructure
 kind: module
 module: MOD-build
 status: draft
-depends_on: [MOD-model]
+depends_on: [MOD-model, ENT-user]
 requirements: []
-source: []
+source: [package.json, tsconfig.json, .github/workflows/ci.yml, db/schema/V1__create_user.sql]
 owns_sections: []
 ---
 
@@ -112,20 +118,22 @@ owns_sections: []
 MOD-build is the mandatory infrastructure module. It owns everything required to
 compile, configure, test, ship, and evolve the database schema but that is not itself
 domain behavior: the build files, the dependency manifests, runtime configuration,
-the CI pipeline, and the database schema changes. Schema changes are **derived from the
-entity specs in MOD-model** — they are never hand-authored independently, so a
-schema change always originates from an `ENT-*` spec, never from this module.
-Domain logic, use-cases, and UI never live here; they live in their feature,
-class, and component modules and are merely built and shipped by MOD-build.
+the CI pipeline, the framework/e2e harness config, and the database schema-change
+scripts. Schema changes are **derived from the entity specs in MOD-model** — they are
+never hand-authored independently, so a schema change always originates from an `ENT-*`
+spec, never from invention here. MOD-build owns these infra **files directly** in its
+own `source:` (the documented exception to the module-overview `source: []` rule);
+domain logic, use-cases, and UI never live here — they live in their feature, class,
+and component modules and are merely built and shipped by MOD-build.
 
 # Contained entries
 
-| Level   | Entry id            | What it represents (one line)                              |
-|---------|---------------------|-------------------------------------------------------------|
-| Class   | `CLS-buildManifest` | Build file + dependency manifest declarations (the build graph) |
-| Class   | `CLS-ciPipeline`    | CI pipeline stages: install → lint → build → test → package  |
-| Shared  | `SHR-appConfig`     | Typed runtime configuration (keys, types, defaults, sources) |
-| Shared  | `SHR-schemaChangeSet`  | Ordered DB schema changes DERIVED from the `ENT-*` specs         |
+<!-- MOD-build owns its infra FILES directly via `source:` (exceptional for a module),
+     not via separate domain sub-entries; it contains no FEAT/CLS/ENT/COMP/SHR of its own. -->
+
+| Level | Entry id | What it represents (one line) |
+|-------|----------|-------------------------------|
+| —     | —        | none — MOD-build owns its infra files directly via `source:` (conventions §2 exception) |
 
 # Boundaries & dependencies
 
@@ -133,26 +141,26 @@ class, and component modules and are merely built and shipped by MOD-build.
 
 | Module      | What this module uses from it                                       |
 |-------------|---------------------------------------------------------------------|
-| `MOD-model` | The `ENT-*` entity specs (fields, types, relations, constraints) that `SHR-schemaChangeSet` derives schema changes from |
+| `MOD-model` | The `ENT-*` entity specs (fields, types, relations, constraints) the forward schema scripts in `source:` derive from |
 
 **Exposes to**
 
-| Consumer module | Public surface offered (entry ids)                              |
+| Consumer module | Public surface offered                                          |
 |-----------------|-----------------------------------------------------------------|
-| `MOD-api`       | `SHR-appConfig` (typed config the API reads at startup)         |
-| `MOD-web`       | `CLS-buildManifest` (build/bundle entry points)                 |
-| _all modules_   | `CLS-ciPipeline` (every module is built and tested by the one CI) |
+| `MOD-api`       | the built/runnable artifacts + applied DB schema the API runs on |
+| `MOD-web`       | the build/bundle entry points and (GUI) the e2e harness          |
+| _all modules_   | the one CI pipeline that installs, lints, builds, tests, packages |
 
 # Conventions specific to the module
 
-- **Schema changes are derived, never authored.** Each `SHR-schemaChangeSet` schema change
-  cites the `ENT-*` spec id and field/relation it realizes; a schema change
-  starts by editing the entity spec (Markdown is the source of truth), then this
-  module regenerates the next forward schema change. Existing schema changes are
-  append-only and immutable once shipped.
-- **Config keys are declared once** in `SHR-appConfig` (key, type, default,
-  source). No module reads an undeclared environment variable; new keys are added
-  to that spec first.
-- **CI stage order is fixed:** install → lint → build → test → package. A module
-  may add a stage only by extending `CLS-ciPipeline`, never by a parallel script.
+- **Schema changes are derived, never authored.** Each forward schema script in
+  `source:` (e.g. `db/schema/V1__create_user.sql`) cites the `ENT-*` spec id and
+  field/relation it realizes; a schema change starts by editing the entity spec
+  (Markdown is the source of truth), then this module emits the **next** forward
+  script. Shipped scripts are **append-only and immutable** — a change adds a new
+  `Vn` script to `source:`, never edits a prior one.
+- **Config keys are declared once** (typed config: key, type, default, source). No
+  module reads an undeclared environment variable; new keys are added here first.
+- **CI stage order is fixed:** install → lint → build → test (incl. e2e for a GUI
+  project) → package. A module extends the one CI pipeline, never adds a parallel script.
 ```
