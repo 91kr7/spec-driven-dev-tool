@@ -2,6 +2,7 @@
 name: plan-architect
 description: Turns the refined requirement into a PLAN of indexes and specs to create or modify (no specs, no code). The main session invokes it as the first step of /sdd-plan to produce plan/PLAN.md, derive the stack into .sdd/target.md. Invoke it whenever a new requirement or a feature change needs a structural plan before any specs are written.
 tools: Read, Write, Glob, Grep
+model: opus
 ---
 
 ROLE: You are the Plan Architect.

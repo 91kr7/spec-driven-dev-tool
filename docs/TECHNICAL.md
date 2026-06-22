@@ -758,19 +758,27 @@ independent tests.
 
 ### 7.1 Isolation matrix
 
-| Agent | May READ | May WRITE | Bash/Edit | Reads `src/`? |
-|---|---|---|---|---|
-| `plan-architect` | `requirements/`, existing `specs/`, `.claude/sdd/`, `.sdd/target.md` | `plan/`, `.sdd/target.md` | — | no |
-| `plan-gatekeeper` | `requirements/`, `plan/`, `specs/`, `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | — | no |
-| `spec-writer` | `plan/`, `requirements/`, `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.claude/sdd/templates/` | `specs/` (incl. indexes) | — | no |
-| `reuse-analyst` | `specs/`, `.claude/sdd/conventions.md` | `specs/` | — | no |
-| `analysis-gatekeeper` | `specs/`, `requirements/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | — | no |
-| `code-implementer` | `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.sdd/impl-notes/`, `src/` | `src/` (declared paths), `.sdd/impl-notes/<id>.md` | **Edit** | **yes** — spec stays authority |
-| `code-gatekeeper` | `specs/`, `.sdd/impl-notes/`, `src/`, `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | Bash (read-only) | yes (review) |
-| `test-writer` | behavioral spec sections, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md` | `tests/` | — | **no — by role** |
-| `test-runner` | `tests/`, `src/`, `.sdd/target.md` | `tests/REPORT.md` | Bash (run) | yes |
-| `test-gatekeeper` | `tests/REPORT.md`, `specs/`, `src/`, `tests/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | — | yes |
-| *commands* (main session) | everything | index `status`, drives all | Task | no (coordinates) |
+| Agent | May READ | May WRITE | Bash/Edit | `model` | Reads `src/`? |
+|---|---|---|---|---|---|
+| `plan-architect` | `requirements/`, existing `specs/`, `.claude/sdd/`, `.sdd/target.md` | `plan/`, `.sdd/target.md` | — | `opus` | no |
+| `plan-gatekeeper` | `requirements/`, `plan/`, `specs/`, `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | — | `sonnet` | no |
+| `spec-writer` | `plan/`, `requirements/`, `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.claude/sdd/templates/` | `specs/` (incl. indexes) | — | `opus` | no |
+| `reuse-analyst` | `specs/`, `.claude/sdd/{conventions,ui-schema}.md` | `specs/` | — | `opus` | no |
+| `analysis-gatekeeper` | `specs/`, `requirements/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | — | `opus` | no |
+| `code-implementer` | `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.sdd/impl-notes/`, `src/` | `src/` (declared paths), `.sdd/impl-notes/<id>.md` | **Edit** | `opus` | **yes** — spec stays authority |
+| `code-gatekeeper` | `specs/`, `.sdd/impl-notes/`, `src/`, `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | Bash (read-only) | `sonnet` | yes (review) |
+| `test-writer` | behavioral spec sections, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md` | `tests/` | — | `sonnet` | **no — by role** |
+| `test-runner` | `tests/`, `src/`, `.claude/sdd/conventions.md`, `.sdd/target.md` | `tests/REPORT.md` | Bash (run) | `sonnet` | yes |
+| `test-gatekeeper` | `tests/REPORT.md`, `specs/`, `src/`, `tests/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | — | `opus` | yes |
+| *commands* (main session) | everything | index `status`, drives all | Task | *(session)* | no (coordinates) |
+
+**Model split.** `opus` for under-specified **authoring** (`plan-architect`,
+`spec-writer`, `reuse-analyst`, `code-implementer`) and the two high-consequence
+**gates** (`analysis-gatekeeper`, `test-gatekeeper` — the spec blocker and the
+spec/code/test triage); `sonnet` for **mechanical / checklist** work a concrete
+contract or a downstream gate already constrains (`plan-gatekeeper`,
+`code-gatekeeper`, `test-writer`, `test-runner`). Canonical in
+`.claude/sdd/conventions.md` §9; a project may override any agent's `model:`.
 
 ---
 

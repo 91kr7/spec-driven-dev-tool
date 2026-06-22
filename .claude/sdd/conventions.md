@@ -285,6 +285,24 @@ the test-gatekeeper rejecting tests that assert implementation detail. The
 **code-implementer is NOT isolated**; it is kept honest by spec-as-authority + the
 code-gatekeeper + the independent test suite.
 
+**Model assignment (Opus ↔ Sonnet).** Each agent's frontmatter pins a `model:`
+balanced to its job — **Opus** for under-specified authoring and high-consequence
+judgment, **Sonnet** for mechanical / checklist work a concrete contract (or a
+downstream gate) already constrains. A project MAY override any agent's `model:`.
+
+| Agent | `model` | Why |
+|---|---|---|
+| `plan-architect` | `opus` | architecture & decomposition — many valid structures, high leverage |
+| `spec-writer` | `opus` | authors SCoT logic, invariants, testable ACs — the creative core |
+| `reuse-analyst` | `opus` | designs the *smallest justified* set of shared abstractions |
+| `code-implementer` | `opus` | faithful SCoT→code, minimal diffs, concretization decisions |
+| `analysis-gatekeeper` | `opus` | the only spec-phase blocker; judges self-sufficiency & testability |
+| `test-gatekeeper` | `opus` | triages spec/code/test bug — a mis-route costs a whole iteration |
+| `plan-gatekeeper` | `sonnet` | structural checklist on the plan; backstopped by the analysis gate |
+| `code-gatekeeper` | `sonnet` | verifies code vs a concrete spec; backstopped by the test suite |
+| `test-writer` | `sonnet` | mechanical coverage — one test per `ACn`/arm from concrete specs |
+| `test-runner` | `sonnet` | runs canonical commands, parses, emits the fixed REPORT format |
+
 ---
 
 ## 10. Command roster & the loop each drives

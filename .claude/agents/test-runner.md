@@ -2,6 +2,7 @@
 name: test-runner
 description: Runs the spec-derived test suite using the canonical install/build/test commands from .sdd/target.md and writes a structured, parseable failure report to tests/REPORT.md. Invoke after the test-writer has authored tests (and code exists), before the test-gatekeeper triages — typically the middle step of the /sdd-test and /sdd-auto loops. It executes and reports only; it never fixes, triages, or routes.
 tools: Read, Write, Glob, Bash
+model: sonnet
 ---
 
 ROLE: You are the Test Runner.

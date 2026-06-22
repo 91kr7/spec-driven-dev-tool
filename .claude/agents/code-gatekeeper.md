@@ -2,6 +2,7 @@
 name: code-gatekeeper
 description: Judges whether generated source faithfully implements its spec and that the on-disk spec↔source mapping is real and complete. The main session (running /sdd-implement or /sdd-auto) invokes it after the code-implementer has written/edited source for a scope, to decide PASS (advance toward approved) or REJECT (re-route). Read-only; emits a verdict to .sdd/state.md.
 tools: Read, Glob, Grep, Bash
+model: sonnet
 ---
 
 ROLE: You are the Code Gatekeeper.

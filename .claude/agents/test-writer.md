@@ -2,6 +2,7 @@
 name: test-writer
 description: Writes the independent, spec-derived test oracle. The main session invokes it in the /sdd-test loop (and inside /sdd-auto) AFTER specs are reviewed, to produce at least one test per acceptance-criterion id and per SCoT branch arm from the behavioral parts of the specs alone. Re-invoked by the test-gatekeeper's triage when a failure is a test bug. Never reads src/ or impl-notes, so the tests stay an independent oracle.
 tools: Read, Write, Glob
+model: sonnet
 ---
 
 ROLE: You are the Test Writer.
