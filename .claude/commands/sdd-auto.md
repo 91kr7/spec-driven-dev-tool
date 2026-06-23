@@ -10,13 +10,13 @@ Steps run in order 1 → 11; steps 7–10 repeat once per slice.
 
 ```
 DATAFLOW
-  $ARGUMENTS
-    └▶ 1 stack ─▶ 2 REQUIREMENT.md ─▶ 3 PLAN.md+target.md ─▶ 4 plan gate
-        └▶ 5 topo order ─▶ 6 slice list
-            └▶ ┌── per slice ──────────────────────────────────────────┐
-               │ 7 specs ─▶ 8 src ─▶ 9 tests ─▶ (gates) ─▶ 10 next slice │
-               └────────────────────────────────────────────────────────┘
-                └▶ 11 whole-suite sweep ─▶ done
+  requirement_text
+    └▶ 1 stack_decision ─▶ 2 REQUIREMENT.md ─▶ 3 PLAN.md + target.md ─▶ 4 verdict_record
+        └▶ 5 topo_order ─▶ 6 slice_list
+            └▶ ┌── per slice ──────────────────────────────────────────────────┐
+               │ 7 spec_paths ─▶ 8 src_paths ─▶ 9 test_paths ─▶ (gates) ─▶ 10 next │
+               └──────────────────────────────────────────────────────────────────┘
+                └▶ 11 whole-suite verdict_record ─▶ done
 ```
 
 ```
@@ -31,125 +31,146 @@ HUMAN  touched twice only: (a) an unstated stack, (b) an escalation.
 
 ## Preconditions
 ```
-REQUIRE  requirement present in $ARGUMENTS (raw text ok; step 2 refines it).
+REQUIRE  requirement_text present in $ARGUMENTS (raw text ok; step 2 refines it).
 REQUIRE  resolvable stack:
-           IF .sdd/target.md missing AND stack not inferable from $ARGUMENTS
+           IF .sdd/target.md missing AND stack not inferable from requirement_text
            THEN ask the human the single stack question now, capture answer, then run unattended.
            (this is the only prompt besides escalation.)
 HAVE     read-only contracts shipped with the tool: conventions.md, scot.md, ui-schema.md.
 ```
 
-> Every step lists its **IN** (data consumed) and **OUT** (data produced). Gates produce a verdict
-> record in `.sdd/state.md`; only **you** act on it via the PASS / REJECT / OVERFLOW branches.
+## Data types   *(the typed tokens used in every step's IN / OUT)*
+```
+requirement_text  : string                — raw $ARGUMENTS
+stack_decision    : { lang, framework, … } — resolved target stack (held in memory until step 3)
+REQUIREMENT.md    : file  { raw, refined, req_ids: REQ-* }
+PLAN.md           : file  — plan of indexes/specs to create or modify
+target.md         : file  — stack + canonical install/build/test commands
+topo_order        : [ feature_id | module_id ]            — dependency-sorted
+slice             : { slice_id, member_ids[], depends_on_closure[] }
+slice_list        : [ slice ]                              — execution order
+index_rows        : rows in level indexes, each with `status: draft|reviewed|approved`
+spec_paths        : [ specs/**/*.spec.md ]  (4 levels + MOD-build)
+REUSE-REPORT.md   : file  { promoted: SHR-*|COMP-*, demote_ids[] }
+src_paths         : [ path ]   — only the spec's declared `source:` paths
+impl_note         : .sdd/impl-notes/<id>.md
+install_result    : { ok: bool, log }
+test_paths        : [ tests/** ]
+REPORT.md         : file  { failures[], per-test status }   — tests/REPORT.md
+verdict_record    : .sdd/state.md row { phase, scope, verdict: PASS|REJECT, reasons[], routing, iteration: n/budget }
+```
+
+> Each step lists its **IN** (tokens consumed) and **OUT** (tokens produced). Gate steps emit a
+> `verdict_record`; only **you** act on it via the PASS / REJECT / OVERFLOW branches.
 
 ---
 
 ### Step 1 — Resolve the stack
 ```
-IN   $ARGUMENTS ; .sdd/target.md (if present)
-DO   take stack from target.md → else infer from $ARGUMENTS → else ask the human once (Preconditions).
-OUT  a resolved stack decision (held for step 3).
+IN   requirement_text ; target.md (if present)
+DO   take stack from target.md → else infer from requirement_text → else ask the human once (Preconditions).
+OUT  stack_decision
 ```
 
 ### Step 2 — Capture the requirement   *(YOU write it — not plan-architect)*
 ```
-IN   $ARGUMENTS (raw free text)
-DO   write & refine the requirement; assign a stable REQ-001, REQ-002, … per atomic, testable item.
-OUT  requirements/REQUIREMENT.md (raw + refined, with REQ-* ids)
+IN   requirement_text
+DO   write & refine; assign a stable REQ-001, REQ-002, … per atomic, testable item.
+OUT  REQUIREMENT.md { raw, refined, req_ids }
 ```
 
 ### Step 3 — INVOKE plan-architect
 ```
-IN   requirements/REQUIREMENT.md ; resolved stack (step 1)
+IN   REQUIREMENT.md ; stack_decision
 DO   architect derives the stack file and the plan of indexes/specs to create or modify.
-OUT  .sdd/target.md ; plan/PLAN.md
+OUT  target.md ; PLAN.md
 ```
 
 ### Step 4 — GATE plan-gatekeeper
 ```
-IN   plan/PLAN.md ; requirements/REQUIREMENT.md ; conventions.md
-OUT  .sdd/state.md record { phase: analysis, scope: PLAN, verdict, reasons, iteration: n/3 }
-      PASS                              → go to step 5.
-      REJECT                            → re-INVOKE plan-architect (step 3) with the reasons; loop step 4.
+IN   PLAN.md ; REQUIREMENT.md ; conventions.md
+OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
+      PASS                              → step 5.
+      REJECT                            → re-INVOKE plan-architect (step 3) with reasons[]; loop step 4.
       OVERFLOW(>3) OR routing: escalate → ESCALATE; stop.   (escalate = unresolved <…> placeholder)
 ```
 
 ### Step 5 — Compute topological order
 ```
-IN   plan/PLAN.md ; index `depends_on` edges
+IN   PLAN.md ; index_rows.depends_on
 DO   topo-sort features/modules (§12); break any cycle interface-first.
-OUT  an ordered list of features/modules
+OUT  topo_order
 ```
 
 ### Step 6 — Build the slice list
 ```
-IN   topo order (step 5) ; depends_on closures
-DO   one vertical slice = a feature/module + its depends_on closure;
+IN   topo_order ; depends_on closures
+DO   one slice = a feature/module + its depends_on_closure;
      order slices so each slice's deps live in an already-approved earlier slice.
-OUT  the ordered slice list (drives the loop below)
+OUT  slice_list
 ```
 
 ```
-╔══════════════════════ LOOP: for each slice, in order — steps 7 → 10 ══════════════════════╗
-║ AFTER EVERY GATE: read the latest .sdd/state.md record for the slice scope,                ║
-║                   then advance the affected index rows' `status` yourself (§5).            ║
-╚════════════════════════════════════════════════════════════════════════════════════════════╝
+╔══════════════════════ LOOP: for each slice in slice_list, in order — steps 7 → 10 ══════════════════════╗
+║ AFTER EVERY GATE: read the latest verdict_record for scope == slice.slice_id,                            ║
+║                   then advance the affected index_rows.status yourself (§5).                             ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 ```
 
 ### Step 7 — Specify   `[analysis budget 3]`   `status: draft → reviewed`
 ```
 7a demote (feature-evolution only)
-     IN  in-scope entity rows currently at reviewed/approved
-     OUT those rows set back to draft (§5)
+     IN  index_rows where in-scope entity status ∈ {reviewed, approved}
+     OUT same rows → status: draft (§5)
 7b INVOKE spec-writer
-     IN  the current slice ; plan/PLAN.md ; .sdd/target.md ; conventions.md
-     OUT index rows + specs/**/*.spec.md (4 levels + MOD-build), all status: draft
+     IN  slice ; PLAN.md ; target.md ; conventions.md
+     OUT index_rows + spec_paths (4 levels + MOD-build), all status: draft
 7c INVOKE reuse-analyst
-     IN  the slice's specs ; existing SHR-* / COMP-* specs
-     OUT deduped/promoted SHR-* / COMP-* specs ; specs/REUSE-REPORT.md
-     THEN read REUSE-REPORT.md → demote to draft every id under its `Demote-for-re-gate:` heading.
+     IN  spec_paths (this slice) ; existing SHR-* / COMP-* specs
+     OUT promoted SHR-*/COMP-* specs ; REUSE-REPORT.md
+     THEN for each id in REUSE-REPORT.md.demote_ids → set index_rows.status: draft
 7d GATE analysis-gatekeeper   (the only spec-phase blocker)
-     IN  the slice's specs ; specs/REUSE-REPORT.md ; requirements/REQUIREMENT.md ; conventions.md
-     OUT .sdd/state.md record { phase: analysis, scope: slice, verdict, reasons, iteration: n/3 }
-      PASS         → YOU advance slice spec rows draft → reviewed; go to step 8.
-      REJECT       → route: spec defect → spec-writer (7b) · duplication → reuse-analyst (7c);
-                     re-run reuse-analyst if specs changed; loop step 7d.
+     IN  spec_paths ; REUSE-REPORT.md ; REQUIREMENT.md ; conventions.md
+     OUT verdict_record { phase: analysis, scope: slice_id, iteration: n/3 }
+      PASS         → YOU set slice spec index_rows.status: draft → reviewed; step 8.
+      REJECT       → route by routing: spec defect → spec-writer (7b) · duplication → reuse-analyst (7c);
+                     re-run reuse-analyst if spec_paths changed; loop step 7d.
       OVERFLOW(>3) → ESCALATE; stop slice.
 ```
 
 ### Step 8 — Implement   `[code budget 3]`   *(writes src/ + impl-notes only)*
 ```
 8a INVOKE code-implementer   (per spec, in depends_on order)
-     IN  one reviewed spec ; .sdd/target.md ; existing src/
+     IN  one reviewed spec ; target.md ; existing src_paths
      DO  minimal Edit by default; regenerate only by exception (§8).
-     OUT src/ at the spec's declared `source:` paths ; .sdd/impl-notes/<id>.md
-8b run canonical `install` (makes the read-only compile check effective), THEN GATE code-gatekeeper
-     IN  src/ ; the slice's specs ; .sdd/impl-notes/* ; install result
-     OUT .sdd/state.md record { phase: code, scope: slice, verdict, reasons, iteration: n/3 }
-      PASS         → go to step 9.   (code PASS advances no status.)
-      REJECT:
-        routing: code-implementer → minimal diff (8a); loop step 8b.
-        routing: spec-writer      → re-validate spec: demote reviewed → draft, re-run
-                                    spec-writer → reuse-analyst (if changed) → analysis-gatekeeper
-                                    → re-advance to reviewed, then resume code; loop step 8b.
+     OUT src_paths (the spec's declared `source:` paths) ; impl_note
+8b run canonical `install` → install_result, THEN GATE code-gatekeeper
+     IN  src_paths ; spec_paths (this slice) ; impl_note ; install_result
+     OUT verdict_record { phase: code, scope: slice_id, iteration: n/3 }
+      PASS         → step 9.   (code PASS advances no status.)
+      REJECT by routing:
+        code-implementer → minimal diff (8a); loop step 8b.
+        spec-writer      → re-validate spec: set status reviewed → draft, re-run
+                           spec-writer → reuse-analyst (if changed) → analysis-gatekeeper
+                           → re-advance to reviewed, then resume code; loop step 8b.
       OVERFLOW(>3) → ESCALATE; stop slice.
 ```
 
 ### Step 9 — Test   `[test budget 5]`   `status: reviewed → approved`
 ```
 9a INVOKE test-writer   (independent oracle — NEVER reads src/ or impl-notes/)
-     IN  the slice's specs ONLY
-     OUT tests/** : ≥1 test per ACn and per SCoT arm; GUI → Playwright e2e per (journey) AC,
-                    selecting by accessible role/name from the spec.
+     IN  spec_paths (this slice) ONLY
+     OUT test_paths : ≥1 test per ACn and per SCoT arm; GUI → Playwright e2e per (journey) AC,
+                      selecting by accessible role/name from the spec.
 9b INVOKE test-runner
-     IN  tests/** ; src/ ; slice ids as {scope} ; canonical commands from .sdd/target.md
-     OUT tests/REPORT.md (structured failures; unit + integration + component, + e2e for GUI)
+     IN  test_paths ; src_paths ; slice.member_ids as {scope} ; target.md install/build/test commands
+     OUT REPORT.md (unit + integration + component, + e2e for GUI)
 9c GATE test-gatekeeper
-     IN  tests/REPORT.md ; the slice's specs (for coverage) ; conventions.md
-     OUT .sdd/state.md record { phase: test, scope: slice, verdict, coverage, triage routing, iteration: n/5 }
-      PASS (green + full coverage)         → YOU advance slice rows reviewed → approved; go to step 10.
+     IN  REPORT.md ; spec_paths (for coverage) ; conventions.md
+     OUT verdict_record { phase: test, scope: slice_id, coverage, routing, iteration: n/5 }
+      PASS (green + full coverage)         → YOU set slice index_rows.status: reviewed → approved; step 10.
       REJECT → route per triage (§7); each loop returns to the sub-step that re-gates the fix:
-        spec bug → spec-writer      : demote reviewed → draft, loop step 7, then step 8 regenerates code.
+        spec bug → spec-writer      : set status reviewed → draft, loop step 7, then step 8 regenerates code.
         code bug → code-implementer : loop step 8 (re-pass the code gate before re-testing).
         test bug → test-writer      : loop step 9a.
       routing: escalate (suite never ran / app won't boot / e2e skipped) → ESCALATE immediately (NOT a budget iteration).
@@ -158,16 +179,16 @@ OUT  the ordered slice list (drives the loop below)
 
 ### Step 10 — Next slice
 ```
-IN   remaining slice list
-DO   if slices remain, return to step 7 for the next slice; else go to step 11.
-OUT  (control flow only)
+IN   slice_list ; index_rows.status
+DO   compute remaining = slices in slice_list not yet approved.
+OUT  next_target : if remaining ≠ ∅ → (next slice, → step 7) ; else → (→ step 11)
 ```
 
 ### Step 11 — Final unscoped sweep
 ```
-IN   the whole approved project ; canonical commands with NO scope
+IN   whole approved project ; target.md test command with NO scope
 DO   INVOKE test-runner (whole suite) → INVOKE test-gatekeeper over the whole project.
-OUT  tests/REPORT.md (whole suite) ; .sdd/state.md whole-project verdict
+OUT  REPORT.md (whole suite) ; verdict_record { phase: test, scope: PROJECT }
       regression → route per §7 to the owning slice, re-run its step 9 (bounded by test budget).
       green      → project done.
 ```
@@ -178,9 +199,9 @@ OUT  tests/REPORT.md (whole suite) ; .sdd/state.md whole-project verdict
 ```
 ON budget overflow OR routing: escalate:
   STOP that slice (or step 1–4) and report concisely:
-    · scope            (slice id or PLAN)
+    · scope            (slice_id or PLAN)
     · step + iteration vs budget
-    · failing verdict  verbatim + its reasons from .sdd/state.md
+    · failing verdict_record verbatim + its reasons[] from .sdd/state.md
     · author           last routed to
 NEVER silently retry past budget. NEVER advance status on an unresolved scope.
 Slices already approved stay approved.
@@ -188,27 +209,27 @@ Slices already approved stay approved.
 
 ## Resume   `from files only`
 ```
-Loop state is reconstructable: each .sdd/state.md record carries `iteration: n/<budget>`,
-and index `status` shows which slices are done.
+Loop state is reconstructable: each verdict_record carries `iteration: n/<budget>`,
+and index_rows.status shows which slices are done.
 TO RESUME re-run /sdd-auto:
   skip every approved slice;
-  re-enter the first non-approved slice at the step its latest record implies;
+  re-enter the first non-approved slice at the step its latest verdict_record implies;
   continue that step's iteration count.
 ```
 
 ## Status transitions   `you make them; gatekeepers never do`
 ```
-step 4/7d analysis PASS                → slice spec rows draft → reviewed.
-step 9c   test PASS (green + full       → reviewed → approved.
-          coverage, implies code PASS)
-step 8b   code PASS alone              → advances nothing.
-any REJECT                            → status unchanged (never regresses).
+step 4 / 7d  analysis PASS              → slice spec index_rows.status: draft → reviewed.
+step 9c      test PASS (green + full     → reviewed → approved.
+             coverage, implies code PASS)
+step 8b      code PASS alone            → advances nothing.
+any REJECT                             → status unchanged (never regresses).
 ```
 
 ## Outputs
 ```
-requirements/REQUIREMENT.md · plan/PLAN.md · .sdd/target.md
-per slice: index rows · specs/**/*.spec.md · src/** · .sdd/impl-notes/<id>.md · tests/** · tests/REPORT.md
-.sdd/state.md   append-only verdict log
-index `status`  advanced to approved for every completed slice
+REQUIREMENT.md · PLAN.md · target.md
+per slice: index_rows · spec_paths · src_paths · impl_note · test_paths · REPORT.md
+.sdd/state.md   append-only verdict_record log
+index_rows.status advanced to approved for every completed slice
 ```
