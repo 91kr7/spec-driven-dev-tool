@@ -5,6 +5,8 @@
 > loop, explicit I/O, invariants) — never library choices, API signatures, or syntax
 > (those live in code + `.sdd/impl-notes/<id>.md`).
 
+## 1. Scope & purpose
+
 Used by `kind:` **behavioral** specs (`service`, `controller`, `use-case`). Not for structural specs (declarative) or `gui` specs (→ `ui-schema.md`). A `gui` spec MAY embed a small SCoT snippet for a non-trivial handler.
 
 **Why a fixed grammar:** faithful (not 1:1) translation to any language; **stable branch ids** make coverage mechanical and edit-resistant; equivalence is judged by **tests**, never by textual diff.

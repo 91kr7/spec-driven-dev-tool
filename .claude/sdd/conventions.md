@@ -34,6 +34,7 @@ specs/model/<id>.spec.md     # entities: fields, relations, constraints
 specs/classes/<id>.spec.md   # per-method SCoT (+ feature gui screens)
 specs/ui-components/<id>.spec.md  # UI library (baseline guaranteed — ui-schema §9)
 specs/shared/<id>.spec.md    # shared non-UI abstractions — indexed in classes.index.md
+specs/REUSE-REPORT.md        # reuse-analyst output: promotions + Demote-for-re-gate list
 src/                         # GENERATED
 tests/                       # GENERATED (unit←classes, integration←features, constraint←entities, component←gui, e2e←gui screens)
 ```

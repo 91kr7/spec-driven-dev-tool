@@ -50,7 +50,7 @@ target.md         : file  — stack + canonical install/build/test commands
 slice             : { slice_id, member_ids[], depends_on_closure[] }
 slice_list        : [ slice ]   — execution order, authored by plan-architect inside PLAN.md
 index_rows        : rows in level indexes, each with `status: draft|reviewed|approved`
-spec_paths        : [ specs/**/*.spec.md ]  (4 levels + MOD-build)
+spec_paths        : [ specs/**/*.spec.md ]  (5 levels: module/feature/entity/class/UI, incl. MOD-build)
 REUSE-REPORT.md   : file  { promoted: SHR-*|COMP-*, demote_ids[] }
 src_paths         : [ path ]   — only the spec's declared `source:` paths
 impl_note         : .sdd/impl-notes/<id>.md
@@ -124,7 +124,7 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
 
 5b ▶▶ INVOKE spec-writer
      IN  slice ; PLAN.md ; target.md ; conventions.md
-     OUT index_rows + spec_paths (4 levels + MOD-build), all status: draft
+     OUT index_rows + spec_paths (5 levels incl. MOD-build), all status: draft
 
 5c ▶▶ INVOKE reuse-analyst
      IN  spec_paths (this slice) ; existing SHR-* / COMP-* specs
