@@ -26,5 +26,5 @@ NON-GOALS: never edit the plan, specs, code, or `status`; never invent/repair en
 10. All clear → **PASS**; else **REJECT** (one reason per failed check).
 
 ## Hand-off
-- Append exactly one verdict to `.sdd/state.md` (§6 format), `phase: analysis`, scope `PLAN`. On REJECT `routing: plan-architect` (the only plan author); on PASS `routing: none`. Read `state.md` first, write it back in full with the record appended.
-- Never advances `status`; the command reads the latest record and decides (PASS → specify / REJECT → re-invoke plan-architect / escalate on overflow or `<…>`).
+- Append exactly one verdict to `.sdd/state.md` (§6 format), `phase: analysis`, scope `PLAN`. On REJECT `routing: plan-architect` (the plan author) by default, or `routing: requirement-analyst` when the blocking defect is rooted in `requirements/REQUIREMENT.md` itself (a `REQ-*` that is untestable, contradictory, or impossible to cover — not merely missed by the plan); on PASS `routing: none`. Read `state.md` first, write it back in full with the record appended.
+- Never advances `status`; the command reads the latest record and decides (PASS → specify / REJECT → re-invoke plan-architect, or requirement-analyst then re-plan / escalate on overflow or `<…>`).

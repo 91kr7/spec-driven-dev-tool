@@ -227,7 +227,7 @@ TO RESUME re-run /sdd-auto:
 
 ## Status transitions   `you make them; gatekeepers never do`
 ```
-step 4 / 5d  analysis PASS              → slice spec index_rows.status: draft → reviewed.
+step 5d      analysis PASS             → slice spec index_rows.status: draft → reviewed.
 step 7c      test PASS (green + full     → reviewed → approved.
              coverage, implies code PASS)
 step 6b      code PASS alone            → advances nothing.
