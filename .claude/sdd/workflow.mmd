@@ -31,7 +31,7 @@ flowchart TB
   PG -- verdict --> STATE
   PG -. REJECT .-> PA
 
-  %% ================= STEP 7 — SPECIFY =================
+  %% ================= STEP 5 — SPECIFY =================
   PLAN --> SW[spec-writer]:::agent
   REQ --> SW
   TGT --> SW
@@ -47,7 +47,7 @@ flowchart TB
   AG -- verdict --> STATE
   AG -. "REJECT: spec-writer / reuse-analyst" .-> SW
 
-  %% ================= STEP 8 — IMPLEMENT =================
+  %% ================= STEP 6 — IMPLEMENT =================
   SPECS --> CI[code-implementer]:::agent
   TGT --> CI
   IMPL -. prior .-> CI
@@ -60,7 +60,7 @@ flowchart TB
   CG -- verdict --> STATE
   CG -. "REJECT: code-implementer / spec-writer" .-> CI
 
-  %% ================= STEP 9 — TEST =================
+  %% ================= STEP 7 — TEST =================
   SPECS -- "behavioral sections only" --> TW[test-writer]:::agent
   TGT --> TW
   TW -- writes --> TESTS
