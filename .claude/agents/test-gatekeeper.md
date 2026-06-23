@@ -30,7 +30,7 @@ NON-GOALS: never edit tests/code/specs; never set `status`; never write `tests/R
    - **SPEC bug** — spec wrong/ambiguous/incomplete → `spec-writer` (fix spec, regenerate code).
    - **CODE bug** — code diverges from a correct spec → `code-implementer` (minimal diff).
    - **TEST bug** — spec + code agree, test asserts the wrong thing → `test-writer`.
-   - **SPEC-DEFECT marker** — a test failing with `SPEC DEFECT: …` → spec bug → `spec-writer` (never bounce to test-writer).
+   - **SPEC DEFECT marker** — a test failing with `SPEC DEFECT: …` → spec bug → `spec-writer` (never bounce to test-writer).
 8. **Iteration** — read the latest prior `phase: test` record for this scope; set `iteration: <n>/5`. Do not act on overflow (the command escalates).
 
 ## Veto criteria — REJECT if

@@ -46,6 +46,7 @@ tests/                       # GENERATED (unit←classes, integration←features
 
 | Prefix | Level / kind | Form | Example |
 |---|---|---|---|
+| `REQ-` | atomic requirement | `REQ-<nnn>` | `REQ-001` |
 | `MOD-` | module | `MOD-<kebab>` | `MOD-api`, `MOD-build` |
 | `FEAT-` | feature / use-case | `FEAT-<nnn>` | `FEAT-001` |
 | `ENT-` | domain entity | `ENT-<kebab>` | `ENT-user` |
@@ -248,7 +249,7 @@ The MINDSET MUST carry both: **"Markdown is the source of truth (authority); reu
 
 - Process entities in **`depends_on` topological order** (dependencies first); the graph MUST be acyclic.
 - On a **cycle**, introduce an `interface`/`contract` spec, re-point members' `depends_on` onto it (stubs derive from the interface), so the physical graph is a DAG.
-- **One vertical slice at a time:** take a feature, pull its `depends_on` closure, run plan→spec→code→test for that slice before the next.
+- **One vertical slice at a time:** the plan + the ordered slice list are produced once up front (plan-architect); then for each slice — a feature plus its `depends_on` closure — run spec→code→test before the next.
 
 ---
 
