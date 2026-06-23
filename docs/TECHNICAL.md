@@ -1,11 +1,11 @@
 # SDD Workflow — Technical Reference
 
 > Production reference for the Spec-Driven Development (SDD) agentic workflow:
-> how the **commands** orchestrate, how the **agents** work, and how every artifact
-> flows through the pipeline. This document describes the system **as implemented**.
-> The machine-read contract is `.claude/sdd/conventions.md` (plus `.claude/sdd/scot.md` and
-> `.claude/sdd/ui-schema.md`); this file is the human-read companion. For a short overview
-> see `README.md`.
+> how the **`/sdd-auto` command** orchestrates, how the **agents** work, and how every
+> artifact flows through the pipeline. This document describes the system **as
+> implemented**. The machine-read contract is `.claude/sdd/conventions.md` (plus
+> `.claude/sdd/scot.md` and `.claude/sdd/ui-schema.md`); this file is the human-read
+> companion. For a short overview see `README.md`.
 
 **Audience:** engineers operating, supervising, or extending the workflow.
 **Conventions in this doc:** `§N` refers to a section of the named `.claude/sdd/*.md`
@@ -19,7 +19,7 @@ contract; `<id>` placeholders follow the id scheme in §[Identifiers](#32-identi
 2. [Architecture](#2-architecture)
 3. [The artifact model](#3-the-artifact-model)
 4. [The agents](#4-the-agents)
-5. [The commands](#5-the-commands)
+5. [The command](#5-the-command)
 6. [Gates, feedback loops & routing](#6-gates-feedback-loops--routing)
 7. [Isolation & trust model](#7-isolation--trust-model)
 8. [End-to-end walkthroughs](#8-end-to-end-walkthroughs)
@@ -58,12 +58,12 @@ Five principles govern every part of the system.
    project of only Markdown files, with no chat history — the one unavoidable human
    touch-point is supplying the **stack** if the requirement does not state it.
 
-5. **Commands orchestrate; agents are single-purpose workers.** Claude Code subagents
-   cannot reliably spawn other subagents, so **orchestration lives in the slash
-   commands** run by the main session (the only level that reliably invokes subagents
-   via the `Task` tool). There is **no orchestrator subagent**. Each command: invokes
-   an agent → reads the verdict from `.sdd/state.md` → decides (proceed / re-invoke
-   the routed author / escalate) → advances the index `status`.
+5. **The command orchestrates; agents are single-purpose workers.** Claude Code
+   subagents cannot reliably spawn other subagents, so **orchestration lives in the
+   `/sdd-auto` slash command** run by the main session (the only level that reliably
+   invokes subagents via the `Task` tool). There is **no orchestrator subagent**. The
+   command: invokes an agent → reads the verdict from `.sdd/state.md` → decides
+   (proceed / re-invoke the routed author / escalate) → advances the index `status`.
 
 ---
 
@@ -99,8 +99,8 @@ contracts ship with the tool.
 
 ### 2.2 Orchestration model
 
-- The **main session** runs a slash command. The command is a procedure the main
-  session executes itself; it is the **orchestrator**.
+- The **main session** runs the `/sdd-auto` command. The command is a procedure the
+  main session executes itself; it is the **orchestrator**.
 - The command invokes **subagents** via the `Task` tool, passing only file paths/ids.
 - Each subagent reads its inputs from files, does one job, writes its outputs to
   files (an author writes artifacts; a gatekeeper appends a verdict), and returns.
@@ -110,24 +110,25 @@ contracts ship with the tool.
 - **The command — not any agent — edits the index `status`.** Gatekeepers judge;
   authors write artifacts; the command advances/demotes lifecycle status.
 
-### 2.3 The eleven roles
+### 2.3 The twelve roles
 
-Ten are subagents in `.claude/agents/`; the eleventh ("orchestrator") is the
-commands themselves.
+Eleven are subagents in `.claude/agents/`; the twelfth ("orchestrator") is the
+`/sdd-auto` command itself.
 
 | # | Role | Kind | Phase |
 |---|------|------|-------|
-| 1 | `plan-architect` | author | plan |
-| 2 | `plan-gatekeeper` | gate | plan |
-| 3 | `spec-writer` | author | spec |
-| 4 | `reuse-analyst` | author | spec |
-| 5 | `analysis-gatekeeper` | gate | spec |
-| 6 | `code-implementer` | author | code |
-| 7 | `code-gatekeeper` | gate | code |
-| 8 | `test-writer` | author | test |
-| 9 | `test-runner` | runner | test |
-| 10 | `test-gatekeeper` | gate + triage | test |
-| — | *orchestrator* | the 7 commands (main session) | all |
+| 1 | `requirement-analyst` | author | plan |
+| 2 | `plan-architect` | author | plan |
+| 3 | `plan-gatekeeper` | gate | plan |
+| 4 | `spec-writer` | author | spec |
+| 5 | `reuse-analyst` | author | spec |
+| 6 | `analysis-gatekeeper` | gate | spec |
+| 7 | `code-implementer` | author | code |
+| 8 | `code-gatekeeper` | gate | code |
+| 9 | `test-writer` | author | test |
+| 10 | `test-runner` | runner | test |
+| 11 | `test-gatekeeper` | gate + triage | test |
+| — | *orchestrator* | the `/sdd-auto` command (main session) | all |
 
 ---
 
@@ -137,18 +138,19 @@ commands themselves.
 
 ```
 # THE TOOL — .claude/ (immutable; one portable folder; a project never edits it)
-.claude/agents/*.md                  the 10 subagents
-.claude/commands/*.md                the 7 slash commands
+.claude/agents/*.md                  the 11 subagents
+.claude/commands/sdd-auto.md         the single orchestrator command (/sdd-auto)
 .claude/sdd/
   conventions.md                     THE canonical reference (ids, front-matter, status, verdicts, rosters)
   scot.md                            canonical SCoT grammar (behavioral specs)
   ui-schema.md                       canonical UI-schematic convention (gui specs) + the GUARANTEED baseline UI library (§9)
   templates/*.template.md            the forms new specs are copied from (incl. target.template, impl-notes.template)
+  workflow.mmd                       the pipeline as a Mermaid flowchart
 docs/TECHNICAL.md                    this document
 
 # THE PROJECT — created/written at runtime by the workflow
 requirements/REQUIREMENT.md          raw + refined requirement, with REQ-* ids
-plan/PLAN.md                         output of the Plan mode
+plan/PLAN.md                         the plan + the ordered slice list
 .sdd/
   target.md                          stack + source-path conventions + canonical commands (AI-written, per project)
   state.md                           append-only verdict / audit log
@@ -171,13 +173,13 @@ Stable, never renumbered/renamed (a rename = a new id + deprecation of the old).
 
 | Prefix | Level / kind | Form | Example |
 |---|---|---|---|
+| `REQ-` | requirement (in `REQUIREMENT.md`) | `REQ-<nnn>` | `REQ-001` |
 | `MOD-` | module | `MOD-<kebab>` | `MOD-api`, `MOD-build` |
 | `FEAT-` | feature / use-case | `FEAT-<nnn>` | `FEAT-001` |
 | `ENT-` | domain entity | `ENT-<kebab>` | `ENT-user` |
 | `CLS-` | class / service / screen | `CLS-<lowerCamel>` | `CLS-regCtrl` |
 | `COMP-` | shared UI component | `COMP-<lowerCamel>` | `COMP-button` |
 | `SHR-` | shared non-UI abstraction | `SHR-<lowerCamel>` | `SHR-passwordHasher` |
-| `REQ-` | requirement (in `REQUIREMENT.md`) | `REQ-<nnn>` | `REQ-001` |
 | `AC` | acceptance criterion (in-spec) | `AC<n>` | `AC1` |
 | `B` | SCoT branch (in-spec) | `B<n>` + arm | `B1.then`, `B3.empty` |
 
@@ -260,7 +262,7 @@ error_style: result             # behavioral only: result|raise (matches the SCo
 ```
 
 - `source` is **derived** from each spec's authoritative `source:` front-matter
-  (a command fills it; it is never hand-edited).
+  (the command fills it; it is never hand-edited).
 - `ui-components.index.md` adds `layer` and `variants` columns (after `module`).
 - **`SHR-*` rows live in `classes.index.md`** (they are implementation units); there
   is no separate shared index.
@@ -285,11 +287,12 @@ Per-entity status lives in the **index row** and moves `draft → reviewed → a
 
 **Backward transitions.** Status normally moves forward, but **code is only ever
 generated from a `reviewed` spec**. So whenever a spec changes after it reached
-`reviewed`/`approved` — a gate routing a **spec bug**, or a deliberate **feature
-evolution** — the spec must re-pass the analysis gate before code is (re)generated:
-the **command** demotes the entity `reviewed → draft` (or `approved → draft`), the
-`spec-writer` fixes it, and it re-advances the normal forward path. A demotion never
-happens for a *code* or *test* bug — those leave the spec untouched.
+`reviewed`/`approved` — a gate routing a **spec bug**, a deliberate **feature
+evolution**, or a **reuse-analyst promotion** that rewrites a gated spec — the spec
+must re-pass the analysis gate before code is (re)generated: the **command** demotes
+the entity `reviewed → draft` (or `approved → draft`), the `spec-writer` fixes it, and
+it re-advances the normal forward path. A demotion never happens for a *code* or
+*test* bug — those leave the spec untouched.
 
 **Who writes what:** gatekeepers JUDGE (verdict → `.sdd/state.md`) and never touch
 `status`; authors WRITE artifacts; the **command** advances/demotes `status` from the
@@ -308,7 +311,7 @@ scope to decide.
 - verdict: PASS | REJECT
 - reasons:
   - <blocking reason, citing the spec id / ACn / branch arm it concerns>
-- routing: <none | plan-architect | spec-writer | reuse-analyst | code-implementer | test-writer | escalate>
+- routing: <none | requirement-analyst | plan-architect | spec-writer | reuse-analyst | code-implementer | test-writer | escalate>
 ```
 
 `state.md` records **why**; the index records **where each entity stands**. (The plan
@@ -375,26 +378,27 @@ Bidirectional, single authoritative home = the spec's `source:` front-matter:
   every co-owner declares it in `source:` and names its `owns_sections:`.
 
 The full chain **REQUIREMENT → FEATURE → CLASS/ENTITY/COMPONENT → SOURCE → TEST** is
-never a separate file — it is reconstructed on demand by `/sdd-trace` from indexes +
-front-matter + headers + test coverage ids.
+never a separate file — it is reconstructed on demand from indexes + front-matter +
+headers + test coverage ids.
 
 ### 3.14 Tool content vs runtime artifacts
 
-This repository is the **tool**. It ships only `.claude/` (agents, commands, and
-`.claude/sdd/` = the `conventions`/`scot`/`ui-schema` contracts + the `templates/`
-forms, including `target.template` and `impl-notes.template`) and `docs/`. The
-per-project `.sdd/` (`target.md` / `state.md` / `impl-notes/`) is created at runtime.
-In particular the **UI
-library is not shipped as files**: for a GUI project the `spec-writer` materializes the
-guaranteed baseline (`.claude/sdd/ui-schema.md` §9) into `specs/ui-components/`. The
-layout in §3.1 is the **runtime** layout of a *project that uses the tool*:
-`requirements/`, `plan/`, `src/`, `tests/`, and the populated `specs/` subfolders are
-**created by the workflow inside that project**, not shipped in the tool repo.
+This repository is the **tool**. It ships only `.claude/` (the 11 agents, the
+`/sdd-auto` command, and `.claude/sdd/` = the `conventions`/`scot`/`ui-schema`
+contracts + the `templates/` forms, including `target.template` and
+`impl-notes.template`, + `workflow.mmd`) and `docs/`. The per-project `.sdd/`
+(`target.md` / `state.md` / `impl-notes/`) is created at runtime. In particular the
+**UI library is not shipped as files**: for a GUI project the `spec-writer`
+materializes the guaranteed baseline (`.claude/sdd/ui-schema.md` §9) into
+`specs/ui-components/`. The layout in §3.1 is the **runtime** layout of a *project that
+uses the tool*: `requirements/`, `plan/`, `src/`, `tests/`, and the populated `specs/`
+subfolders are **created by the workflow inside that project**, not shipped in the tool
+repo.
 
 Two runtime files are written directly from command/agent instructions (no template
 file is read), so their format is documented here rather than shipped as a placeholder:
 
-**`requirements/REQUIREMENT.md`** — written by `/sdd-plan` (the main session):
+**`requirements/REQUIREMENT.md`** — written by `requirement-analyst` (step 2 of `/sdd-auto`):
 
 ```
 # Requirement — <title>
@@ -414,7 +418,7 @@ file is read), so their format is documented here rather than shipped as a place
 - REQ-001 → <observable signal that it is met>
 ```
 
-**`plan/PLAN.md`** — written by `plan-architect`:
+**`plan/PLAN.md`** — written by `plan-architect` (step 3):
 
 ```
 # Plan — <project or feature>
@@ -432,8 +436,8 @@ single global index per level | per-module split (with rationale)
 | id | level | module | depends_on | source | requirement | NEW/MODIFY |
 | … | … | … | … | … | … | … |
 
-## Vertical slices (depends_on topological order)
-1. <slice id> — <entity ids>
+## Slice plan (depends_on topological order)
+1. <slice id> — <member entity ids> — <depends_on closure>
 
 ## Shared / cross-cutting candidates (for the reuse-analyst)
 - <pattern> → <proposed SHR-* / COMP-* abstraction>
@@ -447,28 +451,52 @@ Each agent below: **Mission**, **When invoked**, **Reads** / **Writes** (files o
 **Tools**, **Procedure**, **Veto criteria** (gatekeepers) or **Definition of done**
 (authors), **Guardrails**. Every agent file opens with a `ROLE / MISSION / MINDSET /
 NON-GOALS` block, and the MINDSET always carries the two cross-cutting values verbatim.
+All step numbers refer to the `/sdd-auto` flow (§5).
 
-### 4.1 `plan-architect` (author · plan)
+### 4.1 `requirement-analyst` (author · plan)
+- **Mission:** turn the raw request into `requirements/REQUIREMENT.md` — the raw text
+  preserved + a refined set of atomic, testable requirements, each with a stable
+  `REQ-*` id. No plan, no slices, no specs, no code, no stack.
+- **When:** `/sdd-auto` **step 2** (first authoring step); re-invoked if a gate blames
+  the requirement itself (e.g. a `REQ-*` that is untestable or contradictory).
+- **Reads:** `$ARGUMENTS` (the raw request), existing `requirements/REQUIREMENT.md`
+  (preserve shipped ids), `.claude/sdd/conventions.md`.
+- **Writes:** `requirements/REQUIREMENT.md` only.
+- **Tools:** `Read, Write, Edit, Glob, Grep`.
+- **Procedure:** preserve the raw request verbatim; split compound asks into atomic,
+  independently testable statements; assign stable `REQ-*` ids (never renumber an
+  existing one); flag any ambiguity as an explicit `<…>` open question (a subagent is
+  unattended — it never prompts the human). Do not over-reach: capture only what the
+  request implies; each user-stated NFR becomes its own `REQ-*`.
+- **Definition of done:** raw preserved; every refined requirement atomic + testable +
+  carrying a stable `REQ-*`; open questions flagged as `<…>`; no plan/slice/spec/code/
+  stack written.
+
+### 4.2 `plan-architect` (author · plan)
 - **Mission:** turn the requirement into a PLAN of which indexes/specs to create or
-  modify — no specs, no code.
-- **When:** first step of `/sdd-plan` and Phase A of `/sdd-auto`.
+  modify, order it into vertical slices, and derive the stack into `.sdd/target.md` —
+  no specs, no code.
+- **When:** `/sdd-auto` **step 3** (after `requirement-analyst`); re-invoked on a
+  `plan-gatekeeper` REJECT.
 - **Reads:** `requirements/REQUIREMENT.md`, existing `specs/` + indexes, `.claude/sdd/` + `.sdd/`.
 - **Writes:** `plan/PLAN.md`, `.sdd/target.md` only (the `.claude/sdd/` contracts are read-only). It does **not** write `requirements/`.
 - **Tools:** `Read, Write, Edit, Glob, Grep`.
 - **Procedure:** classify NEW-project vs existing-SDD; derive the stack into
-  `target.md` (**STOP and ask the human if the stack is unstated** — never assume a
-  default); read the `REQ-*` ids the command assigned in `REQUIREMENT.md`; enumerate
-  every entity (`id`, level, `module`, `depends_on`, `source`, requirement, NEW/MODIFY);
-  decide index granularity (global default vs per-module split); order the work into
-  vertical slices in `depends_on` topological order (cycles → interface-first); flag
-  shared/cross-cutting candidates for the reuse-analyst (discover-before-create against
-  the UI library).
+  `target.md` (**leave `<…>` placeholders if the stack is unstated** — the gate REJECTs
+  and the command asks the human; never assume a default); read the `REQ-*` ids;
+  enumerate every entity (`id`, level, `module`, `depends_on`, `source`, requirement,
+  NEW/MODIFY); decide index granularity (global default vs per-module split); order the
+  work into vertical slices in `depends_on` topological order (cycles → interface-first)
+  and record the ordered **Slice plan** in `PLAN.md`; flag shared/cross-cutting
+  candidates for the reuse-analyst (discover-before-create against the UI library);
+  include `MOD-build`.
 - **Definition of done:** every entity carries all fields and a back-link to an
-  existing `REQ-*`; slices topologically ordered; `target.md` complete; no spec/code.
+  existing `REQ-*`; the ordered slice list is recorded; slices topologically ordered;
+  `target.md` complete (or `<…>` left for the gate); no spec/code.
 
-### 4.2 `plan-gatekeeper` (gate · plan)
+### 4.3 `plan-gatekeeper` (gate · plan)
 - **Mission:** judge `plan/PLAN.md`; PASS or REJECT with blocking reasons.
-- **When:** after `plan-architect` (in `/sdd-plan` and `/sdd-auto` Phase A).
+- **When:** `/sdd-auto` **step 4** (after `plan-architect`).
 - **Reads:** `requirements/`, `plan/`, `specs/` (existing), `.claude/sdd/` + `.sdd/`.
 - **Writes:** one verdict to `.sdd/state.md`.
 - **Tools:** `Read, Write, Glob, Grep`.
@@ -479,12 +507,14 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
   that violates topology; a requirement covered by no entity; an entity pointing at a
   non-existent requirement; unflagged shared/cross-cutting duplication; a large project
   with no index-granularity decision; `MOD-build` absent.
-- **Routing on REJECT:** always `plan-architect`.
+- **Routing on REJECT:** `plan-architect` by default; `requirement-analyst` when the
+  blocking defect is rooted in `REQUIREMENT.md` itself.
 
-### 4.3 `spec-writer` (author · spec)
+### 4.4 `spec-writer` (author · spec)
 - **Mission:** write the indexes and the specs at all levels (+ `MOD-build`), each in
   the form its `kind` requires.
-- **When:** `/sdd-specify` step 2; `/sdd-auto` step 7a; re-invoked on a spec-bug route.
+- **When:** `/sdd-auto` **step 5b**; re-invoked on a spec-bug route (incl. a `SPEC
+  DEFECT` marker).
 - **Reads:** `plan/`, `requirements/`, `specs/` (+ `ui-components.index` for
   discover-before-create), `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.claude/sdd/templates/`.
 - **Writes:** `specs/**` (specs + index rows), all at `status: draft`.
@@ -503,23 +533,27 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
   branches have ids; gui references components by id; `SHR-*` rows go in
   `classes.index`.
 
-### 4.4 `reuse-analyst` (author · spec)
+### 4.5 `reuse-analyst` (author · spec)
 - **Mission:** maximize reuse / eliminate duplication across the **specs** (Markdown
   only), before any code exists. A **pure author** — it edits, it does not judge.
-- **When:** after `spec-writer`, before the analysis gate; re-run on any spec change.
-- **Reads:** `specs/`, `.claude/sdd/conventions.md`, `.claude/sdd/ui-schema.md`.
+- **When:** `/sdd-auto` **step 5c** (after `spec-writer`, before the analysis gate);
+  re-run on any spec change.
+- **Reads:** `specs/`, `.claude/sdd/{conventions,ui-schema}.md`, `.sdd/target.md`.
 - **Writes:** `specs/**` (promoted/edited specs, updated index rows), `specs/REUSE-REPORT.md`.
 - **Tools:** `Read, Write, Edit, Glob, Grep`.
 - **Procedure:** detect recurring logic / near-duplicate SCoT / repeated widgets /
   repeated types; promote shared widgets into `specs/ui-components/` (`COMP-*`, correct
   `layer`) and shared non-UI abstractions into `specs/shared/` (`SHR-*`); rewrite
   consumers to reference the promoted id; enforce discover-before-create; write the
-  reuse report. Never promotes a pattern used in only one place.
+  reuse report. Never promotes a pattern used in only one place. **Demote flag:** if a
+  rewrite touches a spec already at `reviewed`/`approved`, list its id under a
+  `Demote-for-re-gate:` heading in `REUSE-REPORT.md` (it cannot set `status` — this
+  tells the command to demote it `→ draft`).
 
-### 4.5 `analysis-gatekeeper` (gate · spec)
+### 4.6 `analysis-gatekeeper` (gate · spec)
 - **Mission:** the single authority that blocks the spec phase.
-- **When:** end of `/sdd-specify`; `/sdd-auto` step 7c; on a spec-bug route.
-- **Reads:** all `specs/` + indexes, `requirements/`, `.claude/sdd/` + `.sdd/`.
+- **When:** `/sdd-auto` **step 5d** (after `spec-writer` + `reuse-analyst`).
+- **Reads:** all `specs/` + indexes, `requirements/`, `REUSE-REPORT.md`, `.claude/sdd/` + `.sdd/`.
 - **Writes:** one verdict to `.sdd/state.md`.
 - **Tools:** `Read, Write, Glob, Grep`.
 - **Veto criteria (REJECT if):** a spec is not self-sufficient to regenerate;
@@ -527,62 +561,70 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
   `module`/`COMP-*` exceptions — do not reject a COMP for "missing Public
   interface")**; `ACn` missing / not testable / not Given-When-Then; a SCoT branch
   lacks an id or its arms are not enumerable; a gui screen re-describes a library
-  component; the source mapping is malformed (paths violate `target.md`; undeclared
-  shared ownership; index `source` ≠ spec `source:`); a requirement is untraceable;
-  unjustified duplication above threshold (→ route `reuse-analyst`); a dependency cycle
-  without an interface-first break; `MOD-build` missing or schema changes not derived from
-  entities.
+  component, or the GUI baseline is missing, or a feature-calling screen declares no
+  `(journey)` AC; the source mapping is malformed (paths violate `target.md`;
+  undeclared shared ownership; index `source` ≠ spec `source:`); a requirement is
+  untraceable; unjustified duplication above threshold (→ route `reuse-analyst`); a
+  dependency cycle without an interface-first break; `MOD-build` missing or schema
+  changes not derived from entities.
 - **Routing on REJECT:** `spec-writer` (default) or `reuse-analyst` (duplication).
 
-### 4.6 `code-implementer` (author · code)
-- **Mission:** turn approved specs into source — create new files or apply **minimal
+### 4.7 `code-implementer` (author · code)
+- **Mission:** turn reviewed specs into source — create new files or apply **minimal
   diffs** — emitting the language/framework from `target.md`; record concretizations
   in impl-notes; never edit the gated spec.
-- **When:** `/sdd-implement` step 3; `/sdd-auto` step 8a; on a code-bug/spec-bug
+- **When:** `/sdd-auto` **step 6a** (in `depends_on` order); on a code-bug/spec-bug
   re-route.
-- **Reads:** the spec(s), `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`,
+- **Reads:** the spec(s) + every spec they reference by id, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`,
   `.sdd/impl-notes/<id>.md`, and the existing `src/` files it touches.
 - **Writes:** `src/**` (declared `source:` paths), `.sdd/impl-notes/<id>.md`.
 - **Tools:** `Read, Write, Edit, Glob, Grep`.
 - **Procedure:** work in `depends_on` order (cycles → interfaces first, derive stubs);
-  **new file** → generate from spec (+ impl-notes), stamp the traceability header;
-  **existing file** → read it and apply the smallest diff that brings the touched
-  entity to the spec (never a whole-file rewrite for a small change); map SCoT
-  faithfully (sequence/branch/loop, error-style, invariants); emit shared `SHR-*`/
-  `COMP-*` once and import everywhere; record every concretization (library/version,
-  API binding, idiom, edge case, bug-fix lesson) into impl-notes. Regenerate a whole
-  file only as an exception (new / substantially-changed spec / bad drift).
+  open every referenced spec and bind against its **real interface** (never a
+  dependency blind); **new file** → generate from spec (+ impl-notes), stamp the
+  traceability header; **existing file** → read it and apply the smallest diff that
+  brings the touched entity to the spec (never a whole-file rewrite for a small
+  change); map SCoT faithfully (sequence/branch/loop, error-style, invariants); emit
+  shared `SHR-*`/`COMP-*` once and import everywhere; materialize each `MOD-build`
+  forward schema script from the corresponding `ENT-*` field table (append-only — a new
+  `Vn` for the delta only); record every concretization (library/version, API binding,
+  idiom, edge case, bug-fix lesson) into impl-notes. Regenerate a whole file only as an
+  exception (new / substantially-changed spec / bad drift).
 - **Definition of done:** every declared `source:` file exists with its header and
   matches the SCoT/interface/invariants; impl-notes updated; no spec edited.
 
-### 4.7 `code-gatekeeper` (gate · code)
+### 4.8 `code-gatekeeper` (gate · code)
 - **Mission:** verify code faithfully implements the spec and the on-disk spec↔source
   mapping is real, complete, and traceable.
-- **When:** `/sdd-implement` step 4; `/sdd-auto` step 8b; after any in-loop code fix.
+- **When:** `/sdd-auto` **step 6b** (after `code-implementer`; the command runs the
+  canonical `install` first so the read-only compile check is effective).
 - **Reads:** specs, impl-notes, `src/`, `.claude/sdd/` + `.sdd/`.
 - **Writes:** one verdict to `.sdd/state.md`.
 - **Tools:** `Read, Write, Glob, Grep, Bash` (Write = the `.sdd/state.md` verdict only;
   **Bash read-only** — compile/lint/inspect only; never mutate, install, format, or run
   tests-as-fixes).
 - **Veto criteria (REJECT if):** code diverges from the SCoT / interface / invariants;
-  a `source:` file is missing, or an orphan source file has no spec; a file lacks its
-  traceability header; a concretization contradicts the spec; the gated spec was edited
-  by the implementer; shared logic is duplicated instead of imported; (optional) a
-  read-only build/lint fails. Per-kind it checks behavioral (SCoT realized), structural
-  (tables match), **gui** (composes `COMP-*` by id, realizes State/Events incl. handler
-  SCoT arms, Props/variants, accessibility intent), and notes that a `source: []` spec
-  (module overview / compositional feature) has **no code of its own** to verify.
+  a `source:` file is missing, or an orphan hand-authored source file has no spec; a
+  comment-supporting file lacks its traceability header; a concretization contradicts
+  the spec; the gated spec was edited by the implementer; shared logic is duplicated
+  instead of imported; a co-owned file lacks declared ownership; (optional) a read-only
+  build/lint fails (unless only a missing-dependency error — this gate never installs).
+  Per-kind it checks behavioral (SCoT realized), structural (tables match), **gui**
+  (composes `COMP-*` by id, realizes State/Events incl. handler SCoT arms,
+  Props/variants, accessibility intent), and notes that a `source: []` spec (module
+  overview / compositional feature) has **no code of its own** to verify.
 - **Routing on REJECT:** `code-implementer` (or `spec-writer` if the spec is at fault).
+  A code PASS advances no status (tests gate `approved`).
 
-### 4.8 `test-writer` (author · test — the independent oracle)
+### 4.9 `test-writer` (author · test — the independent oracle)
 - **Mission:** write tests that are an INDEPENDENT oracle derived only from the
   **behavioral** part of the specs — ≥1 test per `ACn` and per SCoT branch arm.
-- **When:** `/sdd-test` step 1; `/sdd-auto` step 9a; re-invoked on a test-bug route.
+- **When:** `/sdd-auto` **step 7a**; re-invoked on a test-bug route.
 - **Reads:** behavioral spec sections (public interface, ACs, SCoT), entity
   constraints, gui events; `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`. **Never
   reads `src/` or `.sdd/impl-notes/`.**
 - **Writes:** `tests/**` (+ interface-derived stub helpers).
-- **Tools:** `Read, Write, Edit, Glob` (**no `Bash` by design**).
+- **Tools:** `Read, Write, Edit, Glob` (**no `Bash`, no `Grep` by design**).
 - **Procedure:** unit tests from class specs (one per branch arm + per `ACn`),
   integration tests from feature specs, constraint tests from entity specs, **component**
   tests from gui specs (Events + Accessibility ACs, rendered in a test renderer with the
@@ -594,11 +636,15 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
 - **Definition of done:** every in-scope `ACn` and SCoT arm has ≥1 test asserting a
   spec outcome (never an implementation detail); every gui screen has an e2e test per
   `(journey)` AC; assertion style matches the spec's declared `error_style`.
+- **Guardrail — un-testable unit:** if an AC/branch cannot be tested without naming an
+  implementation detail (the spec is ambiguous), write a **failing marker test** tagged
+  with the unit's coverage id asserting `SPEC DEFECT: …`, so the gatekeeper triages it
+  as a **spec bug → spec-writer** rather than leaving a silent gap.
 
-### 4.9 `test-runner` (runner · test)
+### 4.10 `test-runner` (runner · test)
 - **Mission:** run the spec-derived suite via the canonical commands from `target.md`
   and write a parseable `tests/REPORT.md`. Fixes nothing.
-- **When:** `/sdd-test` step 2; `/sdd-auto` step 9b.
+- **When:** `/sdd-auto` **step 7b** (scoped to the slice) and **step 9** (whole suite, unscoped).
 - **Reads:** `tests/`, `src/`, `.sdd/target.md`.
 - **Writes:** `tests/REPORT.md`.
 - **Tools:** `Read, Write, Glob, Bash`.
@@ -613,10 +659,10 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
   capture failures with message + trimmed excerpt; write the §3.9 structure (with `scope`
   + `suites`; `coverage: unknown` rather than inventing one when unrecoverable).
 
-### 4.10 `test-gatekeeper` (gate + triage · test)
+### 4.11 `test-gatekeeper` (gate + triage · test)
 - **Mission:** verify coverage (every `ACn` and SCoT arm has a test, else REJECT) and
   triage each failure as a spec / code / test bug.
-- **When:** `/sdd-test` step 3; `/sdd-auto` step 9c.
+- **When:** `/sdd-auto` **step 7c** (per slice) and **step 9** (whole-project sweep).
 - **Reads:** `tests/REPORT.md`, specs, `tests/`, `src/` (read-only, for triage), `.claude/sdd/` + `.sdd/`.
 - **Writes:** one verdict to `.sdd/state.md` with per-failure routing.
 - **Tools:** `Read, Write, Glob, Grep`.
@@ -629,105 +675,67 @@ NON-GOALS` block, and the MINDSET always carries the two cross-cutting values ve
   suite (install/build/e2e-setup) is REJECTed by offending-file location or **escalated**,
   never treated as a `test-writer` coverage gap. **Triage** each failure: **spec bug**
   → `spec-writer` (fix spec, then regenerate code); **code bug** → `code-implementer`
-  (minimal diff); **test bug** → `test-writer`. PASS only when coverage is complete
-  (incl. e2e journeys) **and** the suite is green.
+  (minimal diff); **test bug** → `test-writer`; a `SPEC DEFECT` marker → `spec-writer`.
+  PASS only when coverage is complete (incl. e2e journeys) **and** the suite is green.
 
 ---
 
-## 5. The commands
+## 5. The command
 
-Seven commands: five flow **modes** (1–4 manual/human-in-control, 5 automatic/human-
-out-of-the-loop) and two read-only **helpers**. Each command runs in the main session
-and is the orchestrator (§2.2).
+**One command.** `/sdd-auto` runs the whole flow end-to-end in the main session and is
+the orchestrator (§2.2). There is no manual, step-by-step mode and no separate helper
+command — the single automatic flow, resumable from files, covers the lifecycle.
 
-| Command | Mode | Drives | Status effect |
-|---|---|---|---|
-| `/sdd-plan` | 1 Plan | `plan-architect` → `plan-gatekeeper` | none (no specs yet) |
-| `/sdd-specify` | 2 Plan approval | `spec-writer` → `reuse-analyst` → `analysis-gatekeeper` | `draft → reviewed` |
-| `/sdd-implement` | 3 Implement | `code-implementer` → `code-gatekeeper` | none (waits for tests) |
-| `/sdd-test` | 4 Test run | `test-writer` → `test-runner` → `test-gatekeeper` | `reviewed → approved` |
-| `/sdd-auto` | 5 Automatic | all of the above, slice by slice | `draft → reviewed → approved` |
-| `/sdd-trace` | helper | reconstruct REQ→…→TEST + coverage gaps | none (read-only) |
-| `/sdd-status` | helper | lifecycle dashboard + resume point | none (read-only) |
+| Command | Drives | Status effect |
+|---|---|---|
+| `/sdd-auto <requirement + stack>` | Plan → Specify → Implement → Test, slice by slice, automatic gates + feedback loops | `draft → reviewed → approved` |
 
-### 5.1 `/sdd-plan` — Mode 1 (Plan)
-Turn the requirement into a plan; **no specs, no code**. Steps: capture/refine
-`requirements/REQUIREMENT.md` from `$ARGUMENTS`, **assigning a stable `REQ-*` id to each
-atomic requirement** (these are the back-link targets); invoke `plan-architect` (it
-derives `target.md`); if the
-stack is unstated, relay its question to the human and stop until answered; invoke
-`plan-gatekeeper`; on PASS tell the human the plan is ready for `/sdd-specify`; on
-REJECT re-invoke `plan-architect` with the reasons (analysis budget 3); on overflow
-escalate. **Stops at an approved plan** — it does not write specs.
+### 5.1 `/sdd-auto` — the orchestrator
 
-### 5.2 `/sdd-specify` — Mode 2 (Plan approval → write specs)
-Represents the **human's approval** of the plan, then writes the spec corpus and drives
-it through the analysis gate. Steps: confirm approval (do not proceed without it);
-**(feature evolution: demote any in-scope `reviewed`/`approved` entity to `draft`
-first)**; invoke `spec-writer` (rows at `draft`); invoke `reuse-analyst`; invoke
-`analysis-gatekeeper`; on PASS advance each in-scope row `draft → reviewed`; on REJECT
-re-invoke the routed author (`spec-writer` or `reuse-analyst`) and re-judge (analysis
-budget 3); on overflow escalate. Output: the `specs/` corpus, ready for human review,
-then `/sdd-implement`.
-
-### 5.3 `/sdd-implement` — Mode 3 (Implement)
-Turn `reviewed` specs into source and drive the code gate. Steps: resolve the work set
-(`$ARGUMENTS` or all `reviewed` specs) and order it topologically; for each entity
-invoke `code-implementer` then `code-gatekeeper`; on PASS proceed; on REJECT route by
-the verdict (code budget 3):
-- **code bug** → re-invoke `code-implementer` (minimal diff) → re-judge.
-- **spec bug** → demote `reviewed → draft`, re-run **inline** `spec-writer` →
-  `reuse-analyst` → `analysis-gatekeeper` → re-advance to `reviewed`, then resume
-  `code-implementer`. (Do **not** re-run the whole `/sdd-specify` — its human-approval
-  step does not belong mid-implementation.) Spec rework does not consume the code
-  budget.
-On overflow escalate. **Does not set `approved`** — `reviewed → approved` requires
-green tests (Mode 4). It records the code-gate PASS in `state.md` for `/sdd-test`.
-
-### 5.4 `/sdd-test` — Mode 4 (Test run)
-Generate spec-derived tests, run them **scoped to the work**, verify coverage, triage
-failures; on full green advance `reviewed → approved`. Steps: invoke `test-writer`
-(independent oracle — unit/integration/constraint/component + Playwright **e2e** per
-`(journey)` AC for a GUI project), then `test-runner` (filters to the scope via `{scope}`,
-runs e2e last for a GUI project, → `tests/REPORT.md`), then `test-gatekeeper` (coverage
-incl. e2e journeys + triage). The no-argument run is the unscoped whole-project arbiter.
-On PASS advance `reviewed → approved`; on REJECT route per triage (test budget 5; a
-`routing: escalate` run-health/e2e-setup failure escalates immediately, not a budget step):
-- **test bug** → `test-writer` → redo run + judge.
-- **code bug** → re-run the implement step (`code-implementer` → `code-gatekeeper`,
-  iterating until the **code gate** PASSes, bounded by the test budget) → redo run +
-  judge.
-- **spec bug** → demote `reviewed → draft`, re-validate via `spec-writer` →
-  `reuse-analyst` → `analysis-gatekeeper` → re-advance to `reviewed`, then re-run the
-  implement step (with the **code gate**) → re-author + run + judge tests.
-On overflow escalate. Every route loops back to the sub-phase that **re-gates the fix**.
-
-### 5.5 `/sdd-auto` — Mode 5 (Automatic)
 Run Plan → Specify → Implement → Test end-to-end, **human out of the loop**, escalating
-only on budget overflow (and the one stack question if the stack is unresolvable).
-Phase A = Plan (no approval stop). Phase B = build the **slice list** in `depends_on`
-order (one vertical slice = a feature/module + its closure). Phase C, per slice in
-order: **Specify** (7, `draft→reviewed`) → **Implement** (8, code gate) → **Test** (9,
-`reviewed→approved`). REJECT routing re-gates: **spec bug → step 7**, **code bug → step
-8**, **test bug → step 9b**; budget overflow → escalate (and stop that slice; other
-approved slices stand). **Resume from files:** if interrupted, re-run `/sdd-auto` — it
-reconstructs progress from `state.md` (`iteration: n/budget`) + index `status`, skips
-`approved` slices, and re-enters the first non-`approved` slice at the implied
-sub-phase.
+only on budget overflow (and the one stack question if the stack is unresolvable). The
+main session **only orchestrates** — it never authors an artifact: it invokes agents via
+`Task`, reads each verdict from `.sdd/state.md`, advances index `status` itself, routes
+on REJECT, and owns the two human touch-points.
 
-### 5.6 `/sdd-trace` — Helper (read-only)
-Reconstruct and print **REQUIREMENT → FEATURE → CLASS/ENTITY/COMPONENT → SOURCE →
-TEST** for a focus id (or the whole project), from indexes + spec front-matter +
-source headers + test coverage ids. Highlights AC/branch coverage gaps, orphan nodes
-(no requirement back-link), dangling/headerless `source:` paths, and index↔spec
-`source` drift. Writes nothing.
+**The flow (steps 1–9; steps 5–8 repeat once per slice):**
 
-### 5.7 `/sdd-status` — Helper (read-only)
-Print a **lifecycle dashboard**: per-entity `status` + last phase/verdict + iter/budget
-+ `blocked-on`, a summary (counts per status, blocked entities, escalations), and the
-**`/sdd-auto` resume point**. Surfaces (does not fix) status↔verdict inconsistencies
-(e.g. `approved` but the latest test verdict is REJECT). Complements `/sdd-trace`:
-`/sdd-status` answers *"where does each thing stand and what's next?"*.
+1. **Resolve the stack** *(orchestrator)* — from `.sdd/target.md`, else infer from the
+   requirement, else **ask the human once** (the only prompt besides escalation).
+2. **Capture the requirement** ▶▶ `requirement-analyst` → `requirements/REQUIREMENT.md` (`REQ-*`).
+3. **Plan** ▶▶ `plan-architect` → `.sdd/target.md` + `plan/PLAN.md` (incl. the ordered slice list).
+4. **Gate the plan** ▶▶ `plan-gatekeeper`. PASS → enter the per-slice loop; REJECT →
+   re-plan (or re-capture the requirement) within the analysis budget; overflow → escalate.
+
+   *Then, for each slice in the slice list, in order:*
+
+5. **Specify** `[analysis budget 3]` — 5a (orchestrator) demote in-scope entities for a
+   feature evolution; 5b ▶▶ `spec-writer`; 5c ▶▶ `reuse-analyst` (+ orchestrator applies
+   any `Demote-for-re-gate:`); 5d ▶▶ `analysis-gatekeeper`. **PASS → `draft → reviewed`.**
+6. **Implement** `[code budget 3]` — 6a ▶▶ `code-implementer` (per spec, `depends_on`
+   order); 6b (orchestrator) run canonical `install`, then ▶▶ `code-gatekeeper`. A code
+   PASS advances no status.
+7. **Test** `[test budget 5]` — 7a ▶▶ `test-writer`; 7b ▶▶ `test-runner` (scoped to the
+   slice); 7c ▶▶ `test-gatekeeper`. **PASS (green + full coverage) → `reviewed → approved`.**
+8. **Next slice** *(orchestrator)* — repeat 5–7 until every slice is `approved`.
+9. **Final unscoped sweep** ▶▶ `test-runner` (whole suite, no scope) → ▶▶ `test-gatekeeper`
+   (whole project). A regression routes per triage to the owning slice's step 7; green → done.
+
+**REJECT routing re-gates the fix** (§6.4): a **spec bug** returns to step 5 (and the
+fix re-flows code + test), a **code bug** returns to step 6, a **test bug** returns to
+step 7a; a `routing: escalate` (run-health / e2e-setup / missing dependency) escalates
+immediately rather than consuming a budget iteration; a budget overflow escalates and
+stops that slice (already-`approved` slices stand).
+
+**Escalation** — the only human touch-point after stack resolution: the command STOPs
+the affected scope and reports the scope, the step + iteration vs budget, the failing
+`verdict_record` verbatim with its reasons, and the last routed author. It never
+silently retries past budget and never advances status on an unresolved scope.
+
+**Resume from files** — if interrupted, re-run `/sdd-auto`: it reconstructs progress
+from `.sdd/state.md` (`iteration: n/budget`) + index `status`, skips every `approved`
+slice, and re-enters the first non-`approved` slice at the step its latest
+`verdict_record` implies, continuing that step's iteration count.
 
 ---
 
@@ -742,10 +750,11 @@ spec phase.)
 
 ### 6.2 Iteration budgets
 Defaults (configurable in `target.md §4`): **analysis 3 · code 3 · test 5**. Each
-REJECT → re-author → re-judge cycle counts as one iteration **against that scope**. On
-overflow the command **escalates to the human** with the scope, phase, failing verdict
-+ reasons, and the last routed author; it does not loop forever and does not advance
-status on an unresolved scope.
+REJECT → re-author → re-judge cycle counts as one iteration **against that scope** (the
+`PLAN` scope and each slice scope count independently; a nested re-gate counts against
+the loop currently driving it). On overflow the command **escalates to the human** with
+the scope, phase, failing verdict + reasons, and the last routed author; it does not
+loop forever and does not advance status on an unresolved scope.
 
 ### 6.3 Routing (MD-as-authority)
 A red test never patches code arbitrarily. The `test-gatekeeper` triages each failure:
@@ -759,13 +768,15 @@ A red test never patches code arbitrarily. The `test-gatekeeper` triages each fa
 ### 6.4 Re-gate consistency (invariant)
 **Every regenerated artifact re-passes its own gate before the next phase.** A changed
 spec re-passes the analysis gate; regenerated code re-passes the code gate; a changed
-test is re-run and re-judged. This holds identically in `/sdd-implement`, `/sdd-test`,
-and `/sdd-auto`.
+test is re-run and re-judged. This holds across `/sdd-auto`'s specify (step 5),
+implement (step 6), and test (step 7) sub-phases, including fixes triggered inside the
+test loop.
 
 ### 6.5 Status demotion
-A spec-bug route (any phase) or a deliberate feature evolution demotes the entity
-`reviewed → draft` (or `approved → draft`) — performed by the command — so it re-earns
-`reviewed` (and then `approved`) through the gates. Code/test bugs never demote.
+A spec-bug route (any phase), a deliberate feature evolution, or a reuse-analyst
+promotion that rewrites a gated spec demotes the entity `reviewed → draft` (or
+`approved → draft`) — performed by the command — so it re-earns `reviewed` (and then
+`approved`) through the gates. Code/test bugs never demote.
 
 ---
 
@@ -779,8 +790,8 @@ auditable, token-cheap, and resumable.
 
 **B) Test-writer independence (soft, by design — no runtime hook).** Tests must be an
 independent oracle, so the `test-writer` must not see the implementation. Enforced by
-three soft layers: (1) **minimal tools** — `Read, Write, Glob`, no `Bash`; (2) an
-explicit **NON-GOAL** — never read `src/` or `.sdd/impl-notes/`; (3) the
+three soft layers: (1) **minimal tools** — `Read, Write, Edit, Glob`, no `Bash` and no
+`Grep`; (2) an explicit **NON-GOAL** — never read `src/` or `.sdd/impl-notes/`; (3) the
 **test-gatekeeper** rejects tests that assert implementation detail. (An earlier
 `PreToolUse` hook + lock file was deliberately dropped as fragile.)
 
@@ -793,6 +804,7 @@ independent tests.
 
 | Agent | May READ | May WRITE | Bash/Edit | `model` | Reads `src/`? |
 |---|---|---|---|---|---|
+| `requirement-analyst` | `$ARGUMENTS`, existing `requirements/`, `.claude/sdd/conventions.md` | `requirements/` | Edit | `opus` | no |
 | `plan-architect` | `requirements/`, existing `specs/`, `.claude/sdd/`, `.sdd/target.md` | `plan/`, `.sdd/target.md` | Edit | `opus` | no |
 | `plan-gatekeeper` | `requirements/`, `plan/`, `specs/`, `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | — | `opus` | no |
 | `spec-writer` | `plan/`, `requirements/`, `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.claude/sdd/templates/` | `specs/` (incl. indexes) | Edit | `opus` | no |
@@ -801,62 +813,60 @@ independent tests.
 | `code-implementer` | `specs/`, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md`, `.sdd/impl-notes/`, `src/` | `src/` (declared paths), `.sdd/impl-notes/<id>.md` | **Edit** | `opus` | **yes** — spec stays authority |
 | `code-gatekeeper` | `specs/`, `.sdd/impl-notes/`, `src/`, `.claude/sdd/`, `.sdd/target.md` | `.sdd/state.md` | Bash (read-only) | `opus` | yes (review) |
 | `test-writer` | behavioral spec sections, `.claude/sdd/{conventions,scot,ui-schema}.md`, `.sdd/target.md` | `tests/` | Edit | `sonnet` | **no — by role** |
-| `test-runner` | `tests/`, `src/`, `.claude/sdd/conventions.md`, `.sdd/target.md` | `tests/REPORT.md` | Bash (run) | `sonnet` | yes |
+| `test-runner` | `tests/`, `src/`, `.sdd/target.md` | `tests/REPORT.md` | Bash (run) | `sonnet` | yes |
 | `test-gatekeeper` | `tests/REPORT.md`, `specs/`, `src/`, `tests/`, `.claude/sdd/`, `.sdd/` | `.sdd/state.md` | — | `opus` | yes |
-| *commands* (main session) | everything | index `status`, drives all | Task | *(session)* | no (coordinates) |
+| *orchestrator* (`/sdd-auto`, main session) | everything | index `status`, drives all | Task, Bash | *(session)* | no (coordinates) |
 
-**Model split.** `opus` for under-specified **authoring** (`plan-architect`,
-`spec-writer`, `reuse-analyst`, `code-implementer`) and the **verification gates**
-(`plan-gatekeeper` graph/DAG + coverage validation, `analysis-gatekeeper` the spec
-blocker, `code-gatekeeper` the semantic code↔spec equivalence check, `test-gatekeeper`
-the spec/code/test triage); `sonnet` for the two **purely mechanical** roles
-(`test-writer` coverage enumeration, `test-runner` execution + reporting). The
-pipeline is reasoning-heavy, so the split is opus-leaning by design. Canonical in
-`.claude/sdd/conventions.md` §9; a project may override any agent's `model:`.
+**Model split.** `opus` for under-specified **authoring** (`requirement-analyst`,
+`plan-architect`, `spec-writer`, `reuse-analyst`, `code-implementer`) and the
+**verification gates** (`plan-gatekeeper` graph/DAG + coverage validation,
+`analysis-gatekeeper` the spec blocker, `code-gatekeeper` the semantic code↔spec
+equivalence check, `test-gatekeeper` the spec/code/test triage); `sonnet` for the two
+**purely mechanical** roles (`test-writer` coverage enumeration, `test-runner`
+execution + reporting). The pipeline is reasoning-heavy, so the split is opus-leaning by
+design. Canonical in `.claude/sdd/conventions.md` §9; a project may override any agent's
+`model:`.
 
 ---
 
 ## 8. End-to-end walkthroughs
 
-### 8.1 New feature, manual path
+### 8.1 A `/sdd-auto` run, end to end
 
 Requirement: *"Register a user with a unique email and a strong password"* (stack: TS,
 modular, Express + React, pnpm, Postgres).
 
-1. **`/sdd-plan "...stack..."`** → the command writes `requirements/REQUIREMENT.md`
-   with `REQ-001`; `plan-architect` writes `.sdd/target.md` and `plan/PLAN.md`
-   (modules `MOD-db`/`MOD-api`/`MOD-web`/`MOD-build`; entity `ENT-user`; classes
-   `CLS-userRepo`/`CLS-regCtrl`/`CLS-registerScreen`; shared `SHR-passwordHasher`);
-   `plan-gatekeeper` PASS → ready for approval.
-2. **`/sdd-specify`** → human approves; `spec-writer` writes the indexes + specs at
-   `draft`; `reuse-analyst` promotes the recurring widgets into `specs/ui-components/`
+1. **Stack & requirement** — the command resolves the stack from the prompt; invokes
+   `requirement-analyst` → `requirements/REQUIREMENT.md` with `REQ-001`.
+2. **Plan** — `plan-architect` writes `.sdd/target.md` and `plan/PLAN.md` (modules
+   `MOD-db`/`MOD-api`/`MOD-web`/`MOD-build`; entity `ENT-user`; classes
+   `CLS-userRepo`/`CLS-regCtrl`/`CLS-registerScreen`; shared `SHR-passwordHasher`; an
+   ordered slice list); `plan-gatekeeper` PASS → enter the per-slice loop.
+3. **Specify (per slice)** — `spec-writer` writes the indexes + specs at `draft`;
+   `reuse-analyst` promotes the recurring widgets into `specs/ui-components/`
    (`COMP-textInput`, `COMP-formField`, `COMP-button`) and rewires the screen to
-   reference them by id; `analysis-gatekeeper` PASS → the command advances every row to
-   `reviewed`.
-3. **`/sdd-implement`** → `code-implementer` generates, in `depends_on` order,
+   reference them by id; `analysis-gatekeeper` PASS → the command advances the slice's
+   rows to `reviewed`.
+4. **Implement (per slice)** — `code-implementer` generates, in `depends_on` order,
    `ENT-user` → `CLS-userRepo` (interface) → `SHR-passwordHasher` → `CLS-regCtrl` →
    `CLS-registerScreen`, plus `MOD-build`'s users-table schema change; each file carries
    its `// spec:` header; concretizations (argon2, the ORM call, the Result mapping)
-   go into `.sdd/impl-notes/`; `code-gatekeeper` PASS.
-4. **`/sdd-test`** → `test-writer` derives the suite from the behavioral specs
+   go into `.sdd/impl-notes/`; the command runs `install`; `code-gatekeeper` PASS.
+5. **Test (per slice)** — `test-writer` derives the suite from the behavioral specs
    (unit per branch arm + per `ACn`, integration from `FEAT-001`, constraints from
    `ENT-user`, **component** from `CLS-registerScreen`'s events, and a **Playwright e2e**
    for the screen's `(journey)` AC — registration succeeds end-to-end against the running
    app); `test-runner` runs it **scoped to the slice** (`{scope}`, dot reporter) →
    `tests/REPORT.md`; `test-gatekeeper` confirms full coverage (incl. the e2e journey) +
-   green → the command advances every row `reviewed → approved`.
+   green → the command advances the slice's rows `reviewed → approved`.
+6. **Next slice / final sweep** — repeat 3–5 for each slice in order; once all are
+   `approved`, a **final unscoped whole-suite run** catches cross-slice regressions
+   before declaring done.
 
-`/sdd-status` at any point shows the dashboard; `/sdd-trace FEAT-001` shows the chain.
+If interrupted, re-running `/sdd-auto` resumes from `.sdd/state.md` + index `status`,
+skipping `approved` slices.
 
-### 8.2 Automatic path
-**`/sdd-auto "...requirement + stack..."`** runs the same four phases unattended, **one
-vertical slice at a time** in `depends_on` order, advancing status from each verdict
-and escalating only on a budget overflow (or the stack question if unresolvable). Each
-slice's tests run **scoped**; once every slice is `approved` it runs a **final unscoped
-whole-suite run** to catch cross-scope regressions before declaring done. If it is
-interrupted, re-running it resumes from `state.md` + index `status`.
-
-### 8.3 A test-phase failure (triage in action)
+### 8.2 A test-phase failure (triage in action)
 `test-runner` reports `CLS-regCtrl::register#B1.then` failing (a duplicate email returns
 500, not `EmailAlreadyTaken`). `test-gatekeeper` triages: the spec's `AC2` and SCoT arm
 are correct, the code diverges → **code bug** → `code-implementer` applies a minimal
@@ -864,24 +874,38 @@ diff → code gate re-passes → tests re-run green → `approved`. Had the spec
 wrong, it would route **spec bug** → demote `reviewed → draft` → re-analysis-gate →
 re-implement (code gate) → re-test.
 
-### 8.4 Feature evolution (already `approved`)
-To change `ENT-user` (add a `displayName`): `/sdd-specify ENT-user` demotes the touched
-entities `approved → draft`, the `spec-writer` edits the entity spec, the analysis gate
-re-passes (`reviewed`), `/sdd-implement` applies a minimal diff to the entity + adds the
-**next forward `MOD-build` schema script** (append-only — a new `Vn`, never editing a
-shipped one) (code gate), `/sdd-test` re-derives constraint tests and re-approves. The
-blast radius is the touched entity, not the project.
+### 8.3 Feature evolution (already `approved`)
+To change `ENT-user` (add a `displayName`): re-run `/sdd-auto` with the new requirement.
+In the entity's slice, step 5a **demotes** the touched entities `approved → draft`, the
+`spec-writer` edits the entity spec, the analysis gate re-passes (`reviewed`), the
+implement step applies a minimal diff to the entity + adds the **next forward
+`MOD-build` schema script** (append-only — a new `Vn`, never editing a shipped one)
+through the code gate, and the test step re-derives constraint tests and re-approves.
+The blast radius is the touched entity, not the project.
 
 ---
 
 ## 9. Supervision & traceability
 
-- **`/sdd-status [scope]`** — the live dashboard: every entity's `status`, last
-  verdict, what is blocked and on whom, and the `/sdd-auto` resume point. Use it to
-  decide the next manual step, to unblock, or to resume an interrupted auto run.
-- **`/sdd-trace [id]`** — the traceability chain REQ→FEAT→CLS/ENT/COMP→SOURCE→TEST,
-  with AC/branch coverage gaps, orphan nodes, and source-mapping drift.
-- Both are **read-only** and invoke no subagent — safe to run anytime.
+The workflow is **file-supervisable** — every decision and every entity's standing live
+in Markdown, so a human can audit a run without chat history:
+
+- **`.sdd/state.md`** — the append-only **verdict log**: each gate's `PASS`/`REJECT`,
+  scope, phase, `iteration: n/budget`, reasons, and routing. This is *why* each
+  transition happened and where a slice is blocked and on whom.
+- **The index `status` columns** — the live **dashboard**: every entity's
+  `draft → reviewed → approved` standing. This is *where each thing stands*.
+- **Resume point** — the first non-`approved` slice (and the sub-phase its latest
+  `verdict_record` implies) where `/sdd-auto` would continue; reconstructable from
+  `state.md` + index `status` (no separate command needed — just re-run `/sdd-auto`).
+- **Traceability chain** — **REQUIREMENT → FEATURE → CLASS/ENTITY/COMPONENT → SOURCE →
+  TEST** is never a separate file; it is reconstructed on demand from the indexes + each
+  spec's `requirements:`/`source:` + source-file headers + the test coverage ids
+  (`scot.md §7.3`). Coverage gaps, orphan nodes (no requirement back-link),
+  dangling/headerless `source:` paths, and index↔spec `source` drift surface from the
+  same data.
+
+Both views are **read-only by nature** (reading files), safe to inspect at any time.
 
 ---
 
@@ -889,16 +913,16 @@ blast radius is the touched entity, not the project.
 
 ### 10.1 Adopting the tool
 Drop the **`.claude/`** folder into your project (copy it, or `ln -s` it from this
-repo) — that one folder *is* the tool: agents, commands, contracts, templates, and the
+repo) — that one folder *is* the tool: agents, the command, contracts, templates, and the
 guaranteed UI-library definition (`.claude/sdd/ui-schema.md` §9). The only thing you
 supply is the requirement (with the stack); everything else (`.sdd/`, `specs/`, `src/`,
 `tests/`) the workflow creates inside your project.
 
 ### 10.2 The stack question
 The stack comes from your prompt; the AI writes it into `.sdd/target.md`. **If the
-stack is unstated, the AI asks once** before writing `target.md` — it never assumes a
-default. `/sdd-auto` is the one automatic command that still asks this one question if
-it cannot infer the stack.
+stack is unstated, `/sdd-auto` asks once** before writing `target.md` — it never assumes
+a default. This is the single prompt the otherwise-unattended run will issue (besides an
+escalation).
 
 ### 10.3 Multi-module scaling
 For a large multi-module project, the plan may split the fine-grained indexes
@@ -927,11 +951,11 @@ escalates to the human.
   (ids + a gate) is a candidate extension.
 - **Add an agent** — only if a genuinely new responsibility appears (e.g.
   reverse-engineering legacy code into specs — currently out of scope). Give it a
-  `ROLE/MISSION/MINDSET/NON-GOALS` block, the minimum tools, a file-only contract, and
-  a row in the isolation matrix.
+  `ROLE/MISSION/MINDSET/NON-GOALS` block, the minimum tools, a file-only contract, a
+  row in the isolation matrix (§9), and wire it into the relevant `/sdd-auto` step.
 
 When extending, keep the invariants: file-only hand-offs, gatekeepers judge / authors
-write / commands advance status, and the two cross-cutting values in every role.
+write / the command advances status, and the two cross-cutting values in every role.
 
 ---
 
@@ -948,8 +972,9 @@ write / commands advance status, and the two cross-cutting values in every role.
   behaviorally, never by a non-deterministic textual diff.
 - **Author/judge separation + iteration budgets + escalation** → robust loops, no
   infinite loops, a human backstop.
-- **Commands orchestrate (no orchestrator subagent)** → matches Claude Code's real
-  capability (no reliable nested subagent spawning).
+- **One automatic command, orchestrated by the main session (no orchestrator subagent)**
+  → matches Claude Code's real capability (no reliable nested subagent spawning) and
+  keeps the surface minimal and resumable from files.
 - **One canonical coverage-id notation** → mechanical, unambiguous coverage matching.
 
 ---
@@ -960,7 +985,9 @@ write / commands advance status, and the two cross-cutting values in every role.
 - **SCoT** — Structured Chain-of-Thought: the structured pseudo-code (sequence/branch/
   loop) used in behavioral specs.
 - **Gatekeeper** — a reviewer agent with veto power over a phase; judges only.
-- **Author** — an agent that writes artifacts (specs/code/tests/impl-notes).
+- **Author** — an agent that writes artifacts (requirements/specs/code/tests/impl-notes).
+- **Orchestrator** — the `/sdd-auto` command run by the main session; invokes agents,
+  reads verdicts, advances status. Not a subagent.
 - **Impl-notes** — concretization (library, API, idiom, edge case) the SCoT omits;
   owned by the implementer; never read by the test-writer.
 - **Coverage id** — the canonical join key `<spec-id>::<function>#<arm-id>` /
@@ -971,4 +998,3 @@ write / commands advance status, and the two cross-cutting values in every role.
   `/sdd-auto` would continue, reconstructable from `state.md` + index `status`.
 - **Stub** — an empty implementation auto-derived from an `interface` spec for a
   not-yet-ready dependency or for tests.
-```
