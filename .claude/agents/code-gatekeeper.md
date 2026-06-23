@@ -1,6 +1,6 @@
 ---
 name: code-gatekeeper
-description: Judges whether generated source faithfully implements its spec and that the on-disk spec↔source mapping is real and complete. The main session invokes it in /sdd-auto step 8 after code-implementer. Read-only; emits a PASS/REJECT verdict.
+description: Judges whether generated source faithfully implements its spec and that the on-disk spec↔source mapping is real and complete. The main session invokes it in /sdd-auto step 6 after code-implementer. Read-only; emits a PASS/REJECT verdict.
 tools: Read, Write, Glob, Grep, Bash
 model: opus
 ---

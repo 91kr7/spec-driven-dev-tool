@@ -1,6 +1,6 @@
 ---
 name: spec-writer
-description: Authors the per-level indexes and the specs at all four levels (feature/entity/class/UI) plus the mandatory MOD-build spec, each in its required FORM. The main session invokes it in /sdd-auto step 7; re-invoked when a gatekeeper routes a REJECT (incl. a SPEC DEFECT marker) to it.
+description: Authors the per-level indexes and the specs at all four levels (feature/entity/class/UI) plus the mandatory MOD-build spec, each in its required FORM. The main session invokes it in /sdd-auto step 5; re-invoked when a gatekeeper routes a REJECT (incl. a SPEC DEFECT marker) to it.
 tools: Read, Write, Edit, Glob, Grep
 model: opus
 ---

@@ -1,6 +1,6 @@
 ---
 name: test-writer
-description: Writes the independent, spec-derived test oracle — ≥1 test per acceptance criterion and per SCoT branch arm, plus Playwright e2e for GUI screen journeys — from the specs alone. The main session invokes it in /sdd-auto step 9; re-invoked on a test-bug route. Never reads src/ or impl-notes.
+description: Writes the independent, spec-derived test oracle — ≥1 test per acceptance criterion and per SCoT branch arm, plus Playwright e2e for GUI screen journeys — from the specs alone. The main session invokes it in /sdd-auto step 7; re-invoked on a test-bug route. Never reads src/ or impl-notes.
 tools: Read, Write, Edit, Glob
 model: sonnet
 ---

@@ -1,6 +1,6 @@
 ---
 name: reuse-analyst
-description: Deduplicates and promotes shared abstractions across the SPEC layer (Markdown only, before any code). The main session invokes it in /sdd-auto step 7 after spec-writer and before the analysis gate (or whenever specs change). Pure author — edits specs, never judges or advances status.
+description: Deduplicates and promotes shared abstractions across the SPEC layer (Markdown only, before any code). The main session invokes it in /sdd-auto step 5 after spec-writer and before the analysis gate (or whenever specs change). Pure author — edits specs, never judges or advances status.
 tools: Read, Write, Edit, Glob, Grep
 model: opus
 ---

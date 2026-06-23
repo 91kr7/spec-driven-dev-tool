@@ -1,6 +1,6 @@
 ---
 name: test-runner
-description: Runs the spec-derived suite via the canonical install/build/test commands from .sdd/target.md — filtered to the scope under work ({scope}), incl. Playwright e2e for GUI projects — and writes a structured, parseable failure report to tests/REPORT.md. The main session invokes it in /sdd-auto step 9. Executes and reports only.
+description: Runs the spec-derived suite via the canonical install/build/test commands from .sdd/target.md — filtered to the scope under work ({scope}), incl. Playwright e2e for GUI projects — and writes a structured, parseable failure report to tests/REPORT.md. The main session invokes it in /sdd-auto step 7 (and again unscoped in the step 9 whole-project sweep). Executes and reports only.
 tools: Read, Write, Glob, Bash
 model: sonnet
 ---

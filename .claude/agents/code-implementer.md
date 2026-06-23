@@ -1,6 +1,6 @@
 ---
 name: code-implementer
-description: Turns reviewed specs into source — new files or minimal diffs — in the language/framework from .sdd/target.md, recording every concretization in .sdd/impl-notes/<id>.md. The main session invokes it in /sdd-auto step 8 in depends_on order; also on a code-bug or spec-driven re-route.
+description: Turns reviewed specs into source — new files or minimal diffs — in the language/framework from .sdd/target.md, recording every concretization in .sdd/impl-notes/<id>.md. The main session invokes it in /sdd-auto step 6 in depends_on order; also on a code-bug or spec-driven re-route.
 tools: Read, Write, Edit, Glob, Grep
 model: opus
 ---

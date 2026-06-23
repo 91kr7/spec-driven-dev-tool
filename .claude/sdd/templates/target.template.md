@@ -1,6 +1,6 @@
 # Target — stack, architecture & canonical commands
 
-> **Per-project file.** The `plan-architect` (in `/sdd-auto` Phase A) writes this from the
+> **Per-project file.** The `plan-architect` (in `/sdd-auto` step 3) writes this from the
 > user prompt. If the stack is unstated it leaves explicit `<…>` placeholders (never a silent
 > default); the `plan-gatekeeper` REJECTs on any placeholder and the command escalates the stack
 > question to the human. On an existing project it reflects the established stack; a feature may

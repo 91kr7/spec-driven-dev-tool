@@ -1,6 +1,6 @@
 ---
 name: plan-gatekeeper
-description: Judges plan/PLAN.md against the requirement and conventions — PASS or REJECT with precise reasons. The main session invokes it in /sdd-auto Phase A after plan-architect, to gate before any spec work. Judges only; never edits the plan, specs, code, or status.
+description: Judges plan/PLAN.md against the requirement and conventions — PASS or REJECT with precise reasons. The main session invokes it in /sdd-auto step 4 after plan-architect, to gate before any spec work. Judges only; never edits the plan, specs, code, or status.
 tools: Read, Write, Glob, Grep
 model: opus
 ---

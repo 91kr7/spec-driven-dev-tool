@@ -14,7 +14,7 @@
 
 ```
 # THE TOOL — .claude/ (immutable; a project never edits it)
-.claude/agents/*.md          # the 10 subagents
+.claude/agents/*.md          # the 11 subagents
 .claude/commands/sdd-auto.md # the single orchestrator command
 .claude/sdd/conventions.md   # THIS FILE
 .claude/sdd/scot.md          # behavioral grammar (behavioral specs)
@@ -138,7 +138,7 @@ Per-entity status lives in the **index row**: `draft → reviewed → approved`.
 **Separation of duties (strict):**
 - **Gatekeepers JUDGE only** — write a verdict to `.sdd/state.md`; never edit specs/code/tests/`status`.
 - **The command (main session) ADVANCES `status`** from the latest verdict.
-- **Authors WRITE artifacts** (specs/code/tests/impl-notes); never write verdicts.
+- **Authors WRITE artifacts** (requirements/specs/code/tests/impl-notes); never write verdicts.
 
 ---
 
@@ -154,7 +154,7 @@ Append-only. Every gate appends one record:
 - verdict: PASS | REJECT
 - reasons:
   - <blocking reason, citing the spec/AC/branch/requirement id>
-- routing: <none | plan-architect | spec-writer | reuse-analyst | code-implementer | test-writer | escalate>   # REJECT only
+- routing: <none | requirement-analyst | plan-architect | spec-writer | reuse-analyst | code-implementer | test-writer | escalate>   # REJECT only
 ```
 
 - `routing: escalate` = a REJECT no author can fix (missing dependency, unresolved `<…>` placeholder, e2e-setup app-won't-boot) — the command surfaces it to the human.
@@ -195,11 +195,12 @@ Append-only. Every gate appends one record:
 
 ## 9. Agent roster & isolation matrix
 
-Eleven roles; **ten are subagents** in `.claude/agents/`. The **orchestrator is NOT a subagent** — it is the main session running `sdd-auto`. Subagents are single-purpose: read files in, write files/verdicts out; they never spawn subagents.
+Twelve roles; **eleven are subagents** in `.claude/agents/`. The **orchestrator is NOT a subagent** — it is the main session running `sdd-auto`. Subagents are single-purpose: read files in, write files/verdicts out; they never spawn subagents.
 
 | Agent | Role | May WRITE | tools | Reads `src/`? | model |
 |---|---|---|---|---|---|
-| `plan-architect` | requirement → plan + target | `plan/`, `.sdd/target.md` | `Read, Write, Edit, Glob, Grep` | no | opus |
+| `requirement-analyst` | capture raw → refined requirement + REQ ids | `requirements/` | `Read, Write, Edit, Glob, Grep` | no | opus |
+| `plan-architect` | requirement → plan (+ ordered slices) + target | `plan/`, `.sdd/target.md` | `Read, Write, Edit, Glob, Grep` | no | opus |
 | `plan-gatekeeper` | judge the plan | `.sdd/state.md` | `Read, Write, Glob, Grep` | no | opus |
 | `spec-writer` | write indexes + specs | `specs/` | `Read, Write, Edit, Glob, Grep` | no | opus |
 | `reuse-analyst` | dedupe + promote shared specs | `specs/` | `Read, Write, Edit, Glob, Grep` | no | opus |

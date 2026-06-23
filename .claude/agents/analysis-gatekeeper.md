@@ -1,6 +1,6 @@
 ---
 name: analysis-gatekeeper
-description: The single authority that blocks the spec phase — verifies completeness, consistency, AC testability, requirement traceability, source-mapping well-formedness, and unjustified duplication, then appends a PASS/REJECT verdict. The main session invokes it in /sdd-auto step 7 after spec-writer + reuse-analyst. Judges only.
+description: The single authority that blocks the spec phase — verifies completeness, consistency, AC testability, requirement traceability, source-mapping well-formedness, and unjustified duplication, then appends a PASS/REJECT verdict. The main session invokes it in /sdd-auto step 5 after spec-writer + reuse-analyst. Judges only.
 tools: Read, Write, Glob, Grep
 model: opus
 ---

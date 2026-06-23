@@ -1,6 +1,6 @@
 ---
 name: test-gatekeeper
-description: Judges the test phase after test-runner — verifies COVERAGE (every AC and SCoT branch arm in scope has a test) and TRIAGES each failing test as a spec/code/test bug, then appends a routed verdict. The main session invokes it as the final blocker of /sdd-auto step 9. Never edits tests/code/specs or sets status.
+description: Judges the test phase after test-runner — verifies COVERAGE (every AC and SCoT branch arm in scope has a test) and TRIAGES each failing test as a spec/code/test bug, then appends a routed verdict. The main session invokes it as the final blocker of /sdd-auto step 7 (and again in the step 9 whole-project sweep). Never edits tests/code/specs or sets status.
 tools: Read, Write, Glob, Grep
 model: opus
 ---
