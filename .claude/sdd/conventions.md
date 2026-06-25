@@ -57,6 +57,8 @@ tests/                       # GENERATED (unit←classes, integration←features
 | `AC` | acceptance criterion | `AC<n>` | `AC1` |
 | `B` | SCoT branch | `B<n>` + arm | `B1.then`, `B3.empty` |
 
+**Terminology — "entity" (generic) vs `ENT-` (specific).** Unqualified, **entity** means *any planned node at any of the five levels* — one index row / one spec, whatever its prefix (`MOD-`/`FEAT-`/`ENT-`/`CLS-`/`COMP-`/`SHR-`). It is the generic word for "a thing in the plan/index" (e.g. "one row per entity", "every `REQ-*` covered by ≥1 entity", "process entities in `depends_on` order"). The prefix **`ENT-`** is the *narrow* sense — a **domain entity** (the `entity` kind: field table + relations + invariants). When the narrow sense is meant the text says `ENT-` or "`entity` **kind/spec**"; bare "entity" is always the generic node.
+
 - Ids are **stable**: never renumber/rename; new entries take the next free id; deprecate rather than rename.
 - A spec file is named after its id (`specs/classes/CLS-userRepo.spec.md`).
 - **`MOD-build` is mandatory in every project.** It owns build files, manifests, config, CI, framework/build/entry scaffolding (e.g. `tsconfig.json`, the app entry, `playwright.config.*` for a GUI project's e2e), and **DB schema changes derived from the entity specs** (never hand-authored; forward-only, append-only once shipped).
