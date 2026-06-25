@@ -101,7 +101,7 @@ OUT  target.md ; PLAN.md { entities, ordered Slice plan }   →  the orchestrato
 ### Step 4 — Gate the plan
 ```
 ▶▶ GATE plan-gatekeeper
-IN   PLAN.md ; REQUIREMENT.md ; conventions.md
+IN   PLAN.md ; target.md ; REQUIREMENT.md ; conventions.md ; specs/ (existing — id stability)
 OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
  PASS                              → enter the per-slice loop (step 5) over slice_list.
  REJECT                            → by routing:
