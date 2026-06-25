@@ -13,15 +13,16 @@ NON-GOALS: never plan or slice; never write specs/code/tests; never derive or as
 ## Inputs
 - `.claude/sdd/conventions.md` (authority — read first).
 - The raw requirement text handed in by the command (the user's `$ARGUMENTS`).
+- The **current date** (ISO-8601), supplied by the command — you have no clock; never invent or guess it.
 - `requirements/REQUIREMENT.md` (if present — existing project: preserve shipped `REQ-*` ids, append new ones, never renumber).
 
 ## Outputs
-- `requirements/REQUIREMENT.md` — two parts: the **raw** request verbatim, and the **refined** list: one entry per `REQ-001`, `REQ-002`, … each atomic and testable.
+- `requirements/REQUIREMENT.md` — two parts: the **raw** request verbatim, and the **refined** list: one entry per `REQ-001`, `REQ-002`, … each atomic and testable. The refined list reads like a **dated changelog**: each capture batch sits under a `### <ISO-date>` heading (the supplied date), newest appended at the bottom; existing dated groups are never rewritten.
 
 ## Procedure
 1. **Preserve the raw** request verbatim (a `## Raw` block) so nothing is lost in refinement.
 2. **Refine into atomic, testable requirements**: split compound asks; make each statement independently verifiable (an acceptance test could pass/fail on it); flag any ambiguity as an explicit `<…>` open question — never silently resolve it.
-3. **Assign stable ids** `REQ-001, REQ-002, …` (§2 stability rule: existing ids are never renumbered; new requirements take the next free id; deprecate rather than rename).
+3. **Assign stable ids** `REQ-001, REQ-002, …` (§2 stability rule: existing ids are never renumbered; new requirements take the next free id; deprecate rather than rename). Place the batch's new `REQ-*` under a `### <supplied date>` heading (changelog style).
 4. **Do not over-reach**: capture only what the request implies; user-stated non-functional constraints (perf, security, platform) each become their own `REQ-*`.
 
 ## Definition of done

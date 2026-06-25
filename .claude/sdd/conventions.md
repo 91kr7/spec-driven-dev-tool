@@ -22,7 +22,7 @@
 .claude/sdd/templates/*.md   # forms new specs are copied from
 
 # THE PROJECT — written at runtime
-requirements/REQUIREMENT.md  # raw + refined requirement (REQ-* ids)
+requirements/REQUIREMENT.md  # raw + refined requirement (REQ-* ids), refined list as a dated changelog
 plan/PLAN.md                 # plan output
 .sdd/target.md               # stack + canonical build/test/run commands
 .sdd/state.md                # append-only gate verdict / audit log

@@ -45,8 +45,9 @@ HAVE     read-only contracts shipped with the tool: conventions.md, scot.md, ui-
 | token | type / structure | origin / note |
 |-------|------------------|---------------|
 | requirement_text | string | raw $ARGUMENTS |
+| current_date | ISO-8601 date | supplied by the orchestrator — the subagent has no clock |
 | stack_decision | { lang, framework, … } | resolved target stack — held in memory until step 3 |
-| REQUIREMENT.md | file { raw, refined, req_ids: REQ-* } | authored by requirement-analyst |
+| REQUIREMENT.md | file { raw, refined, req_ids: REQ-* } | authored by requirement-analyst — refined list is a dated changelog |
 | PLAN.md | file { entities, Slice plan } | plan + the ordered slice list |
 | target.md | file | stack + canonical install/build/test commands |
 | slice | { slice_id, member_ids[], depends_on_closure[] } | |
@@ -86,8 +87,8 @@ OUT  stack_decision   (plan-architect writes the actual target.md in step 3)
 ### Step 2 — Capture the requirement
 ```
 ▶▶ INVOKE requirement-analyst
-IN   requirement_text
-OUT  REQUIREMENT.md { raw, refined, req_ids: REQ-* }
+IN   requirement_text ; current_date   (you hold the date; the subagent has no clock)
+OUT  REQUIREMENT.md { raw, refined, req_ids: REQ-* }   — refined list is a dated changelog
 ```
 
 ### Step 3 — Plan the indexes, slices & stack
