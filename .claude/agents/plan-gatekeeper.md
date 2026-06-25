@@ -22,7 +22,7 @@ NON-GOALS: never edit the plan, specs, code, or `status`; never invent/repair en
 6. **No invented requirements** — every entity's `requirements` trace to real `REQ-*` ids (infrastructure like `MOD-build`/`MOD-schema`, with `requirements: —`, is exempt).
 7. **Reuse flagging** — shared/cross-cutting duplication is flagged for the reuse-analyst, not silently duplicated.
 8. **Index granularity** — a large project states an explicit granularity choice.
-9. **Infra modules present** — `MOD-build` always (a GUI project: it owns the e2e harness); `MOD-schema` for a DB project with persisted `ENT-*`, its `depends_on` reaching the relevant `ENT-*`.
+9. **Infra modules present & ordered** — `MOD-build` always, with **every domain module declaring `depends_on: MOD-build`** so it is the first slice (a GUI project: it also owns the e2e harness); `MOD-schema` for a DB project with persisted `ENT-*`, its `depends_on` reaching the relevant `ENT-*`.
 10. All clear → **PASS**; else **REJECT** (one reason per failed check).
 
 ## Hand-off
