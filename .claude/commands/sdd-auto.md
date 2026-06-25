@@ -41,24 +41,25 @@ HAVE     read-only contracts shipped with the tool: conventions.md, scot.md, ui-
 ```
 
 ## Data types   *(the typed tokens used in every step's IN / OUT)*
-```
-requirement_text  : string                — raw $ARGUMENTS
-stack_decision    : { lang, framework, … } — resolved target stack (held in memory until step 3)
-REQUIREMENT.md    : file  { raw, refined, req_ids: REQ-* }   — authored by requirement-analyst
-PLAN.md           : file  { entities, Slice plan } — plan + the ordered slice list
-target.md         : file  — stack + canonical install/build/test commands
-slice             : { slice_id, member_ids[], depends_on_closure[] }
-slice_list        : [ slice ]   — execution order, authored by plan-architect inside PLAN.md
-index_rows        : rows in level indexes, each with `status: draft|reviewed|approved`
-spec_paths        : [ specs/**/*.spec.md ]  (5 levels: module/feature/entity/class/UI, incl. MOD-build)
-REUSE-REPORT.md   : file  { promoted: SHR-*|COMP-*, demote_ids[] }
-src_paths         : [ path ]   — only the spec's declared `source:` paths
-impl_note         : .sdd/impl-notes/<id>.md
-install_result    : { ok: bool, log }
-test_paths        : [ tests/** ]
-REPORT.md         : file  { failures[], per-test status }   — tests/REPORT.md
-verdict_record    : .sdd/state.md row { phase, scope, verdict: PASS|REJECT, reasons[], routing, iteration: n/budget }
-```
+
+| token | type / structure | origin / note |
+|-------|------------------|---------------|
+| requirement_text | string | raw $ARGUMENTS |
+| stack_decision | { lang, framework, … } | resolved target stack — held in memory until step 3 |
+| REQUIREMENT.md | file { raw, refined, req_ids: REQ-* } | authored by requirement-analyst |
+| PLAN.md | file { entities, Slice plan } | plan + the ordered slice list |
+| target.md | file | stack + canonical install/build/test commands |
+| slice | { slice_id, member_ids[], depends_on_closure[] } | |
+| slice_list | [ slice ] | execution order, authored by plan-architect inside PLAN.md |
+| index_rows | rows in level indexes, each with `status: draft\|reviewed\|approved` | |
+| spec_paths | [ specs/**/*.spec.md ] | 5 levels: module/feature/entity/class/UI, incl. MOD-build |
+| REUSE-REPORT.md | file { promoted: SHR-*\|COMP-*, demote_ids[] } | |
+| src_paths | [ path ] | only the spec's declared `source:` paths |
+| impl_note | .sdd/impl-notes/<id>.md | |
+| install_result | { ok: bool, log } | |
+| test_paths | [ tests/** ] | |
+| REPORT.md | file { failures[], per-test status } | tests/REPORT.md |
+| verdict_record | .sdd/state.md row { phase, scope, verdict: PASS\|REJECT, reasons[], routing, iteration: n/budget } | |
 
 ## How to read a step
 ```
