@@ -28,7 +28,7 @@ plan/PLAN.md                 # plan output
 .sdd/state.md                # append-only gate verdict / audit log
 .sdd/impl-notes/<id>.md      # implementer concretization notes (NOT part of the spec)
 specs/indexes/{modules,features,model,classes,ui-components}.index.md  # one index per level
-specs/modules/<id>.spec.md   # incl. MOD-build
+specs/modules/<id>.spec.md   # incl. MOD-build (scaffolding) + MOD-schema (DB projects)
 specs/features/<id>.spec.md  # use-case: orchestration + integration acceptance
 specs/model/<id>.spec.md     # entities: fields, relations, constraints
 specs/classes/<id>.spec.md   # per-method SCoT (+ feature gui screens)
@@ -61,9 +61,9 @@ tests/                       # GENERATED (unit←classes, integration←features
 
 - Ids are **stable**: never renumber/rename; new entries take the next free id; deprecate rather than rename.
 - A spec file is named after its id (`specs/classes/CLS-userRepo.spec.md`).
-- **`MOD-build` is mandatory in every project.** It owns build files, manifests, config, CI, framework/build/entry scaffolding (e.g. `tsconfig.json`, the app entry, `playwright.config.*` for a GUI project's e2e), and **DB schema changes derived from the entity specs** (never hand-authored; forward-only, append-only once shipped).
-  - DB project (`target.md` DB ≠ `none`) + any persisted `ENT-*` → `MOD-build` MUST declare ≥1 forward schema-change script in `source:`.
+- **`MOD-build` is mandatory in every project.** It owns build files, manifests, config, CI, and framework/build/entry scaffolding (e.g. `tsconfig.json`, the app entry, `playwright.config.*` for a GUI project's e2e). It carries **no domain `depends_on`** — pure scaffolding — so it is eligible as the **first slice**.
   - GUI project (Frontend ≠ `none`) → `MOD-build` owns the e2e harness (`playwright.config.*` + `webServer`) and `target.md`'s `test-e2e` must be a real command, not `n/a`.
+- **`MOD-schema` is mandatory for a DB project** (`target.md` DB ≠ `none`) with any persisted `ENT-*`. It owns the **DB schema changes derived from the entity specs** (never hand-authored; forward-only, append-only once shipped) and MUST declare ≥1 forward schema-change script in `source:`. Its `depends_on` reaches the persistence module + the `ENT-*` it evolves, so it is ordered **after** the entities. A non-DB project has no `MOD-schema`.
 
 ---
 
@@ -252,7 +252,7 @@ The MINDSET MUST carry both: **"Markdown is the source of truth (authority); reu
 
 - Process entities in **`depends_on` topological order** (dependencies first); the graph MUST be acyclic.
 - On a **cycle**, introduce an `interface`/`contract` spec, re-point members' `depends_on` onto it (stubs derive from the interface), so the physical graph is a DAG.
-- **One vertical slice at a time:** the plan + the ordered slice list are produced once up front (plan-architect); then for each slice — a feature plus its `depends_on` closure — run spec→code→test before the next.
+- **One vertical slice at a time:** the plan + the ordered slice list are produced once up front (plan-architect); then for each slice — a feature (or a module, e.g. `MOD-build`) plus its `depends_on` closure — run spec→code→test before the next.
 
 ---
 

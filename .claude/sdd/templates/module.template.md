@@ -12,7 +12,7 @@ module: MOD-<kebab>             # required — self-reference (a module is its o
 status: draft                  # MIRRORS modules.index (index is canonical)
 depends_on: [MOD-<other>]      # other MODULE ids — topological; [] if none
 requirements: [REQ-<nnn>]      # back-link; [] if purely infra
-source: []                     # usually [] — EXCEPTION: MOD-build owns its infra FILES here (conventions §2)
+source: []                     # usually [] — EXCEPTION: MOD-build / MOD-schema own their infra FILES here (conventions §2)
 owns_sections: []
 ---
 
@@ -42,9 +42,9 @@ owns_sections: []
 
 ---
 
-## Filled example — the mandatory `MOD-build` (conventions §2)
+## Filled examples — the infra modules `MOD-build` & `MOD-schema` (conventions §2)
 
-> `MOD-build` is the documented exception to `source: []`: it owns its infra **files directly** (each forward schema script is append-only, traced to an `ENT-*`; the code-implementer materializes the SQL from the entity tables). A GUI project also lists `playwright.config.ts` and sets `target.md` `test-e2e` to a real command.
+> Both are the documented exception to `source: []`: they own their infra **files directly**. `MOD-build` is pure scaffolding — **no domain `depends_on`** → it is the first slice; a GUI project also lists `playwright.config.ts` and sets `target.md` `test-e2e` to a real command. `MOD-schema` (DB projects only) owns the forward schema scripts — each append-only, traced to an `ENT-*`; the code-implementer materializes the SQL from the entity tables.
 
 ```markdown
 ---
@@ -53,14 +53,14 @@ name: Build & Infrastructure
 kind: module
 module: MOD-build
 status: draft
-depends_on: [MOD-model, ENT-user]
+depends_on: []
 requirements: []
-source: [package.json, tsconfig.json, .github/workflows/ci.yml, db/schema/V1__create_user.sql]
+source: [package.json, tsconfig.json, .github/workflows/ci.yml]
 owns_sections: []
 ---
 
 # Purpose
-The mandatory infra module: build files, manifests, runtime config, CI, the framework/e2e harness config, and DB schema-change scripts **derived from the entity specs in MOD-model** (never hand-authored). Domain logic lives elsewhere and is merely built/shipped here.
+The mandatory scaffolding module: build files, manifests, runtime config, CI, the app entry, and (GUI) the e2e harness config. Pure scaffolding — no domain dependency — so it builds first. Domain logic lives elsewhere and is merely built/shipped here.
 
 # Contained entries
 | Level | Entry id | What it represents (one line) |
@@ -68,11 +68,39 @@ The mandatory infra module: build files, manifests, runtime config, CI, the fram
 | — | — | none — MOD-build owns its infra files directly via `source:` (§2 exception) |
 
 # Boundaries & dependencies
+**Depends on** — | — | nothing (pure scaffolding) |
+**Exposes to** — | `MOD-api`/`MOD-web` | built artifacts (+ GUI: the e2e harness) |
+
+# Conventions specific to the module
+- **Config keys declared once** (key/type/default); no module reads an undeclared env var.
+- **CI order fixed:** install → lint → build → test (incl. e2e for GUI) → package.
+```
+
+```markdown
+---
+id: MOD-schema
+name: Database Schema
+kind: module
+module: MOD-schema
+status: draft
+depends_on: [MOD-model, ENT-user]
+requirements: []
+source: [db/schema/V1__create_user.sql]
+owns_sections: []
+---
+
+# Purpose
+The DB schema module (DB projects only): forward-only schema-change scripts **derived from the entity specs in MOD-model** (never hand-authored). Ordered after the entities it realizes.
+
+# Contained entries
+| Level | Entry id | What it represents (one line) |
+|-------|----------|-------------------------------|
+| — | — | none — MOD-schema owns its forward scripts directly via `source:` (§2 exception) |
+
+# Boundaries & dependencies
 **Depends on** — | `MOD-model` | the `ENT-*` specs the forward schema scripts derive from |
-**Exposes to** — | `MOD-api`/`MOD-web` | built artifacts + applied schema (+ GUI: the e2e harness) |
+**Exposes to** — | `MOD-api`/`MOD-web` | the applied schema |
 
 # Conventions specific to the module
 - **Schema is derived, not authored:** each `Vn` script cites the `ENT-*` it realizes; shipped scripts are append-only/immutable — a change adds the next `Vn`.
-- **Config keys declared once** (key/type/default); no module reads an undeclared env var.
-- **CI order fixed:** install → lint → build → test (incl. e2e for GUI) → package.
 ```

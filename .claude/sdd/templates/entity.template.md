@@ -47,7 +47,7 @@ owns_sections: []
 # Derivation note
 This spec is the single source for two derived artifacts, never hand-authored independently (§1/§2):
 1. **Code entity** at `<source>` — by `code-implementer`; types map via `target.md`; invariants become construction/mutation validation.
-2. **DB schema change** — owned by **MOD-build**, derived here (NOT NULL/UNIQUE/CHECK/FK from the tables above). If the entity changes, the spec is corrected first, then the schema follows.
+2. **DB schema change** — owned by **MOD-schema**, derived here (NOT NULL/UNIQUE/CHECK/FK from the tables above). If the entity changes, the spec is corrected first, then the schema follows.
 
 # Acceptance criteria
 <Each `ACn` Given/When/Then, tied to a constraint or INV-<tag>; cover every invariant.>
@@ -79,7 +79,7 @@ depends_on: [ENT-user] · requirements: [REQ-014] · source: [src/domain/order/O
 
 **Invariants** — INV-nonEmpty (`lines` size>=1); INV-totalDerived (`total` = Σ qty*unitPrice, >=0, read-only); INV-positiveQty (each line qty>=1); INV-statusEnum.
 
-**Derivation** — code entity at `src/domain/order/Order.ts`; schema owned by MOD-build (NOT NULL from required, UNIQUE from `id`, FK on `customerId` ON DELETE RESTRICT, CHECKs from INV-positiveQty/totalDerived/statusEnum).
+**Derivation** — code entity at `src/domain/order/Order.ts`; schema owned by MOD-schema (NOT NULL from required, UNIQUE from `id`, FK on `customerId` ON DELETE RESTRICT, CHECKs from INV-positiveQty/totalDerived/statusEnum).
 
 - **AC1** — Given `customerId`, `currency="USD"`, one line `{qty:2, unitPrice:10.00}`, When constructed, Then accepted, `total`=`20.00`, `status`=`PENDING`.
 - **AC2** — Given empty `lines`, When constructed, Then `EmptyOrder` (INV-nonEmpty).

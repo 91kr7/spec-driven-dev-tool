@@ -15,14 +15,14 @@ NON-GOALS: never edit the plan, specs, code, or `status`; never invent/repair en
 
 ## Procedure → REJECT on any failed check
 1. **target.md resolved** — exists, no `<…>` placeholder in §1 stack / §2 source-paths / §3 commands (unused fields read `n/a`).
-2. **Per-entity completeness** — each entity declares `id` (valid §2 form) · `level` · `module` · `depends_on` · `source` · `requirement`, and is marked NEW/MODIFY.
+2. **Per-entity completeness** — each entity declares `id` (valid §2 form) · `level` · `module` · `depends_on` · `source` · `requirements`, and is marked NEW/MODIFY. Infrastructure entities (`MOD-build`, `MOD-schema`) carry `requirements: —` — accept it, do not demand a `REQ-*`.
 3. **DAG** — the `depends_on` graph is acyclic; an interface-break must re-point members' edges so no cycle remains (name the cycle members).
 4. **Topological order** — any stated slice order places dependencies before dependents.
 5. **Requirement coverage** — every `REQ-*` in `requirements/REQUIREMENT.md` is covered by ≥1 entity.
-6. **No invented requirements** — every entity's `requirement` traces to a real `REQ-*`.
+6. **No invented requirements** — every entity's `requirements` trace to real `REQ-*` ids (infrastructure like `MOD-build`/`MOD-schema`, with `requirements: —`, is exempt).
 7. **Reuse flagging** — shared/cross-cutting duplication is flagged for the reuse-analyst, not silently duplicated.
 8. **Index granularity** — a large project states an explicit granularity choice.
-9. **`MOD-build` present** (and, where a DB/GUI applies, its `depends_on` reaches the relevant `ENT-*` / it owns the e2e harness).
+9. **Infra modules present** — `MOD-build` always (a GUI project: it owns the e2e harness); `MOD-schema` for a DB project with persisted `ENT-*`, its `depends_on` reaching the relevant `ENT-*`.
 10. All clear → **PASS**; else **REJECT** (one reason per failed check).
 
 ## Hand-off

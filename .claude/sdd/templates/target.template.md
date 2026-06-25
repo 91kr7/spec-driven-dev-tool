@@ -34,7 +34,7 @@ How each spec `kind` maps to a path (used to propose `source:` for new specs):
 | `interface`/`config` | `src/<module>/<Name>.<ext>` | `src/db/UserRepository.ts` |
 | `gui` screen | `src/<module>/screens/<Name>.<ext>` | `src/web/screens/RegisterScreen.tsx` |
 | `COMP-*` | `src/ui/<layer>/<Name>.<ext>` | `src/ui/atoms/Button.tsx` |
-| schema changes | owned by `MOD-build`, derived from entities | `db/schema/<n>_<name>.sql` |
+| schema changes | owned by `MOD-schema`, derived from entities | `db/schema/<n>_<name>.sql` |
 
 - Traceability-header comment syntax: `<// …>`. Design-token source: `<theme/token file>`.
 - **Test layout (one target per spec id, so a scoped run resolves mechanically):** `<unit/component → tests/unit/<id>.* ; integration → tests/integration/<FEAT-id>.* ; constraint → tests/model/<ENT-id>.* ; e2e → tests/e2e/<CLS-screen-id>.spec.*>`. Name each e2e file after the **screen id** (`CLS-*` gui), not the feature.
