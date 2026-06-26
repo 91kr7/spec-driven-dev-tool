@@ -125,8 +125,8 @@ Every component declares `layer:`; higher layers compose lower layers **by id** 
 
 ---
 
-## 9. Mandatory baseline library (every GUI project)
-Every GUI project GUARANTEES a default component library so screens are composed, never hand-rolled. The `spec-writer` **materializes** these (from `templates/ui-component.template.md`) into `specs/ui-components/` and registers them in the index **before** any screen composes them. The `analysis-gatekeeper` blocks a GUI project whose baseline is missing or whose screens inline a component.
+## 9. Reusable component catalog (compose, don't hand-roll)
+A GUI project composes its screens from reusable components instead of hand-rolling duplicated markup — but it creates **only the components a screen actually composes**. The table below is a **catalog of common candidates** (canonical ids/layers to reuse when you need them), **NOT a mandatory set**: reach for a frame component (`appShell`/`header`/`footer`/…) only when the app's views share that structure — a single-screen app may need none of it. The `spec-writer` materializes a catalog component (from `templates/ui-component.template.md`) into `specs/ui-components/` + index the **first time a screen composes it**, never up front. The `analysis-gatekeeper` blocks a screen that **inlines/hand-rolls** a component instead of composing one by id, and any **unused (orphan)** component (each must carry its consumers' `requirements:` — §traceability).
 
 | id | layer | Purpose |
 |---|---|---|
@@ -139,4 +139,4 @@ Every GUI project GUARANTEES a default component library so screens are composed
 | `COMP-grid` | layout | 2-D grid helper (columns, gap, areas) |
 | `COMP-section` | layout | titled content section |
 
-**Progressive enrichment:** beyond the baseline, recurring widgets (Button, TextInput, Select, Modal, Table, Toast, …) are promoted by the `reuse-analyst` the moment a **second** screen needs one — specified once (layer per §7), referenced by id.
+**Progressive enrichment:** beyond this catalog, recurring widgets (Button, TextInput, Select, Modal, Table, Toast, …) are promoted by the `reuse-analyst` the moment a **second** screen needs one — specified once (layer per §7), referenced by id.

@@ -18,7 +18,7 @@
 .claude/commands/sdd-auto.md # the single orchestrator command
 .claude/sdd/conventions.md   # THIS FILE
 .claude/sdd/scot.md          # behavioral grammar (behavioral specs)
-.claude/sdd/ui-schema.md     # UI convention (gui specs) + baseline UI library (§9)
+.claude/sdd/ui-schema.md     # UI convention (gui specs) + reusable component catalog (§9)
 .claude/sdd/templates/*.md   # forms new specs are copied from
 
 # THE PROJECT — written at runtime
@@ -32,7 +32,7 @@ specs/modules/<id>.spec.md   # incl. MOD-build (scaffolding) + MOD-schema (DB pr
 specs/features/<id>.spec.md  # use-case: orchestration + integration acceptance
 specs/model/<id>.spec.md     # entities: fields, relations, constraints
 specs/classes/<id>.spec.md   # per-method SCoT (+ feature gui screens)
-specs/ui-components/<id>.spec.md  # UI library (baseline guaranteed — ui-schema §9)
+specs/ui-components/<id>.spec.md  # UI components — created only as screens compose them (ui-schema §9 catalog)
 specs/shared/<id>.spec.md    # shared non-UI abstractions — indexed in classes.index.md
 specs/REUSE-REPORT.md        # reuse-analyst output: promotions + Demote-for-re-gate list
 src/                         # GENERATED
@@ -102,7 +102,7 @@ error_style: result             # behavioral specs only: result|raise (canonical
 | `module` | structural | overview — Purpose · Contained entries · Boundaries |
 | `gui` | ui | **UI schematic** (`ui-schema.md`) |
 
-**GUI-project trigger:** `target.md` Frontend ≠ `none` (equivalently: any `gui`-kind entry exists). Only a GUI project materializes the baseline UI library (ui-schema §9).
+**GUI-project trigger:** `target.md` Frontend ≠ `none` (equivalently: any `gui`-kind entry exists). Only a GUI project creates `COMP-*` — from the ui-schema §9 catalog, and only those its screens actually compose (the catalog is candidates, not a required set).
 
 A **stub/mock is never specced** — it is auto-derived from its `interface` spec.
 
