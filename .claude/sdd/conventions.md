@@ -63,7 +63,7 @@ tests/                       # GENERATED (unit←classes, integration←features
 - A spec file is named after its id (`specs/classes/CLS-userRepo.spec.md`).
 - **`MOD-build` is mandatory in every project.** It owns build files, manifests, config, CI, and framework/build/entry scaffolding (e.g. `tsconfig.json`, the app entry, `playwright.config.*` for a GUI project's e2e). It carries **no `depends_on`** itself, and **every other module declares `depends_on: MOD-build`**, so it is always the **first slice** — generated code cannot compile/build without the scaffolding.
   - GUI project (Frontend ≠ `none`) → `MOD-build` owns the e2e harness (`playwright.config.*` + `webServer`) and `target.md`'s `test-e2e` must be a real command, not `n/a`.
-- **`MOD-schema` is mandatory for a DB project** (`target.md` DB ≠ `none`) with any persisted `ENT-*`. It owns the **DB schema changes derived from the entity specs** (never hand-authored; forward-only, append-only once shipped) and MUST declare ≥1 forward schema-change script in `source:`. Its `depends_on` reaches the persistence module + the `ENT-*` it evolves, so it is ordered **after** the entities. A non-DB project has no `MOD-schema`.
+- **`MOD-schema` is mandatory for a DB project** (`target.md` DB ≠ `none`) with any persisted `ENT-*`. It owns the **DB schema changes derived from the entity specs** (never hand-authored; forward-only, append-only once shipped) and MUST declare ≥1 forward schema-change script in `source:`. Its `depends_on` reaches the persistence module + the `ENT-*` it evolves, so it is ordered **after** the entities. Unlike `MOD-build`, it is **not requirement-exempt**: its `requirements` = the union of the `REQ-*` of the `ENT-*` whose schema it materializes (the DB exists for those persistence requirements). A non-DB project has no `MOD-schema`.
 
 ---
 
@@ -87,6 +87,7 @@ error_style: result             # behavioral specs only: result|raise (canonical
 ```
 
 - `source:` is the **single authoritative** spec→source map. The index `source` column is **derived** from it by the authoring agent — never hand-edited later. NEW entity → propose paths from `target.md`; EXISTING → real files; `[]` for a purely-compositional feature.
+- `requirements:` is the back-link to the `REQ-*` id(s) the spec realizes — **real ids or, ONLY for `MOD-build`, `—`; never a prose annotation**. Every other spec needs ≥1 real `REQ-*`. `MOD-build` is the **sole** exemption: it is scaffolding for the *whole* app, tied to no single requirement (test: removing any one `REQ-*` never removes it). Two kinds of spec own no requirement directly but still carry one, as the **union of a related set's `REQ-*`** (never empty — empty ⇒ **orphan**, blocking): **`MOD-schema`** → the `REQ-*` of the `ENT-*` whose schema it materializes (the DB exists for those persistence requirements); **shared/library** specs (`SHR-*`, baseline-or-promoted `COMP-*`) → the `REQ-*` of their consumers (the specs that `depends_on` them). So traceability is explicit at every node, and "no requirement" always signals a real defect.
 - **One file ↔ one spec by default.** A shared aggregator MAY be co-owned only if every co-owner declares it in `source:` and names `owns_sections:`. Undeclared shared ownership is blocking.
 - `error_style:` lives **only** in front-matter (canonical). scot.md restates the style atop a body for readability but the front-matter field is authority.
 
@@ -260,6 +261,8 @@ The MINDSET MUST carry both: **"Markdown is the source of truth (authority); reu
 ## 13. Traceability (reconstructable, not a file)
 
 Chain **REQUIREMENT → FEATURE → CLASS → SOURCE → TEST** is rebuilt on demand from: indexes + each spec's `requirements:`/`source:` + source-file traceability headers + test coverage ids.
+
+**Shared/library nodes carry their consumers' requirements.** A `SHR-*`/`COMP-*` invents no `REQ-*`; it lists the **union of the `REQ-*` of the specs that `depends_on` it** — so the chain `REQ → FEATURE/CLASS/screen → SHR/COMP` is explicit at every node, never inferred. A promoted abstraction therefore always carries ≥1 `REQ-*`: those of the duplicators it replaced. A shared node with **empty** `requirements:` has no consumer → it is an **orphan** (a gate REJECT). The invariant "every spec carries ≥1 real `REQ-*`" stays universal — only `MOD-build` (whole-app scaffolding) is outside the requirement graph; `MOD-schema` carries the `REQ-*` of the `ENT-*` whose schema it materializes.
 
 Every generated source file carries a header pointing back to its spec:
 ```

@@ -16,14 +16,14 @@ NON-GOALS: never edit specs/indexes/code/tests/impl-notes; never set/advance `st
 
 ## Procedure → REJECT on any veto
 1. **Scope** — read the latest `.sdd/state.md` record (iteration, prior reasons); default scope = the full spec set for the slice. Read indexes, then specs lazily.
-2. **Front-matter** (per spec) — `id` (matches filename + a row) · `name` · `kind` · `module` · `status` (mirrors index) · `depends_on` (ids) · `requirements` (≥1; infra modules `MOD-build`/`MOD-schema` carry `[]`) · `source` (`[]` only for a purely-compositional feature). Co-owned files: every co-owner declares the file + `owns_sections:`.
+2. **Front-matter** (per spec) — `id` (matches filename + a row) · `name` · `kind` · `module` · `status` (mirrors index) · `depends_on` (ids) · `requirements` (≥1 real `REQ-*`; `[]` allowed ONLY for `MOD-build`. `MOD-schema` carries the `REQ-*` of the `ENT-*` it materializes; a shared/library `SHR-*`/`COMP-*` carries the **union of its consumers' `REQ-*`** — empty in either case ⇒ **orphan** ⇒ REJECT — §13) · `source` (`[]` only for a purely-compositional feature). Co-owned files: every co-owner declares the file + `owns_sections:`.
 3. **Completeness / self-sufficiency** — required sections per kind exist (honor the two §3 exceptions: a `module` uses Purpose/Contained/Boundaries; a `COMP-*` uses the ui-schema §6 sections in place of Public-interface/Invariants). Enough detail to regenerate the code unaided. No TODO/placeholder.
 4. **Body-form** — behavioral: valid SCoT (`error_style` set; every branch a `[Bn]`; arms enumerable incl. loop/switch boundary; ids stable/unique; no concretization). structural: declarative tables complete (`interface` = signatures only). module: overview, no SCoT/table. gui: five sections in order, composes `COMP-*` by id (no re-described widget); a feature-calling screen declares ≥1 `(journey)` AC. **GUI project:** each baseline id (ui-schema §9) exists as a row + backing `COMP-*.spec.md`; `MOD-build` owns the e2e harness.
 5. **AC testability** — every spec ≥1 `ACn`, each Given/When/Then + concretely testable. Behavioral: ACs + every SCoT arm form a mechanical coverage target.
 6. **Consistency** — every `depends_on`/`CALL <id>`/component reference resolves; each `status` mirrors its index; the index `source` column matches the spec's `source:`; ids stable.
 7. **Source mapping** — paths conform to `target.md`; one-file-one-spec by default; shared ownership declared with `owns_sections:`. DB project + persisted `ENT-*` → `MOD-schema` schema derived from entities, its `source:` lists ≥1 forward schema script; GUI project → `MOD-build` includes the e2e config.
 8. **Cycles** — `depends_on` graph acyclic, or broken interface-first.
-9. **Traceability** — every `REQ-*` reachable through some spec's `requirements:`.
+9. **Traceability** — every `REQ-*` reachable through some spec's `requirements:`. A shared/library `SHR-*`/`COMP-*` carries the **union of its consumers' `REQ-*`** (§13): check each listed `REQ-*` has a consumer that `depends_on` the shared spec; a shared spec nothing depends on is an **orphan** → REJECT.
 10. **Unjustified duplication** — duplication above threshold with no justification in `REUSE-REPORT.md` is blocking → routes `reuse-analyst`.
 11. Decide; append one verdict.
 

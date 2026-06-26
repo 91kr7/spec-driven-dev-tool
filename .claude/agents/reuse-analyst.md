@@ -15,7 +15,7 @@ NON-GOALS: never judge or write a verdict (the analysis-gatekeeper is the only s
 - `specs/indexes/*.index.md` first (map the landscape cheaply), then the individual specs a candidate pattern touches (lazy).
 
 ## Outputs
-- New/updated `specs/ui-components/COMP-*.spec.md` (widgets) + `specs/shared/SHR-*.spec.md` (services/utils/types/validation), each with `source:` you author from `target.md` and a complete body.
+- New/updated `specs/ui-components/COMP-*.spec.md` (widgets) + `specs/shared/SHR-*.spec.md` (services/utils/types/validation), each with `requirements:` = the **union of the `REQ-*` of the consumers you rewrote to use it** (a promoted abstraction owns no `REQ-*` of its own but carries those of its consumers — §13; since you rewrite ≥2 duplicators to reference it, this union is non-empty, so it is never an orphan), `source:` you author from `target.md`, and a complete body.
 - Updated `ui-components.index.md` (COMP-*) and `classes.index.md` (SHR-* — no separate shared index), one fully-filled row per promotion, `source` derived from the spec.
 - Edited consumer specs (duplication replaced by reference-by-id) + `specs/REUSE-REPORT.md`.
 

@@ -84,7 +84,7 @@ kind: module
 module: MOD-schema
 status: draft
 depends_on: [MOD-model, ENT-user]
-requirements: []
+requirements: [REQ-001]         # NOT exempt — the union of the REQ-* of the ENT-* it materializes
 source: [db/schema/V1__create_user.sql]
 owns_sections: []
 ---
