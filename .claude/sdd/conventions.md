@@ -111,6 +111,12 @@ A **stub/mock is never specced** — it is auto-derived from its `interface` spe
 - `module`: `# Purpose` · `# Contained entries` · `# Boundaries & dependencies` (no Public-interface/Invariants).
 - `COMP-*` (`kind: gui`): replaces Public-interface + Invariants with the ui-schema §6 sections (Props · Variants · Visual states · Events · Slots/children · Accessibility).
 
+### Acceptance-criterion altitudes (what verifies each AC)
+Every `ACn` is verified at exactly one of three altitudes, **marked** so coverage is mechanical:
+- **test-covered** (default, untagged) — an authored test asserts it (unit / integration / component). The `test-writer` writes ≥1 mapped test (scot.md §7.3 id); the `test-gatekeeper` REJECTs if any is uncovered.
+- **`(journey)`** — a screen outcome that crosses the running stack; verified **end-to-end by a Playwright test** (ui-schema §5).
+- **`(pipeline)`** — the outcome **is** the success of a canonical `target.md §3` command (install / build / run-boot / migrate); verified by that command reaching green in `tests/REPORT.md`, **not** by an authored test (a test that re-asserts "the build passes" is circular; one that re-asserts a manifest value against the spec is tautological — neither is an independent oracle). **Allowed ONLY on an infra-module AC** (`MOD-build`, `MOD-schema`) whose assertion is literally "the build / boot / migration command succeeds". A behavioral spec (`CLS-*` / `FEAT-*` / `ENT-*`) may **never** tag `(pipeline)` to dodge a real test, and a genuine boot **smoke** check (e.g. application-context-loads, which exercises runtime wiring the spec left open) stays **test-covered**, not `(pipeline)`. The `test-writer` authors **no** test for a `(pipeline)` AC; the `test-gatekeeper` counts it covered from the green run result and REJECTs a `(pipeline)` tag on a non-infra spec.
+
 ---
 
 ## 4. Index row schema
@@ -271,11 +277,13 @@ Every generated source file carries a header pointing back to its spec:
 - Comment syntax per target language; placed at the **top but after any mandatory first-line construct** (shebang, `<?php`, `"use client"`, XML/encoding decl).
 - **Comment-less formats are exempt** (pure JSON like `package.json`/`tsconfig.json`, lockfiles): the spec↔source link is the `source:` declaration alone — the gatekeeper never demands a header for them.
 
+**Comment economy — the header is the *only* mandatory comment.** The **spec is the narrative** (Purpose, SCoT arms, invariants, ACs); the generated code is its concretization and **must not re-narrate it**. Forbidden as noise: a comment restating a `[Bn]` branch / AC / rule already in the spec; docstrings paraphrasing the Purpose; section-banner comments (`// ---- helpers ----`); "what" comments on self-evident statements. The reader who wants *why* follows the header to the spec; a genuinely non-obvious concretization rationale goes to `impl-notes`, **not** an inline comment. Default to **comment-free bodies under the header** (plus only what the language *requires* — e.g. a mandated annotation). Over-commenting is duplication that costs tokens to write **and** re-read on every downstream pass, and silently drifts from the spec.
+
 ---
 
 ## 14. `tests/REPORT.md` format (test-runner → test-gatekeeper contract)
 
-`test-runner` writes it (overwritten each run); `test-gatekeeper` parses it. Fixed structure (no heuristics). **Coverage** (every `ACn`/arm has a test) is verified by the gatekeeper from the tagged test files; this report supplies the **run result**.
+`test-runner` writes it (overwritten each run); `test-gatekeeper` parses it. Fixed structure (no heuristics). **Coverage** (every test-covered `ACn`/arm has a test) is verified by the gatekeeper from the tagged test files; this report supplies the **run result**. A **`(pipeline)`** AC (§3 altitudes) is the exception: it carries no tagged test — the gatekeeper counts it covered from this report's **green run result** (the install/build/boot/migrate command it asserts necessarily ran as part of reaching `phase-reached: complete`).
 
 ```
 # Test Report
