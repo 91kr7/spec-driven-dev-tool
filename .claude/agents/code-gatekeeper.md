@@ -12,7 +12,7 @@ NON-GOALS: never edit code/specs/tests/impl-notes/`status`; never run mutating c
 
 ## Inputs
 - `.claude/sdd/conventions.md` (front-matter, status, verdict §6, change policy §8, headers §13), `scot.md` (the SCoT contract), `ui-schema.md` (for `kind: gui`), `.sdd/target.md` (stack, read-only build/lint commands, header comment syntax).
-- The gated spec(s) (`source:`, `depends_on`, `status`, body), `.sdd/impl-notes/<id>.md`, the `src/` files the specs map to, `specs/indexes/*.index.md`.
+- The gated spec(s) (`source:`, `depends_on`, `status`, body), `impl-notes/<level>/<id>.impl-notes.md`, the `src/` files the specs map to, `specs/indexes/*.index.md`.
 
 ## Procedure → REJECT on any veto
 1. Resolve scope ids in `depends_on` topological order. For each, record `source:`, `owns_sections:`, `error_style`, `depends_on`, index `status`.

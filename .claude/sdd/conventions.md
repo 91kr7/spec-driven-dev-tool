@@ -25,8 +25,7 @@
 requirements/REQUIREMENT.md  # raw + refined requirement (REQ-* ids), refined list as a dated changelog
 plan/PLAN.md                 # plan output
 .sdd/target.md               # stack + canonical build/test/run commands
-.sdd/verdicts/<nn>-<gate>-<scope>-<verdict>.md  # one file per gate — the append-only verdict log (no rewrite)
-.sdd/impl-notes/<id>.md      # implementer concretization notes (NOT part of the spec)
+.sdd/verdicts/<nn>-<gate-agent>-<scope>-<verdict>.md  # one file per gate — the append-only verdict log (no rewrite)
 specs/indexes/{modules,features,model,classes,ui-components}.index.md  # one index per level
 specs/modules/<id>.spec.md   # incl. MOD-build (scaffolding) + MOD-schema (DB projects)
 specs/features/<id>.spec.md  # use-case: orchestration + integration acceptance
@@ -35,6 +34,7 @@ specs/classes/<id>.spec.md   # per-method SCoT (+ feature gui screens)
 specs/ui-components/<id>.spec.md  # UI components — created only as screens compose them (ui-schema §9 catalog)
 specs/shared/<id>.spec.md    # shared non-UI abstractions — indexed in classes.index.md
 specs/REUSE-REPORT.md        # reuse-analyst output: promotions + Demote-for-re-gate list
+impl-notes/{modules,features,model,classes,ui-components,shared}/<id>.impl-notes.md  # concretization notes — MIRRORS the specs/ hierarchy + basename; NOT the gated spec; the test-writer never reads this tree
 src/                         # GENERATED
 tests/                       # GENERATED (unit←classes, integration←features, constraint←entities, component←gui, e2e←gui screens)
 ```
@@ -189,7 +189,7 @@ Per-entity status lives in the **index row**: `draft → reviewed → approved`.
 - verdict: PASS
 - reasons:
   - §3 front-matter: 9/9 valid (id↔filename↔index, status=draft, error_style on the 5 behavioral specs).
-  - §13 traceability: REQ-003..009 each reachable; consumers(SHR-passwordHasher)={CLS-authService}, requirements={004,005,006} ⊆, no orphan/excess.
+  - §13 traceability: REQ-003..009 each reachable; consumers(SHR-passwordHasher)={CLS-authService}, requirements={004,005,006} ⊆ consumers', no orphan/excess.
   - §5 AC testability: every spec ≥1 AC (G/W/T); behavioral ACs map to SCoT arms.
   - §4/§6 consistency: every depends_on/CALL/collaborator resolves; indexes mirror front-matter.
   - §12 cycles: acyclic. §9 duplication: REUSE-REPORT promoted=none, ownership=clean (consumer set re-verified).
@@ -252,7 +252,7 @@ Twelve roles; **eleven are subagents** in `.claude/agents/`. The **orchestrator 
 | `spec-writer` | write indexes + specs | `specs/` | `Read, Write, Edit, Glob, Grep` | no | opus |
 | `reuse-analyst` | dedupe + promote shared specs | `specs/` | `Read, Write, Edit, Glob, Grep` | no | opus |
 | `analysis-gatekeeper` | judge specs (only spec-phase blocker) | `.sdd/verdicts/` (one file) | `Read, Write, Glob, Grep` | no | opus |
-| `code-implementer` | specs → source | `src/` (declared paths), `.sdd/impl-notes/` | `Read, Write, Edit, Glob, Grep` | yes (edit) | opus |
+| `code-implementer` | specs → source | `src/` (declared paths), `impl-notes/` | `Read, Write, Edit, Glob, Grep` | yes (edit) | opus |
 | `code-gatekeeper` | judge code ≡ spec | `.sdd/verdicts/` (one file) | `Read, Write, Glob, Grep, Bash` (read-only) | yes (review) | opus |
 | `test-writer` | specs → tests (independent oracle) | `tests/` | `Read, Write, Edit, Glob` | **no — by role** | sonnet |
 | `test-runner` | run tests, write report | `tests/REPORT.md` | `Read, Write, Glob, Bash` | yes | sonnet |

@@ -10,6 +10,7 @@
 > — enough to pass the same tests and not re-introduce a fixed bug. Goal:
 > behavioral completeness, not byte-for-byte reproduction.
 
+- path: `impl-notes/<level>/<SPEC-ID>.impl-notes.md` (mirrors the spec's `specs/` folder + basename)
 - spec: `specs/<level>/<SPEC-ID>.spec.md`
 - source: `<the file(s) from the spec's source: front-matter>`
 

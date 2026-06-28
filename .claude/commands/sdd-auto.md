@@ -57,11 +57,11 @@ HAVE     read-only contracts shipped with the tool: conventions.md, scot.md, ui-
 | spec_paths | [ specs/**/*.spec.md ] | 5 levels: module/feature/entity/class/UI, incl. MOD-build/MOD-schema |
 | REUSE-REPORT.md | file { promoted: SHR-*\|COMP-*, demote_ids[] } | |
 | src_paths | [ path ] | only the spec's declared `source:` paths |
-| impl_note | .sdd/impl-notes/<id>.md | |
+| impl_note | impl-notes/<level>/<id>.impl-notes.md | mirrors the spec's specs/ folder + basename |
 | install_result | { ok: bool, log } | |
 | test_paths | [ tests/** ] | |
 | REPORT.md | file { failures[], per-test status } | tests/REPORT.md |
-| verdict_record | .sdd/verdicts/<nn>-<gate>-<scope>-<verdict>.md { phase, scope, verdict: PASS\|REJECT, reasons[], routing, iteration: n/budget } | one file per gate; read the latest by Glob — PASS/REJECT is in the filename, open the body only on REJECT |
+| verdict_record | .sdd/verdicts/<nn>-<gate-agent>-<scope>-<verdict>.md { phase, scope, verdict: PASS\|REJECT, reasons[], routing, iteration: n/budget } | one file per gate; read the latest by Glob — PASS/REJECT is in the filename, open the body only on REJECT |
 
 ## How to read a step
 ```
