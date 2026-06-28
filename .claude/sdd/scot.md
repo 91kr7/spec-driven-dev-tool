@@ -26,7 +26,7 @@ Used by `kind:` **behavioral** specs (`service`, `controller`, `use-case`). Not 
 
 Indentation = 2 spaces (readability only); `END` is authoritative for block scope.
 
-**Neutral types** (implementer maps via `target.md`): `Int Long Float Decimal Bool String Char Bytes Date DateTime UUID`, `List<T> Set<T> Map<K,V> Option<T> Result<T,E> Void Any`. Domain/structural types referenced by id/name (`User` = ENT-user).
+**Neutral types** (implementer **and** test-writer both map via `target.md` §2's language-idioms map — same map ⇒ converging call sites, so a spec-derived test compiles against the real code without reading `src/`): `Int Long Float Decimal Bool String Char Bytes Date DateTime UUID`, `List<T> Set<T> Map<K,V> Option<T> Result<T,E> Void Any`. Domain/structural types referenced by id/name (`User` = ENT-user).
 
 ---
 

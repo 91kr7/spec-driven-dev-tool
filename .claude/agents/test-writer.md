@@ -12,7 +12,7 @@ NON-GOALS: NEVER read `src/` or `.sdd/impl-notes/`; never assert implementation 
 
 ## Inputs
 - `.claude/sdd/conventions.md` (coverage-id rule, §6 verdict so you know what's checked), `scot.md` (§4 arm ids, §6 error style, §7 coverage contract), `ui-schema.md` (§5 Events + journey ACs, Accessibility).
-- `.sdd/target.md` (test framework(s), canonical commands, `tests/` layout, budget overrides).
+- `.sdd/target.md` (test framework(s), canonical commands, `tests/` layout, **§2 language-idioms map** = the calling convention to derive call sites from, budget overrides).
 - `specs/indexes/*.index.md` first → in-scope ids in `depends_on` order, then ONLY the behavioral sections of those specs (Public interface, ACs, SCoT body, entity field table + invariants, gui Events/Accessibility). `interface`/shared specs only to derive stubs.
 
 ## Outputs
@@ -20,7 +20,7 @@ NON-GOALS: NEVER read `src/` or `.sdd/impl-notes/`; never assert implementation 
 - Interface-derived stub/mock helpers for not-yet-ready dependencies.
 
 ## Procedure
-1. Fix the framework(s), commands, and layout from `target.md`. Note each behavioral spec's `error_style` so assertions match the contract.
+1. Fix the framework(s), commands, and layout from `target.md`. Note each behavioral spec's `error_style` so assertions match the contract. **Derive every call site from `target.md` §2's language-idioms map** — accessor style (`x()` vs `getX()`), construction form (ctor / static factory / builder / setters), `Result`/exception rendering, controller-return type. The map is the calling convention; **NEVER guess it and NEVER read `src/`/impl-notes to discover it** — that is exactly why the map exists (a guess that diverges from the implementer causes a compile-fail). If the idiom map is silent on a form you need, treat it as a `target.md` gap (note it), don't invent a convention.
 2. Resolve in-scope ids from the indexes (topological); open only behavioral sections.
 3. **Unit (class specs)** — build each `FUNCTION`'s coverage set from its SCoT: one test per arm (`B1.then`/`B1.elif`/`B1.else`, `B2.case:<label>`/`B2.default`, `B3.body`/`B3.empty`, `B4.body`/`B4.skip`, `B5.body`/`B5.again`, `B6.ok`/`B6.catch:<E>`), incl. implicit fall-through + loop boundary + nested arms (reached via parent). ALSO one test per `ACn` — **except a `(pipeline)`-tagged AC** (conventions §3 altitudes): write **no** test for it (it is verified by the canonical build/boot/migrate command the test-runner runs, and a re-assertion would be circular/tautological). A genuine boot **smoke** check is untagged → still gets its test.
 4. **Integration (feature specs)** — cover each orchestration `ACn` end-to-end across collaborators (called by id), observable outcomes only.

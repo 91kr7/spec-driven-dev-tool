@@ -21,7 +21,7 @@
 | Test framework(s) | `<unit>` + `<integration>` + `<component/UI>` + `<Playwright | Cypress | none>` (e2e — GUI only) |
 | DB / persistence | `<Postgres | MySQL | SQLite | none>` + `<schema-versioning tool, e.g. Flyway | Prisma Migrate | EF Core>` |
 
-## 2. Source path & naming conventions
+## 2. Source mapping, naming & language idioms
 
 How each spec `kind` maps to a path (used to propose `source:` for new specs):
 
@@ -38,6 +38,22 @@ How each spec `kind` maps to a path (used to propose `source:` for new specs):
 
 - Traceability-header comment syntax: `<// …>`. Design-token source: `<theme/token file>`.
 - **Test layout (one target per spec id, so a scoped run resolves mechanically):** `<unit/component → tests/unit/<id>.* ; integration → tests/integration/<FEAT-id>.* ; constraint → tests/model/<ENT-id>.* ; e2e → tests/e2e/<CLS-screen-id>.spec.*>`. Name each e2e file after the **screen id** (`CLS-*` gui), not the feature. Render `<id>` in a **filename/identifier-legal form** for the language (strip separators / PascalCase — e.g. `MOD-build` → `MODBuild`); the exact spec id is preserved verbatim only in each test's coverage-id comment (the matching source of truth), never forced into an illegal filename, and never as an empty "naming-stub" file.
+
+### Language idioms — neutral-type → concrete calling convention
+
+Specs/SCoT stay concretization-free (scot.md §2); the implementer **and** the test-writer BOTH derive the concrete callable form from this single map — so a spec-derived test compiles and calls the real code **without reading `src/`**. Pin it up front (this is the contract that makes the two sides converge instead of guessing):
+
+| Neutral form (specs/SCoT) | Concrete idiom for this stack | Example call |
+|---|---|---|
+| entity / `dto` / `enum` type | `<record \| data class \| POJO+getters \| plain object>` | `<new Credential(u,v,a,s)>` |
+| field accessor | `<x() \| getX() \| .x>` | `<cred.username()>` |
+| construction | `<canonical ctor \| static factory \| builder \| setters>` | `<new LoginRequest(u,p)>` |
+| `error_style: result` → `Result<T,E>` | `<concrete result type + ok/err builders>` | `<Result.ok(x) \| Result.err(e)>` |
+| `error_style: raise` | `<exception types + how thrown>` | `<throw new BlankUsername()>` |
+| `Option<T>` | `<Optional<T> \| nullable \| …>` | `<Optional.empty()>` |
+| controller / HTTP boundary return | `<neutral Result rendered as a framework HTTP type? + the Outcome→status map>` | `<ResponseEntity<LoginResponse>, 200/400/401/500>` |
+
+The implementer MUST follow these idioms (never free-style its own); the test-writer derives every call site / accessor / constructor from them. **A deviation from this map is a `code` defect, never a test defect.**
 
 ## 3. Canonical commands
 
