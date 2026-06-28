@@ -37,7 +37,7 @@ How each spec `kind` maps to a path (used to propose `source:` for new specs):
 | schema changes | owned by `MOD-schema`, derived from entities | `db/schema/<n>_<name>.sql` |
 
 - Traceability-header comment syntax: `<// …>`. Design-token source: `<theme/token file>`.
-- **Test layout (one target per spec id, so a scoped run resolves mechanically):** `<unit/component → tests/unit/<id>.* ; integration → tests/integration/<FEAT-id>.* ; constraint → tests/model/<ENT-id>.* ; e2e → tests/e2e/<CLS-screen-id>.spec.*>`. Name each e2e file after the **screen id** (`CLS-*` gui), not the feature.
+- **Test layout (one target per spec id, so a scoped run resolves mechanically):** `<unit/component → tests/unit/<id>.* ; integration → tests/integration/<FEAT-id>.* ; constraint → tests/model/<ENT-id>.* ; e2e → tests/e2e/<CLS-screen-id>.spec.*>`. Name each e2e file after the **screen id** (`CLS-*` gui), not the feature. Render `<id>` in a **filename/identifier-legal form** for the language (strip separators / PascalCase — e.g. `MOD-build` → `MODBuild`); the exact spec id is preserved verbatim only in each test's coverage-id comment (the matching source of truth), never forced into an illegal filename, and never as an empty "naming-stub" file.
 
 ## 3. Canonical commands
 
@@ -55,6 +55,7 @@ run:       <e.g. pnpm dev>
 db-schema: <e.g. pnpm prisma migrate deploy>   # applies the entity-derived schema changes
 ```
 
+- **Path discipline in `cd`-ing commands:** if a command changes into a build-unit dir (`cd frontend && …`), every path in it (output files, configs, selectors) is **relative to that dir or absolute** — never re-prefix the dir name. `cd frontend && … --outputFile=frontend/test-results/…` writes to `frontend/frontend/test-results/…`. One working dir, one path origin.
 - **`{scope}`** — put the token where the framework's test selector goes; the runner substitutes the in-scope selector (file globs or an id-alternation `--grep`/`--tests`). Empty `{scope}` = whole suite. The runner fills it only — never adds/alters any other flag.
 - **Two reporters baked in:** a compact **`dot`** console reporter (tiny captured output) **and** a machine-readable **file** reporter (JUnit-XML/JSON/TAP) the runner parses with `xmllint`/`jq`. Both belong here, in the canonical command — never added ad-hoc.
 

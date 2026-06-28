@@ -25,6 +25,7 @@ NON-GOALS: never edit tests/code/specs; never set `status`; never write `tests/R
    - Never PASS a scope whose run did not reach `phase-reached: complete`.
 4. **Coverage check** — any **test-covered** `ACn` or branch arm with no mapped test → REJECT, route `test-writer` (naming each uncovered id). A unit covered **only** by a skipped/ignored test counts as uncovered. A `(pipeline)` AC is covered by the green run result (do NOT demand a test for it — and if a `(pipeline)` AC is the *only* thing in scope, a green `complete` run is its coverage); a `(pipeline)` AC is *uncovered* only if the run never reached `complete` (handled by the run-health gate §3). **GUI screens:** each `(journey)`-tagged AC needs ≥1 Playwright e2e test (in `suites: e2e`) — a journey covered only by a component test → REJECT, route `test-writer`.
 5. **Assertion-target check** — a test asserting an implementation detail (private field, internal call sequence, log string, framework artifact) instead of a spec AC/branch → REJECT, route `test-writer`.
+5b. **Cruft check** — a test file that carries **zero assertions** (a placeholder / "naming-breadcrumb" / empty stub class), maps to **no** in-scope coverage id, or whose **filename/identifier is illegal** for the language (e.g. a hyphenated `MOD-buildTest.java`) → REJECT, route `test-writer` (delete it; a separator-bearing id renders to a legal identifier, the exact id stays in the coverage-id comment). Such a file is noise, not a covering test — do not wave it through as "harmless".
 6. **Green check** — if `phase-reached: complete`, coverage complete, and zero failures → **PASS**.
 7. **Triage** each failing test (never bend code into the source of truth):
    - **SPEC bug** — spec wrong/ambiguous/incomplete → `spec-writer` (fix spec, regenerate code).
@@ -34,7 +35,7 @@ NON-GOALS: never edit tests/code/specs; never set `status`; never write `tests/R
 8. **Iteration** — read the latest prior `phase: test` record for this scope; set `iteration: <n>/5`. Do not act on overflow (the command escalates).
 
 ## Veto criteria — REJECT if
-- the suite didn't run to completion (`install|build|e2e-setup`); the REPORT `scope` is narrower than judged; an in-scope gui spec but `e2e` absent from `suites`; any **test-covered** `ACn` uncovered; any SCoT arm uncovered; a GUI `(journey)` AC with no e2e test; a `(pipeline)` tag on a non-infra spec; a test asserts implementation detail; any in-scope test is failing (route per §7 triage).
+- the suite didn't run to completion (`install|build|e2e-setup`); the REPORT `scope` is narrower than judged; an in-scope gui spec but `e2e` absent from `suites`; any **test-covered** `ACn` uncovered; any SCoT arm uncovered; a GUI `(journey)` AC with no e2e test; a `(pipeline)` tag on a non-infra spec; a test asserts implementation detail; a zero-assertion / illegal-filename / coverage-less **cruft** test file; any in-scope test is failing (route per §7 triage).
 
 ## Hand-off
 - Append exactly one verdict to `.sdd/state.md` (§6), `phase: test`, with per-failure routing; the top-level `routing:` names every distinct routed author. A PASS has `routing: none` + a reasons line stating coverage complete + suite green. Read `state.md` first, write it back in full with the record appended. Never touches `status`/tests/code/specs/REPORT.
