@@ -49,7 +49,7 @@ HAVE     read-only contracts shipped with the tool: conventions.md, scot.md, ui-
 | current_date | ISO-8601 date | supplied by the orchestrator — the subagent has no clock |
 | stack_decision | { lang, framework, … } | resolved target stack — held in memory until step 3 |
 | REQUIREMENT.md | file { raw, refined, req_ids: REQ-* } | authored by requirement-analyst — refined list is a dated changelog |
-| PLAN.md | file { entities, Slice plan } | plan + the ordered slice list |
+| PLAN.md | file { entities, Slice plan } | plan + ordered slice list; rewritten per run — on existing-SDD a delta (only NEW/MODIFY + their slices) |
 | target.md | file | stack + canonical install/build/test commands |
 | slice | { slice_id, member_ids[], depends_on_closure[] } | |
 | slice_list | [ slice ] | execution order, authored by plan-architect inside PLAN.md |
@@ -96,7 +96,7 @@ OUT  REQUIREMENT.md { raw, refined, req_ids: REQ-* }   — refined list is a dat
 ```
 ▶▶ INVOKE plan-architect
 IN   REQUIREMENT.md ; stack_decision
-OUT  target.md ; PLAN.md { entities, ordered Slice plan }   →  the orchestrator reads slice_list from here
+OUT  target.md ; PLAN.md { entities, ordered Slice plan } — rewritten afresh; on existing-SDD a **delta** (only NEW/MODIFY entities + the slices that contain them)   →  the orchestrator reads slice_list from here
 ```
 
 ### Step 4 — Gate the plan
@@ -121,9 +121,9 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
 
 ### Step 5 — Specify the slice   `[analysis budget 3]`   `status: draft → reviewed`
 ```
-5a ··  YOU   demote (feature-evolution only)
-     IN  index_rows where in-scope entity status ∈ {reviewed, approved}
-     OUT same rows → status: draft (§5)
+5a ··  YOU   demote (feature-evolution only) — ONLY the entities this change rewrites
+     IN  index_rows of the slice's `MODIFY` members (per the PLAN delta) whose status ∈ {reviewed, approved}
+     OUT those rows → status: draft (§5).  `NEW` members start at draft; unchanged `depends_on`-closure members stay `approved` (read-only deps — never demoted, never re-worked).
 
 5b ▶▶ INVOKE spec-writer
      IN  slice ; PLAN.md ; target.md ; conventions.md
@@ -150,7 +150,7 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
      DO  minimal Edit by default; regenerate only by exception (§8).
      OUT src_paths (the spec's declared `source:` paths) ; impl_note
 
-6b ··  YOU   run canonical `install` → install_result   (makes the read-only compile check effective)
+6b ··  YOU   run canonical `install` → install_result
    ▶▶ GATE code-gatekeeper
      IN  src_paths ; spec_paths (this slice) ; impl_note ; install_result
      OUT verdict_record { phase: code, scope: slice_id, iteration: n/3 }
