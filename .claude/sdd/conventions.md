@@ -25,7 +25,7 @@
 requirements/REQUIREMENT.md  # raw + refined requirement (REQ-* ids), refined list as a dated changelog
 plan/PLAN.md                 # plan output
 .sdd/target.md               # stack + canonical build/test/run commands
-.sdd/state.md                # append-only gate verdict / audit log
+.sdd/verdicts/<nn>-<gate>-<scope>-<verdict>.md  # one file per gate — the append-only verdict log (no rewrite)
 .sdd/impl-notes/<id>.md      # implementer concretization notes (NOT part of the spec)
 specs/indexes/{modules,features,model,classes,ui-components}.index.md  # one index per level
 specs/modules/<id>.spec.md   # incl. MOD-build (scaffolding) + MOD-schema (DB projects)
@@ -147,15 +147,21 @@ Per-entity status lives in the **index row**: `draft → reviewed → approved`.
 **Backward transition (spec change after `reviewed`).** Code is only generated from a `reviewed` spec. So whenever a spec changes after `reviewed`/`approved` — a gate routing a **spec bug**, a **feature evolution**, or a **reuse-analyst promotion** that rewrites a gated spec — the **command demotes** it `→ draft`, `spec-writer` fixes it, then it re-flows the forward path. A **code** or **test** bug never demotes the spec.
 
 **Separation of duties (strict):**
-- **Gatekeepers JUDGE only** — write a verdict to `.sdd/state.md`; never edit specs/code/tests/`status`.
+- **Gatekeepers JUDGE only** — write one verdict **file** to `.sdd/verdicts/` (§6); never edit specs/code/tests/`status`.
 - **The command (main session) ADVANCES `status`** from the latest verdict.
 - **Authors WRITE artifacts** (requirements/specs/code/tests/impl-notes); never write verdicts.
 
 ---
 
-## 6. `.sdd/state.md` verdict record
+## 6. `.sdd/verdicts/` verdict records
 
-Append-only. Every gate appends one record:
+**Append-only by *file*, never by rewrite.** Every gate writes **one new file** and never reads or rewrites prior verdicts. The directory *is* the audit log; its sorted filenames are the timeline.
+
+- **Path:** `.sdd/verdicts/<nn>-<gate-agent>-<scope>-<verdict>.md`
+  - `<nn>` = zero-padded 2-digit ordinal = (count of existing `.sdd/verdicts/*.md`) + 1, so files sort in execution order. Get it by **Glob** on filenames — never read their contents.
+  - `<scope>` = the short scope key the command matches on: the `slice_id` (e.g. `FEAT-login`, `MOD-build`), `PLAN`, or `PROJECT`. The full member-id list goes in the body's `scope:` field, not the filename.
+  - `<verdict>` = `PASS` | `REJECT` — so the command reads the outcome from the filename alone and opens the body only on REJECT/escalation.
+- **One record per file:**
 
 ```
 ## <ISO-8601> — <gate-agent> — <PASS|REJECT>
@@ -164,12 +170,42 @@ Append-only. Every gate appends one record:
 - iteration: <n>/<budget>
 - verdict: PASS | REJECT
 - reasons:
-  - <blocking reason, citing the spec/AC/branch/requirement id>
+  - <one terse line per check — see economy rule>
 - routing: <none | requirement-analyst | plan-architect | spec-writer | reuse-analyst | code-implementer | test-writer | escalate>   # REJECT only
 ```
 
+- **Verdict economy — record the *conclusion*, not the re-derivation.** The enumeration rigor lives in the gate's *reasoning* (that is what `effort: high` buys); the file records the *outcome* plus the smallest evidence the next reader acts on:
+  - **PASS** → one terse line per check group: the conclusion + the minimal rebuilt datum where the check is a forcing-function (a traceability **consumer set**, an **orphan-scan** result). NEVER a paragraph re-narrating what held, never the whole front-matter/SCoT/AC list echoed back.
+  - **REJECT** → one line per *blocking* defect: the offending `id`/path + what is wrong + the **resolution** (this is what the routed author consumes) + `routing:`. Do not also transcribe the checks that passed.
 - `routing: escalate` = a REJECT no author can fix (missing dependency, unresolved `<…>` placeholder, e2e-setup app-won't-boot) — the command surfaces it to the human.
-- **Appending safely:** gatekeepers hold `Write` (whole-file), not `Edit` — they MUST **Read** `state.md`, then **Write it back in full** with the new record appended. Never write only the new record.
+- **Why per-file:** a single shared log forced every gate to Read-whole + Write-whole to append, so the k-th of N gates re-emitted the first k records — O(N²) output for an O(N) log. One file per gate makes each append O(1); this was the dominant token sink of the whole flow.
+
+**Example — compact PASS** (the full rebuilt evidence collapses to conclusions):
+```
+## 2026-06-26 — analysis-gatekeeper — PASS
+- scope: FEAT-login (MOD-auth, ENT-credential, SHR-passwordHasher, CLS-credentialRepo, CLS-loginRequest, CLS-loginResponse, CLS-authService, CLS-authController, FEAT-login)
+- phase: analysis
+- iteration: 1/3
+- verdict: PASS
+- reasons:
+  - §3 front-matter: 9/9 valid (id↔filename↔index, status=draft, error_style on the 5 behavioral specs).
+  - §13 traceability: REQ-003..009 each reachable; consumers(SHR-passwordHasher)={CLS-authService}, requirements={004,005,006} ⊆, no orphan/excess.
+  - §5 AC testability: every spec ≥1 AC (G/W/T); behavioral ACs map to SCoT arms.
+  - §4/§6 consistency: every depends_on/CALL/collaborator resolves; indexes mirror front-matter.
+  - §12 cycles: acyclic. §9 duplication: REUSE-REPORT promoted=none, ownership=clean (consumer set re-verified).
+- routing: none
+```
+**Example — compact REJECT** (one actionable line per defect):
+```
+## 2026-06-26 — code-gatekeeper — REJECT
+- scope: MOD-build
+- phase: code
+- iteration: 1/3
+- verdict: REJECT
+- reasons:
+  - §3 orphan (veto): backend/src/main/resources/application.properties is on disk but in no spec's source:; load-bearing boot scaffolding (SQLite datasource, AC3). Resolution: add it to MOD-build.spec.md source: + re-derive the modules.index.md source column.
+- routing: spec-writer
+```
 
 ---
 
@@ -212,18 +248,18 @@ Twelve roles; **eleven are subagents** in `.claude/agents/`. The **orchestrator 
 |---|---|---|---|---|---|
 | `requirement-analyst` | capture raw → refined requirement + REQ ids | `requirements/` | `Read, Write, Edit, Glob, Grep` | no | opus |
 | `plan-architect` | requirement → plan (+ ordered slices) + target | `plan/`, `.sdd/target.md` | `Read, Write, Edit, Glob, Grep` | no | opus |
-| `plan-gatekeeper` | judge the plan | `.sdd/state.md` | `Read, Write, Glob, Grep` | no | opus |
+| `plan-gatekeeper` | judge the plan | `.sdd/verdicts/` (one file) | `Read, Write, Glob, Grep` | no | opus |
 | `spec-writer` | write indexes + specs | `specs/` | `Read, Write, Edit, Glob, Grep` | no | opus |
 | `reuse-analyst` | dedupe + promote shared specs | `specs/` | `Read, Write, Edit, Glob, Grep` | no | opus |
-| `analysis-gatekeeper` | judge specs (only spec-phase blocker) | `.sdd/state.md` | `Read, Write, Glob, Grep` | no | opus |
+| `analysis-gatekeeper` | judge specs (only spec-phase blocker) | `.sdd/verdicts/` (one file) | `Read, Write, Glob, Grep` | no | opus |
 | `code-implementer` | specs → source | `src/` (declared paths), `.sdd/impl-notes/` | `Read, Write, Edit, Glob, Grep` | yes (edit) | opus |
-| `code-gatekeeper` | judge code ≡ spec | `.sdd/state.md` | `Read, Write, Glob, Grep, Bash` (read-only) | yes (review) | opus |
+| `code-gatekeeper` | judge code ≡ spec | `.sdd/verdicts/` (one file) | `Read, Write, Glob, Grep, Bash` (read-only) | yes (review) | opus |
 | `test-writer` | specs → tests (independent oracle) | `tests/` | `Read, Write, Edit, Glob` | **no — by role** | sonnet |
 | `test-runner` | run tests, write report | `tests/REPORT.md` | `Read, Write, Glob, Bash` | yes | sonnet |
-| `test-gatekeeper` | verify coverage + triage | `.sdd/state.md` | `Read, Write, Glob, Grep` | yes | opus |
+| `test-gatekeeper` | verify coverage + triage | `.sdd/verdicts/` (one file) | `Read, Write, Glob, Grep` | yes | opus |
 
 - The `.claude/sdd/` contracts + templates ship with the tool — **read-only**, no agent edits them.
-- A gatekeeper's `Write` is scoped to **appending its verdict to `.sdd/state.md`** only.
+- A gatekeeper's `Write` is scoped to **one new verdict file in `.sdd/verdicts/`** only — it never reads or rewrites the existing log (§6).
 - **test-writer independence is SOFT**: no `Bash`, explicit NON-GOAL (never read `src/` or `impl-notes/`), and the test-gatekeeper rejects tests that assert implementation detail.
 - The **test-runner** is the only agent that **executes** the suite (canonical `target.md` commands, filling only `{scope}`); for GUI e2e those commands launch/tear down the running app.
 - **Models:** Opus for under-specified authoring + high-consequence judgment; Sonnet for mechanical/checklist work a concrete contract constrains. A project MAY override any `model:`.

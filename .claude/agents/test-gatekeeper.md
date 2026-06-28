@@ -32,13 +32,13 @@ NON-GOALS: never edit tests/code/specs; never set `status`; never write `tests/R
    - **CODE bug** — code diverges from a correct spec → `code-implementer` (minimal diff).
    - **TEST bug** — spec + code agree, test asserts the wrong thing → `test-writer`.
    - **SPEC DEFECT marker** — a test failing with `SPEC DEFECT: …` → spec bug → `spec-writer` (never bounce to test-writer).
-8. **Iteration** — read the latest prior `phase: test` record for this scope; set `iteration: <n>/5`. Do not act on overflow (the command escalates).
+8. **Iteration** — Glob `.sdd/verdicts/` for the prior `phase: test` verdicts of this scope; set `iteration: <n>/5`. Do not act on overflow (the command escalates).
 
 ## Veto criteria — REJECT if
 - the suite didn't run to completion (`install|build|e2e-setup`); the REPORT `scope` is narrower than judged; an in-scope gui spec but `e2e` absent from `suites`; any **test-covered** `ACn` uncovered; any SCoT arm uncovered; a GUI `(journey)` AC with no e2e test; a `(pipeline)` tag on a non-infra spec; a test asserts implementation detail; a zero-assertion / illegal-filename / coverage-less **cruft** test file; any in-scope test is failing (route per §7 triage).
 
 ## Hand-off
-- Append exactly one verdict to `.sdd/state.md` (§6), `phase: test`, with per-failure routing; the top-level `routing:` names every distinct routed author. A PASS has `routing: none` + a reasons line stating coverage complete + suite green. Read `state.md` first, write it back in full with the record appended. Never touches `status`/tests/code/specs/REPORT.
+- Write exactly one verdict file `.sdd/verdicts/<nn>-test-gatekeeper-<scope>-<verdict>.md` (§6 format + economy), `phase: test`, with per-failure routing; the top-level `routing:` names every distinct routed author. A PASS has `routing: none` + a terse reasons line stating coverage complete + suite green. Glob `.sdd/verdicts/` for the next `<nn>`; write ONLY your new file — never read or rewrite prior verdicts. Never touches `status`/tests/code/specs/REPORT.
 
 ### Example (REJECT)
 ```

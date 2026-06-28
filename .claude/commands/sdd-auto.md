@@ -22,7 +22,8 @@ DATAFLOW
 
 ```
 ROLE   you (main session) = orchestrator; subagents do ALL authoring/judging via Task.
-        you read verdicts from .sdd/state.md, set index `status` yourself, loop on REJECT.
+        you read verdicts from .sdd/verdicts/ (one file per gate; latest = highest <nn> via Glob),
+        set index `status` yourself, loop on REJECT.
 LAW    Markdown spec = source of truth (authority). Reuse over repetition (DRY).
         A red test never makes code authoritative — fix the wrong spec first, then regenerate code.
 RULES  obey .claude/sdd/conventions.md: ids §2 · front-matter §3 · index rows §4 · status/duties §5
@@ -60,7 +61,7 @@ HAVE     read-only contracts shipped with the tool: conventions.md, scot.md, ui-
 | install_result | { ok: bool, log } | |
 | test_paths | [ tests/** ] | |
 | REPORT.md | file { failures[], per-test status } | tests/REPORT.md |
-| verdict_record | .sdd/state.md row { phase, scope, verdict: PASS\|REJECT, reasons[], routing, iteration: n/budget } | |
+| verdict_record | .sdd/verdicts/<nn>-<gate>-<scope>-<verdict>.md { phase, scope, verdict: PASS\|REJECT, reasons[], routing, iteration: n/budget } | one file per gate; read the latest by Glob — PASS/REJECT is in the filename, open the body only on REJECT |
 
 ## How to read a step
 ```
@@ -211,7 +212,7 @@ ON budget overflow OR routing: escalate:
   STOP that slice (or step 1–4) and report concisely:
     · scope            (slice_id or PLAN)
     · step + iteration vs budget
-    · failing verdict_record verbatim + its reasons[] from .sdd/state.md
+    · failing verdict_record verbatim + its reasons[] from its `.sdd/verdicts/` file
     · author           last routed to
 NEVER silently retry past budget. NEVER advance status on an unresolved scope.
 Slices already approved stay approved.
@@ -219,8 +220,8 @@ Slices already approved stay approved.
 
 ## Resume   `from files only`
 ```
-Loop state is reconstructable: each verdict_record carries `iteration: n/<budget>`,
-and index_rows.status shows which slices are done.
+Loop state is reconstructable: Glob `.sdd/verdicts/` (highest `<nn>` per scope = that scope's latest
+verdict_record, carrying `iteration: n/<budget>`); index_rows.status shows which slices are done.
 TO RESUME re-run /sdd-auto:
   skip every approved slice;
   re-enter the first non-approved slice at the step its latest verdict_record implies;
@@ -240,6 +241,6 @@ any REJECT                             → status unchanged (never regresses).
 ```
 REQUIREMENT.md · PLAN.md (incl. Slice plan) · target.md
 per slice: index_rows · spec_paths · src_paths · impl_note · test_paths · REPORT.md
-.sdd/state.md   append-only verdict_record log
+.sdd/verdicts/  append-only verdict log — one file per gate (no whole-file rewrite)
 index_rows.status advanced to approved for every completed slice
 ```
