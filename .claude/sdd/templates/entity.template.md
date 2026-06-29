@@ -1,11 +1,11 @@
 <!--
   TEMPLATE — ENTITY spec (kind: entity, DECLARATIVE — no SCoT, no UI). Authority: conventions §3/§4.
-  Copy to .sdd/specs/model/<ENT-id>.spec.md. An entity describes WHAT data it holds + the rules that bind it,
+  Copy to .sdd/specs/<MOD>/model/<ENT-id>.spec.md. An entity describes WHAT data it holds + the rules that bind it,
   never HOW it is stored. Both the code entity AND the DB schema change DERIVE from this spec.
   Markdown is the source of truth; reuse over repetition (DRY). Delete the "## Filled example".
 -->
 ---
-id: ENT-<kebab>                # required — matches filename + model.index row
+id: ENT-<kebab>                # required — matches filename + a <MOD>.index.md row
 name: <EntityName>            # required
 kind: entity                  # required — declarative
 module: MOD-<kebab>           # required — home module

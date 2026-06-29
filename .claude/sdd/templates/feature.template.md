@@ -1,11 +1,11 @@
 <!--
   TEMPLATE — FEATURE / USE-CASE spec (kind: use-case, behavioral orchestration).
-  Copy to .sdd/specs/features/<FEAT-nnn>.spec.md. Authority: conventions §2/§3/§5; body = SCoT (scot.md,
+  Copy to .sdd/specs/<MOD>/features/<FEAT-nnn>.spec.md. Authority: conventions §2/§3/§5; body = SCoT (scot.md,
   cross-class CALLs only). Markdown is the source of truth; reuse over repetition — name collaborators
   by id, never re-describe them. Delete the "## Filled example" from a real spec.
 -->
 ---
-id: FEAT-<nnn>                  # required — matches filename + features.index row
+id: FEAT-<nnn>                  # required — matches filename + a <MOD>.index.md row
 name: <FeatureName>            # required
 kind: use-case                 # required — behavioral orchestration
 module: MOD-<kebab>            # required — home module

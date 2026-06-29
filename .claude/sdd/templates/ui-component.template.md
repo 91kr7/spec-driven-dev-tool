@@ -1,12 +1,12 @@
 <!--
-  TEMPLATE — shared UI component (COMP-*, kind: gui). Copy to .sdd/specs/ui-components/COMP-<lowerCamel>.spec.md.
+  TEMPLATE — shared UI component (COMP-*, kind: gui). Copy to .sdd/specs/<MOD>/ui-components/COMP-<lowerCamel>.spec.md (<MOD> = owning module, MOD-shared when composed across ≥2 modules — Rule A).
   Authority: conventions §2/§3/§5 + ui-schema §6 (the EXTRA sections a COMP-* adds) + §7 (layers) + scot.md (only a non-trivial handler).
-  Discover before create: read ui-components.index.md first; a higher layer composes lower layers BY ID, never re-described.
+  Discover before create: read MOD-shared.index.md first; a higher layer composes lower layers BY ID, never re-described.
   No framework code, no CSS/colors/pixels — only design-token names. Markdown is the source of truth; reuse over repetition (DRY).
   Delete the "## Filled example".
 -->
 ---
-id: COMP-<lowerCamel>         # required — matches filename + a ui-components.index row
+id: COMP-<lowerCamel>         # required — matches filename + a <MOD>.index.md row
 name: <HumanName>            # required
 kind: gui                    # required — always gui for a UI component
 module: MOD-<kebab>          # required — e.g. MOD-ui

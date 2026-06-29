@@ -53,11 +53,11 @@ HAVE     read-only contracts shipped with the tool: conventions.md, scot.md, ui-
 | target.md | file | stack + canonical install/build/test commands |
 | slice | { slice_id, member_ids[], depends_on_closure[] } | |
 | slice_list | [ slice ] | execution order, authored by plan-architect inside PLAN.md |
-| index_rows | rows in level indexes, each with `status: draft\|reviewed\|implemented\|approved` | |
+| index_rows | rows in the per-module `<MOD>.index.md` (+ the global `modules.index.md`), each with `status: draft\|reviewed\|implemented\|approved` | |
 | spec_paths | [ .sdd/specs/**/*.spec.md ] | 5 levels: module/feature/entity/class/UI, incl. MOD-build/MOD-schema |
 | REUSE-REPORT.md | file { promoted: SHR-*\|COMP-*, demote_ids[] } | |
 | src_paths | [ path ] | only the spec's declared `source:` paths |
-| impl_note | .sdd/impl-notes/<level>/<id>.impl-notes.md | mirrors the spec's .sdd/specs/ folder + basename |
+| impl_note | .sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md | mirrors the spec's .sdd/specs/<MOD-id>/<level> path + basename |
 | install_result | { ok: bool, log } | |
 | test_paths | [ tests/** ] | |
 | TEST-REPORT.md | file { failures[], per-test status } | .sdd/TEST-REPORT.md |

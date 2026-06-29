@@ -1,5 +1,5 @@
 <!--
-  TEMPLATE — shared NON-UI abstraction (SHR-*, .sdd/specs/shared/). Copy to .sdd/specs/shared/SHR-<lowerCamel>.spec.md.
+  TEMPLATE — shared NON-UI abstraction (SHR-*). Copy to .sdd/specs/<MOD>/shared/SHR-<lowerCamel>.spec.md (<MOD> = owning module, MOD-shared when used across ≥2 modules — Rule A).
   Authority: conventions §2/§3/§5 + scot.md (ONLY when kind: service). Discover before create: reuse SHR-*/ENT- by id.
   Markdown is the source of truth; reuse over repetition (DRY). Delete the "## Filled example".
 

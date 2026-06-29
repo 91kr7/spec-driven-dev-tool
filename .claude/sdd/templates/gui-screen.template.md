@@ -1,14 +1,14 @@
 <!--
-  TEMPLATE — feature SCREEN spec (CLS-*, kind: gui). Copy to .sdd/specs/classes/CLS-<lowerCamel>.spec.md.
+  TEMPLATE — feature SCREEN spec (CLS-*, kind: gui). Copy to .sdd/specs/<MOD>/classes/CLS-<lowerCamel>.spec.md.
   UI form = ui-schema.md EXACTLY. A screen COMPOSES library components BY ID; never re-describes one.
-  Discover before create: read ui-components.index.md first. Markdown is the source of truth; reuse over repetition (DRY).
+  Discover before create: read MOD-shared.index.md + the module's <MOD>.index.md first. Markdown is the source of truth; reuse over repetition (DRY).
   Sections: # Purpose · # Public interface · # Invariants & rules · then the FIVE ui-schema sections
   (Wireframe · Component tree · State · Events · Acceptance criteria). No framework code, no CSS/colors —
   only design-token names; no business logic beyond view orchestration (call a feature/service by id).
   Delete the "## Filled example".
 -->
 ---
-id: CLS-<lowerCamel>          # required — matches filename + classes.index row
+id: CLS-<lowerCamel>          # required — matches filename + a <MOD>.index.md row
 name: <ScreenName>           # required
 kind: gui                    # required — feature-specific screen
 module: MOD-<web-or-ui>      # required

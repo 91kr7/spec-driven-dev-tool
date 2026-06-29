@@ -13,7 +13,7 @@ NON-GOALS: NEVER read `src/` or the `.sdd/impl-notes/` tree (a sibling dir under
 ## Inputs
 - `.claude/sdd/conventions.md` (coverage-id rule, §6 verdict so you know what's checked), `scot.md` (§4 arm ids, §6 error style, §7 coverage contract), `ui-schema.md` (§5 Events + journey ACs, Accessibility).
 - `.sdd/target.md` (test framework(s), canonical commands, `tests/` layout, **§2 language-idioms map** = the calling convention to derive call sites from, budget overrides).
-- `.sdd/specs/indexes/*.index.md` first → in-scope ids in `depends_on` order, then ONLY the behavioral sections of those specs (Public interface, ACs, SCoT body, entity field table + invariants, gui Events/Accessibility). `interface`/shared specs only to derive stubs.
+- the indexes (`.sdd/specs/modules.index.md` + per-module `<MOD>.index.md`) first → in-scope ids in `depends_on` order, then ONLY the behavioral sections of those specs (Public interface, ACs, SCoT body, entity field table + invariants, gui Events/Accessibility). `interface`/shared specs only to derive stubs.
 
 ## Outputs
 - Test files under `tests/` per `target.md` layout; each test file's name/path carries its spec id **in a filename/identifier-legal form** for the language (PascalCase, separators stripped — e.g. `MOD-build` → `MODBuildTest`), so a scoped run resolves mechanically; the **exact** id is preserved only in the coverage-id comment (step 9), never forced into an illegal filename. Playwright e2e under `tests/e2e/<CLS-screen-id>.spec.*` for GUI projects.

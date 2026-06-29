@@ -25,15 +25,13 @@
 .sdd/target.md               # stack + canonical build/test/run commands (the env contract)
 .sdd/REQUIREMENT.md          # raw + refined requirement (REQ-* ids), refined list as a dated changelog
 .sdd/PLAN.md                 # plan output (a delta on existing-SDD)
-.sdd/specs/indexes/{modules,features,model,classes,ui-components}.index.md  # one index per level
-.sdd/specs/modules/<id>.spec.md   # incl. MOD-build (scaffolding) + MOD-schema (DB projects)
-.sdd/specs/features/<id>.spec.md  # use-case: orchestration + integration acceptance
-.sdd/specs/model/<id>.spec.md     # entities: fields, relations, constraints
-.sdd/specs/classes/<id>.spec.md   # per-method SCoT (+ feature gui screens)
-.sdd/specs/ui-components/<id>.spec.md  # UI components — created only as screens compose them (ui-schema §9 catalog)
-.sdd/specs/shared/<id>.spec.md    # shared non-UI abstractions — indexed in classes.index.md
+.sdd/specs/modules.index.md       # GLOBAL skeleton: every MOD-* + depends_on + status (the only top-level index)
+.sdd/specs/<MOD-id>/<MOD-id>.spec.md    # each module's own spec, at the root of its folder (incl. MOD-build, and MOD-schema for a DB project)
+.sdd/specs/<MOD-id>/<MOD-id>.index.md   # per-module roster: every entity in this module, ALL levels (lazy — once it has ≥1 member)
+.sdd/specs/<MOD-id>/<level>/<id>.spec.md  # members; <level> ∈ {features,classes,model,ui-components,shared}; each subfolder created lazily
+.sdd/specs/MOD-shared/{shared,ui-components}/<id>.spec.md  # cross-cutting home: SHR-*/COMP-* whose consumers span ≥2 modules (Rule A); MOD-shared is a dependency SINK (depends_on MOD-build only)
 .sdd/specs/REUSE-REPORT.md        # reuse-analyst output: promotions + Demote-for-re-gate list
-.sdd/impl-notes/{modules,features,model,classes,ui-components,shared}/<id>.impl-notes.md  # concretization notes — MIRRORS the .sdd/specs/ hierarchy + basename; NOT the gated spec; the test-writer never reads this tree
+.sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md  # concretization notes — MIRRORS the spec's <MOD-id>/<level> path + basename; NOT the gated spec; the test-writer never reads this tree
 .sdd/verdicts/<nn>-<gate-agent>-<scope>-<verdict>.md  # one file per gate — the append-only verdict log (no rewrite)
 .sdd/TEST-REPORT.md          # test-runner → test-gatekeeper run result (§14; overwritten each run)
 
@@ -42,7 +40,7 @@ src/                         # GENERATED source (or framework roots, e.g. backen
 tests/                       # GENERATED test files (unit←classes, integration←features, constraint←entities, component←gui, e2e←gui screens)
 ```
 
-**Scaling option (decided in the plan):** for a large multi-module project the fine-grained indexes (`classes`/`model`/`ui-components`) MAY split per module under `.sdd/specs/indexes/<level>/<MOD-id>.index.md`; `modules`/`features` stay global. Default = single global index per level.
+**Organized by module, level inside.** Every entity lives under its home module: `.sdd/specs/<module:>/<level>/<id>.spec.md` — the **`module:` front-matter is the folder**, the **id prefix is the level** (`CLS-`→`classes`, `FEAT-`→`features`, `ENT-`→`model`, `COMP-`→`ui-components`, `SHR-`→`shared`; a `MOD-` spec sits at its folder root). Level subfolders and the per-module `<MOD>.index.md` are created **lazily** (only when populated). The single global `modules.index.md` is the architectural skeleton. A single-module project still uses `specs/<MOD>/…` (no flattening). **Cross-cutting placement (Rule A / LCA):** an `SHR-*`/`COMP-*` whose consumers all live in **one** module stays in that module's `shared/`/`ui-components/`; one whose consumers span **≥2** modules goes to **`MOD-shared`** (§13).
 
 ---
 
@@ -60,13 +58,14 @@ tests/                       # GENERATED test files (unit←classes, integration
 | `AC` | acceptance criterion | `AC<n>` | `AC1` |
 | `B` | SCoT branch | `B<n>` + arm | `B1.then`, `B3.empty` |
 
-**Terminology — "entity" (generic) vs `ENT-` (specific).** Unqualified, **entity** means *any planned node at any of the five levels* — one index row / one spec, whatever its prefix (`MOD-`/`FEAT-`/`ENT-`/`CLS-`/`COMP-`/`SHR-`). It is the generic word for "a thing in the plan/index" (e.g. "one row per entity", "every `REQ-*` covered by ≥1 entity", "process entities in `depends_on` order"). The prefix **`ENT-`** is the *narrow* sense — a **domain entity** (the `entity` kind: field table + relations + invariants). When the narrow sense is meant the text says `ENT-` or "`entity` **kind/spec**"; bare "entity" is always the generic node.
+**Terminology — "entity" (generic) vs `ENT-` (specific).** Unqualified, **entity** means *any planned node at any level* — one index row / one spec, whatever its prefix (`MOD-`/`FEAT-`/`ENT-`/`CLS-`/`COMP-`/`SHR-`). It is the generic word for "a thing in the plan/index" (e.g. "one row per entity", "every `REQ-*` covered by ≥1 entity", "process entities in `depends_on` order"). The prefix **`ENT-`** is the *narrow* sense — a **domain entity** (the `entity` kind: field table + relations + invariants). When the narrow sense is meant the text says `ENT-` or "`entity` **kind/spec**"; bare "entity" is always the generic node.
 
 - Ids are **stable**: never renumber/rename; new entries take the next free id; deprecate rather than rename.
-- A spec file is named after its id (`.sdd/specs/classes/CLS-userRepo.spec.md`).
+- A spec file is named after its id and lives under its home module (`.sdd/specs/MOD-domain/classes/CLS-userRepo.spec.md`).
 - **`MOD-build` is mandatory in every project.** It owns build files, manifests, config, CI, and framework/build/entry scaffolding (e.g. `tsconfig.json`, the app entry, `playwright.config.*` for a GUI project's e2e). It carries **no `depends_on`** itself, and **every other module declares `depends_on: MOD-build`**, so it is always the **first slice** — generated code cannot compile/build without the scaffolding.
   - GUI project (Frontend ≠ `none`) → `MOD-build` owns the e2e harness (`playwright.config.*` + `webServer`) and `target.md`'s `test-e2e` must be a real command, not `n/a`.
 - **`MOD-schema` is mandatory for a DB project** (`target.md` DB ≠ `none`) with any persisted `ENT-*`. It owns the **DB schema changes derived from the entity specs** (never hand-authored; forward-only, append-only once shipped) and MUST declare ≥1 forward schema-change script in `source:`. Its `depends_on` reaches the persistence module + the `ENT-*` it evolves, so it is ordered **after** the entities. Unlike `MOD-build`, it is **not requirement-exempt**: its `requirements` = the union of the `REQ-*` of the `ENT-*` whose schema it materializes (the DB exists for those persistence requirements). A non-DB project has no `MOD-schema`.
+- **`MOD-shared` is the cross-cutting home** — the single module that owns every `SHR-*`/`COMP-*` whose consumers span **≥2** modules (Rule A / LCA; an abstraction whose consumers all live in one module stays in *that* module — §13). It is a dependency **SINK**: it declares `depends_on: [MOD-build]` and **never** depends on a feature module (a gate REJECTs an upward edge). Created only when ≥1 cross-module shared abstraction exists — the plan-architect provisions it when foreseen, else the reuse-analyst creates it on the first cross-module promotion (so it is never empty); its `requirements` = the union of its members' `REQ-*`. Like `MOD-build`/`MOD-schema`, the id `MOD-shared` is reserved.
 
 ---
 
@@ -77,7 +76,7 @@ tests/                       # GENERATED test files (unit←classes, integration
 id: CLS-regCtrl                 # required — matches filename + an index row
 name: RegistrationController    # required
 kind: controller                # required — drives the FORM (table below)
-module: MOD-api                 # required for class/model/feature/gui
+module: MOD-api                 # the home module = the spec's FOLDER (§1); required for every entity (a MOD- spec sits at its folder root)
 layer: organism                 # ui-components only: atom|molecule|organism|layout
 depends_on: [CLS-userRepo, ENT-user]   # ids — topological order
 requirements: [REQ-001]         # back-link id(s)
@@ -122,21 +121,31 @@ Every `ACn` is verified at exactly one of three altitudes, **marked** so coverag
 
 ---
 
-## 4. Index row schema
+## 4. Index rows — two index types
 
+Indexes are **logical rosters**; agents **read them first**, then open only the specs they need (lazy loading). There are exactly two kinds:
+
+**Global `.sdd/specs/modules.index.md`** — one row per module (the skeleton):
 ```
-| id | name | description (WHAT, one line) | module | depends_on | spec | source | status |
+| id | name | description (WHAT, one line) | depends_on | spec | source | status |
 ```
+
+**Per-module `.sdd/specs/<MOD>/<MOD>.index.md`** — one row per entity living in that module, **all levels** (created lazily once the module has ≥1 member):
+```
+| id | name | description (WHAT, one line) | level | depends_on | spec | source | status |
+```
+- It **drops** `module` (redundant — it is the folder) and **adds** `level` (the entity's level = its id prefix: `feature`/`class`/`entity`/`ui-component`/`shared`).
+- A module that contains any `ui-component` row **appends** `layer` + `variants` after `level` (filled for the `COMP-*` rows, `—` elsewhere).
+
+Common to both:
 - `description` = what it represents, never how it is built.
 - `depends_on` = comma-separated ids **without brackets** (`—` when none).
-- `spec` / `source` = `—` when no file (`source: []`).
+- `spec` / `source` = `—` when no file (`source: []`); `spec` is the full path `.sdd/specs/<MOD>/…`.
 - `source` is **derived** from the spec's `source:` by the authoring agent.
 - `status` is the **canonical** lifecycle home (§5).
-- `ui-components.index.md` adds `layer` + `variants` columns.
-- `SHR-*` are listed in `classes.index.md` (no separate shared index).
+- A `SHR-*`/`COMP-*` is rostered in the `<MOD>.index.md` of the module that owns it — its home module, or `MOD-shared` when cross-cutting (§1, §13).
+- **Locate a spec by id** with `Glob .sdd/specs/**/<id>.spec.md` (you need not know its module up front; the id prefix gives the level). The matching index row gives its `status`/`depends_on`/`source`.
 - The authoring agent fills **every** column for each row it writes.
-
-Agents **read the index first**, then open only the specs they need (lazy loading).
 
 ---
 
@@ -310,9 +319,11 @@ Chain **REQUIREMENT → FEATURE → CLASS → SOURCE → TEST** is rebuilt on de
 
 **Shared/library nodes carry a subset of their consumers' requirements.** A `SHR-*`/`COMP-*` invents no `REQ-*`; it lists a **non-empty subset** of the `REQ-*` carried by the specs that `depends_on` it — each id both *consumer-backed* (some consumer carries it) **and** *genuinely realized by this node* (a leaf atom serves only some of its screen's requirements, not all) — so the chain `REQ → FEATURE/CLASS/screen → SHR/COMP` is explicit at every node, never inferred. A promoted abstraction therefore always carries ≥1 `REQ-*`: those of the duplicators it replaced that it actually realizes. Two failure modes a gate REJECTs: **empty** `requirements:` (no consumer, or nothing realized) → **orphan**; a listed `REQ-*` that **no consumer carries** → **excess** (gold-plating). The invariant "every spec carries ≥1 real `REQ-*`" stays universal — only `MOD-build` (whole-app scaffolding) is outside the requirement graph; `MOD-schema` carries the **union** of the `REQ-*` of the `ENT-*` whose schema it materializes (it realizes them all).
 
+**Placement of shared nodes (Rule A / LCA).** A shared node lives in the module that owns it: the **single** module if every consumer (the specs that `depends_on` it) lives there, else **`MOD-shared`**, the cross-cutting dependency sink (§1–§2). So the home module = the lowest common ancestor of the consumers. When a *second* module starts consuming an intra-module `SHR-*`/`COMP-*`, the reuse-analyst **re-homes** it to `MOD-shared` (file moves folder, id unchanged — id stability §2). `MOD-shared` itself depends only on `MOD-build`; a gate REJECTs any `MOD-shared → feature-module` edge.
+
 Every generated source file carries a header pointing back to its spec:
 ```
-// spec: CLS-regCtrl RegistrationController — .sdd/specs/classes/CLS-regCtrl.spec.md
+// spec: CLS-regCtrl RegistrationController — .sdd/specs/MOD-api/classes/CLS-regCtrl.spec.md
 ```
 - Comment syntax per target language; placed at the **top but after any mandatory first-line construct** (shebang, `<?php`, `"use client"`, XML/encoding decl).
 - **Comment-less formats are exempt** (pure JSON like `package.json`/`tsconfig.json`, lockfiles): the spec↔source link is the `source:` declaration alone — the gatekeeper never demands a header for them.

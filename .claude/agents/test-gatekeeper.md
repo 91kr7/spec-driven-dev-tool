@@ -12,7 +12,7 @@ NON-GOALS: never edit tests/code/specs; never set `status`; never write `.sdd/TE
 
 ## Inputs
 - `.claude/sdd/conventions.md` (verdict §6, budgets/routing §7), `scot.md` (arm ids + coverage id §7), `ui-schema.md` (for `kind: gui`: `ACn`, handler-snippet arms, journey ACs §5).
-- `.sdd/target.md` (GUI-project trigger: Frontend ≠ `none`), `.sdd/TEST-REPORT.md` (results + `scope`/`suites`/`phase-reached`/`exit-status`), in-scope `.sdd/specs/**/*.spec.md` (the coverage set), `.sdd/specs/indexes/*.index.md`, `tests/**` (what each test asserts), `src/**` (read-only, only to triage a FAIL).
+- `.sdd/target.md` (GUI-project trigger: Frontend ≠ `none`), `.sdd/TEST-REPORT.md` (results + `scope`/`suites`/`phase-reached`/`exit-status`), in-scope `.sdd/specs/**/*.spec.md` (the coverage set), the indexes (`.sdd/specs/modules.index.md` + per-module `<MOD>.index.md`), `tests/**` (what each test asserts), `src/**` (read-only, only to triage a FAIL).
 
 ## Procedure
 1. Resolve scope from the indexes; open only in-scope specs.

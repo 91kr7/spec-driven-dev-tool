@@ -1,7 +1,7 @@
 <!--
-  TEMPLATE — class/service/controller spec (behavioral, SCoT). Copy to .sdd/specs/classes/CLS-<lowerCamel>.spec.md.
+  TEMPLATE — class/service/controller spec (behavioral, SCoT). Copy to .sdd/specs/<MOD>/classes/CLS-<lowerCamel>.spec.md (<MOD> = the module: below).
   Authority: conventions §3 + scot.md (the ONLY behavioral grammar — branch ids [Bn], arm enumeration, §6 error style).
-  Discover before create: read classes.index.md first; reuse SHR-*/CLS-* by id.
+  Discover before create: read the module's <MOD>.index.md first; reuse SHR-*/CLS-* by id.
   Markdown is the source of truth; reuse over repetition (DRY). Delete the "## Filled example".
 -->
 ---

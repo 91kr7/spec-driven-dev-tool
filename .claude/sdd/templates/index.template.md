@@ -1,39 +1,60 @@
 <!--
-  TEMPLATE — level index (.sdd/specs/indexes/<level>.index.md). One index PER LEVEL:
-  modules, features, model, classes, ui-components. Authority: conventions §4 (row schema),
-  §2 (ids), §3 (front-matter — `source` is DERIVED from it), §5 (status lives HERE).
+  TEMPLATE — index files. There are TWO kinds (conventions §4):
+    1. GLOBAL      .sdd/specs/modules.index.md          — one row per MODULE (the skeleton).
+    2. PER-MODULE  .sdd/specs/<MOD>/<MOD>.index.md       — one row per entity in that module, ALL levels (created lazily).
+  Authority: conventions §1 (layout), §4 (row schema), §2 (ids), §3 (front-matter — `source` is DERIVED), §5 (status lives HERE).
   Markdown is the source of truth (authority); reuse over repetition (DRY).
   Delete the "## Filled example" when authoring a real index.
 -->
-# `<level>` index
 
-> Canonical roster of **every** entry at one level. Agents read this first, then open
-> only the specs they need (lazy loading). `status` is the **canonical** lifecycle home
-> (only the command advances it). `source` is **derived** from each spec's `source:`
-> front-matter by the authoring agent. The authoring agent fills **every** column.
+# Global module index — `.sdd/specs/modules.index.md`
 
-**Columns (conventions §4):** `id` (§2 prefix) · `name` · `description` (WHAT, one line, never how) · `module` (home MOD-*) · `depends_on` (comma-separated ids, deps first, `—` if none) · `spec` (path, `—` if none) · `source` (derived, `—` when `source: []`) · `status` (draft|reviewed|implemented|approved).
-**ui-components.index.md only** adds two columns after `module`: `layer` (atom|molecule|organism|layout) + `variants` (or `—`).
+> The architectural skeleton: **every** `MOD-*` + its `depends_on` + `status`. Agents read this
+> first to map the module graph, then open the per-module index they need (lazy loading).
 
-| id | name | description (WHAT, one line) | module | depends_on | spec | source | status |
-|----|------|------------------------------|--------|------------|------|--------|--------|
-| `<PREFIX-id>` | `<Name>` | `<one-line WHAT>` | `<MOD-id>` | `<dep-id, … | —>` | `<.sdd/specs/<level>/<id>.spec.md>` | `<src/… | —>` | `<draft|reviewed|implemented|approved>` |
+**Columns (conventions §4):** `id` (`MOD-*`) · `name` · `description` (WHAT, one line) · `depends_on` (comma-separated `MOD-*`, deps first, `—` if none) · `spec` (`.sdd/specs/<MOD>/<MOD>.spec.md`) · `source` (derived, `—` when `source: []`) · `status` (draft|reviewed|implemented|approved).
+
+| id | name | description (WHAT, one line) | depends_on | spec | source | status |
+|----|------|------------------------------|------------|------|--------|--------|
+| `<MOD-id>` | `<Name>` | `<one-line WHAT>` | `<MOD-dep, … \| —>` | `.sdd/specs/<MOD-id>/<MOD-id>.spec.md` | `<src/… \| —>` | `<draft\|reviewed\|implemented\|approved>` |
+
+---
+
+# Per-module index — `.sdd/specs/<MOD>/<MOD>.index.md`
+
+> Roster of **every** entity that lives in this module, across all levels. It **drops** the `module`
+> column (it IS the folder) and **adds** `level`. A module that contains any `ui-component` row
+> **appends** `layer` + `variants` after `level`. `status` is the canonical lifecycle home (only the
+> command advances it); `source` is **derived** from each spec's `source:`. Fill **every** column.
+
+**Columns:** `id` (§2 prefix) · `name` · `description` (WHAT, one line) · `level` (feature|class|entity|ui-component|shared) · `depends_on` (ids, deps first, `—` if none) · `spec` (path) · `source` (derived, `—` when `source: []`) · `status`.
+
+| id | name | description (WHAT, one line) | level | depends_on | spec | source | status |
+|----|------|------------------------------|-------|------------|------|--------|--------|
+| `<PREFIX-id>` | `<Name>` | `<one-line WHAT>` | `<level>` | `<dep-id, … \| —>` | `.sdd/specs/<MOD>/<level>/<id>.spec.md` | `<src/… \| —>` | `<draft\|reviewed\|implemented\|approved>` |
 
 ---
 
 ## Filled example
 
-**Base columns** (modules / features / model / classes all share this shape; `classes.index.md` also hosts `SHR-*` rows):
+**Global `modules.index.md`:**
 
-| id | name | description (WHAT, one line) | module | depends_on | spec | source | status |
-|----|------|------------------------------|--------|------------|------|--------|--------|
-| `CLS-userService` | UserService | Owns the user lifecycle use cases | `MOD-domain` | `CLS-userRepo, SHR-passwordHasher, ENT-user` | `.sdd/specs/classes/CLS-userService.spec.md` | `src/domain/UserService.ts` | approved |
-| `SHR-passwordHasher` | PasswordHasher | Hashes/verifies passwords behind a stable interface | `MOD-domain` | — | `.sdd/specs/shared/SHR-passwordHasher.spec.md` | `src/domain/PasswordHasher.ts` | reviewed |
-| `FEAT-003` | Account dashboard | Compose the signed-in landing view (compositional) | `MOD-api` | `FEAT-002, CLS-dashboardScreen` | `.sdd/specs/features/FEAT-003.spec.md` | — | draft |
+| id | name | description (WHAT, one line) | depends_on | spec | source | status |
+|----|------|------------------------------|------------|------|--------|--------|
+| `MOD-build` | Build & scaffolding | Build files, manifests, config, app entry | — | `.sdd/specs/MOD-build/MOD-build.spec.md` | `package.json, tsconfig.json` | approved |
+| `MOD-shared` | Shared | Cross-cutting abstractions used by ≥2 modules (dependency sink) | `MOD-build` | `.sdd/specs/MOD-shared/MOD-shared.spec.md` | — | reviewed |
+| `MOD-domain` | Domain | User lifecycle + persistence | `MOD-build` | `.sdd/specs/MOD-domain/MOD-domain.spec.md` | — | approved |
 
-**ui-components.index.md** (adds `layer` + `variants`; higher layers compose lower by id):
+**Per-module `MOD-domain.index.md`** (no UI → base columns):
 
-| id | name | description (WHAT, one line) | module | layer | variants | depends_on | spec | source | status |
-|----|------|------------------------------|--------|-------|----------|------------|------|--------|--------|
-| `COMP-button` | Button | A clickable action control | `MOD-ui` | atom | `primary, secondary, ghost, danger` | — | `.sdd/specs/ui-components/COMP-button.spec.md` | `src/ui/atoms/Button.tsx` | approved |
-| `COMP-formField` | FormField | A labelled control with inline validation | `MOD-ui` | molecule | — | `COMP-textInput` | `.sdd/specs/ui-components/COMP-formField.spec.md` | `src/ui/molecules/FormField.tsx` | draft |
+| id | name | description (WHAT, one line) | level | depends_on | spec | source | status |
+|----|------|------------------------------|-------|------------|------|--------|--------|
+| `CLS-userService` | UserService | Owns the user lifecycle use cases | class | `CLS-userRepo, SHR-passwordHasher, ENT-user` | `.sdd/specs/MOD-domain/classes/CLS-userService.spec.md` | `src/domain/UserService.ts` | approved |
+| `ENT-user` | User | The user aggregate | entity | — | `.sdd/specs/MOD-domain/model/ENT-user.spec.md` | `src/domain/User.ts` | approved |
+
+**Per-module `MOD-shared.index.md`** (contains UI → appends `layer` + `variants` after `level`):
+
+| id | name | description (WHAT, one line) | level | layer | variants | depends_on | spec | source | status |
+|----|------|------------------------------|-------|-------|----------|------------|------|--------|--------|
+| `SHR-passwordHasher` | PasswordHasher | Hashes/verifies passwords behind a stable interface | shared | — | — | — | `.sdd/specs/MOD-shared/shared/SHR-passwordHasher.spec.md` | `src/shared/PasswordHasher.ts` | reviewed |
+| `COMP-button` | Button | A clickable action control | ui-component | atom | `primary, secondary, ghost, danger` | — | `.sdd/specs/MOD-shared/ui-components/COMP-button.spec.md` | `src/ui/atoms/Button.tsx` | approved |

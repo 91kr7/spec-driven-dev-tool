@@ -11,15 +11,15 @@
 
 | Aspect | Value |
 |--------|-------|
-| Project type | `<new app | feature on existing SDD project>` |
-| Architecture | `<monolith | modular | microservices | library | CLI>` |
-| Primary language | `<Java | Kotlin | C# | TypeScript | Python | Go | …>` + version |
-| Runtime | `<JVM 21 | .NET 8 | Node 20 | Python 3.12 | …>` |
-| Backend framework | `<Spring | ASP.NET | Express/Nest | FastAPI | Gin | none>` |
-| Frontend framework | `<React | Angular | Vue | Svelte | none>` (≠ `none` ⇒ GUI project) |
-| Build tool / package manager | `<Gradle | Maven | dotnet | npm/pnpm | uv/poetry | go>` |
-| Test framework(s) | `<unit>` + `<integration>` + `<component/UI>` + `<Playwright | Cypress | none>` (e2e — GUI only) |
-| DB / persistence | `<Postgres | MySQL | SQLite | none>` + `<schema-versioning tool, e.g. Flyway | Prisma Migrate | EF Core>` |
+| Project type | `<new app \| feature on existing SDD project>` |
+| Architecture | `<monolith \| modular \| microservices \| library \| CLI>` |
+| Primary language | `<Java \| Kotlin \| C# \| TypeScript \| Python \| Go \| …>` + version |
+| Runtime | `<JVM 21 \| .NET 8 \| Node 20 \| Python 3.12 \| …>` |
+| Backend framework | `<Spring \| ASP.NET \| Express/Nest \| FastAPI \| Gin \| none>` |
+| Frontend framework | `<React \| Angular \| Vue \| Svelte \| none>` (≠ `none` ⇒ GUI project) |
+| Build tool / package manager | `<Gradle \| Maven \| dotnet \| npm/pnpm \| uv/poetry \| go>` |
+| Test framework(s) | `<unit>` + `<integration>` + `<component/UI>` + `<Playwright \| Cypress \| none>` (e2e — GUI only) |
+| DB / persistence | `<Postgres \| MySQL \| SQLite \| none>` + `<schema-versioning tool, e.g. Flyway \| Prisma Migrate \| EF Core>` |
 
 ## 2. Source mapping, naming & language idioms
 

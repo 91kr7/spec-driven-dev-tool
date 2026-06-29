@@ -1,7 +1,7 @@
 <!--
   TEMPLATE — MODULE spec (kind: module, structural overview). Schema per conventions §3.
   A module partitions the system and names the entries it contains — no SCoT, no UI schematic.
-  Copy to .sdd/specs/modules/MOD-<kebab>.spec.md. Markdown is the source of truth; reuse over repetition (DRY).
+  Copy to .sdd/specs/<MOD-id>/<MOD-id>.spec.md (the module spec sits at the root of its own folder; register it in the global modules.index.md). Markdown is the source of truth; reuse over repetition (DRY).
   Delete the "## Filled example" from a real spec.
 -->
 ---
