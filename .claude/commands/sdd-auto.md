@@ -166,7 +166,7 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
 ### Step 7 — Test the slice   `[test budget 5]`   `status: implemented → approved`
 ```
 7a ▶▶ INVOKE test-writer   (independent oracle — NEVER reads src/ or .sdd/impl-notes/; it DOES read its contracts: target.md §2 idioms map, conventions, scot/ui-schema)
-     IN  conventions ; scot ; ui-schema ; target.md (§2 idioms map + tests/ layout) ; the indexes + in-scope spec_paths (behavioral sections only) ; [test-bug re-INVOKE: + reasons[] + prior test_paths]   (NEVER src/ or impl-notes — the firewall)
+     IN  conventions ; scot ; ui-schema ; target.md (§2 idioms map + tests/ layout) ; the indexes + in-scope spec_paths (behavioral sections only) + every spec they reference by id (depends_on + CALL/COMP, via Glob .sdd/specs/**/<id>.spec.md — to derive stubs) ; [test-bug re-INVOKE: + reasons[] + prior test_paths]   (NEVER src/ or impl-notes — the firewall)
      OUT test_paths : ≥1 test per ACn and per SCoT arm; GUI → Playwright e2e per (journey) AC,
                       selecting by accessible role/name from the spec.
 
