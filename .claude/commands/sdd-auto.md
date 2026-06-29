@@ -135,7 +135,7 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
    ··  YOU   then: (1) for each re_homed {old_path → new_path} → `mv old_path new_path` (Bash — authors have no move/delete tool); (2) for each id in demote_ids → set index_rows.status: draft
 
 5d ▶▶ GATE analysis-gatekeeper   (the only spec-phase blocker)
-     IN  spec_paths ; REUSE-REPORT.md ; REQUIREMENT.md ; conventions.md ; target.md ; current_date
+     IN  spec_paths ; the indexes (modules.index.md + per-module <MOD>.index.md — the full depends_on graph) ; REUSE-REPORT.md ; REQUIREMENT.md ; conventions.md ; target.md ; current_date
      OUT verdict_record { phase: analysis, scope: slice_id, iteration: n/3 }
       PASS         → YOU set slice spec index_rows.status: draft → reviewed; step 6.
       REJECT       → by routing (each re-invoke carries the verdict reasons[]): spec defect → spec-writer (5b) · duplication → reuse-analyst (5c);
