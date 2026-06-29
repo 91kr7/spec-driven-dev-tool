@@ -15,7 +15,6 @@ id: SHR-<lowerCamel>          # required — matches filename
 name: <AbstractionName>      # required
 kind: <interface|service|dto|enum|type|config>   # drives the FORM
 module: MOD-<kebab>          # required
-status: draft                # MIRRORS the index
 depends_on: [<SHR-*|ENT-* ids, deps first>]
 requirements: [REQ-<nnn>]    # back-link
 source: [<src/shared/… from target.md>]

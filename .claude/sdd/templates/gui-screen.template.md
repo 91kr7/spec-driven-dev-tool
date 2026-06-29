@@ -12,7 +12,6 @@ id: CLS-<lowerCamel>          # required — matches filename + classes.index ro
 name: <ScreenName>           # required
 kind: gui                    # required — feature-specific screen
 module: MOD-<web-or-ui>      # required
-status: draft                # MIRRORS the index
 depends_on: [COMP-<id>, FEAT-<nnn>]   # every COMP-* composed + any FEAT-*/CLS-* called; topological
 requirements: [REQ-<nnn>]    # back-link
 source: [src/<web>/<ScreenName>.<ext>]

@@ -11,7 +11,6 @@ name: <HumanName>            # required
 kind: gui                    # required — always gui for a UI component
 module: MOD-<kebab>          # required — e.g. MOD-ui
 layer: <atom|molecule|organism|layout>   # required (ui-schema §7)
-status: draft                # MIRRORS the index
 depends_on: [<COMP-id>]      # LOWER-layer components this composes; [] if none
 requirements: [REQ-<nnn>]    # back-link
 source: [<src/path/Component.ext>]

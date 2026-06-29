@@ -53,7 +53,7 @@ HAVE     read-only contracts shipped with the tool: conventions.md, scot.md, ui-
 | target.md | file | stack + canonical install/build/test commands |
 | slice | { slice_id, member_ids[], depends_on_closure[] } | |
 | slice_list | [ slice ] | execution order, authored by plan-architect inside PLAN.md |
-| index_rows | rows in level indexes, each with `status: draft\|reviewed\|approved` | |
+| index_rows | rows in level indexes, each with `status: draft\|reviewed\|implemented\|approved` | |
 | spec_paths | [ specs/**/*.spec.md ] | 5 levels: module/feature/entity/class/UI, incl. MOD-build/MOD-schema |
 | REUSE-REPORT.md | file { promoted: SHR-*\|COMP-*, demote_ids[] } | |
 | src_paths | [ path ] | only the spec's declared `source:` paths |
@@ -122,7 +122,7 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
 ### Step 5 — Specify the slice   `[analysis budget 3]`   `status: draft → reviewed`
 ```
 5a ··  YOU   demote (feature-evolution only) — ONLY the entities this change rewrites
-     IN  index_rows of the slice's `MODIFY` members (per the PLAN delta) whose status ∈ {reviewed, approved}
+     IN  index_rows of the slice's `MODIFY` members (per the PLAN delta) whose status ∈ {reviewed, implemented, approved}
      OUT those rows → status: draft (§5).  `NEW` members start at draft; unchanged `depends_on`-closure members stay `approved` (read-only deps — never demoted, never re-worked).
 
 5b ▶▶ INVOKE spec-writer
@@ -154,16 +154,16 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
    ▶▶ GATE code-gatekeeper
      IN  src_paths ; spec_paths (this slice) ; impl_note ; install_result
      OUT verdict_record { phase: code, scope: slice_id, iteration: n/3 }
-      PASS         → step 7.   (code PASS advances no status.)
+      PASS         → YOU set slice index_rows.status: reviewed → implemented; step 7.
       REJECT       → by routing:
         code-implementer → minimal diff (6a); loop step 6b.
-        spec-writer      → re-validate spec: set status reviewed → draft, re-run
+        spec-writer      → re-validate spec: demote status → draft, re-run
                            spec-writer (5b) → reuse-analyst (5c, if changed) → analysis-gatekeeper (5d)
                            → re-advance to reviewed, then resume code; loop step 6b.
       OVERFLOW(>3) → ESCALATE; stop slice.
 ```
 
-### Step 7 — Test the slice   `[test budget 5]`   `status: reviewed → approved`
+### Step 7 — Test the slice   `[test budget 5]`   `status: implemented → approved`
 ```
 7a ▶▶ INVOKE test-writer   (independent oracle — NEVER reads src/ or impl-notes/)
      IN  spec_paths (this slice) ONLY
@@ -177,9 +177,9 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
 7c ▶▶ GATE test-gatekeeper
      IN  REPORT.md ; spec_paths (for coverage) ; conventions.md
      OUT verdict_record { phase: test, scope: slice_id, coverage, routing, iteration: n/5 }
-      PASS (green + full coverage) → YOU set slice index_rows.status: reviewed → approved; step 8.
+      PASS (green + full coverage) → YOU set slice index_rows.status: implemented → approved; step 8.
       REJECT → route per triage (§7); each loop returns to the sub-step that re-gates the fix:
-        spec bug → spec-writer (5b)      : set status reviewed → draft, loop step 5, then step 6 regenerates code.
+        spec bug → spec-writer (5b)      : demote status → draft, loop step 5, then step 6 regenerates code.
         code bug → code-implementer (6a) : loop step 6 (re-pass the code gate before re-testing).
         test bug → test-writer (7a)      : loop step 7a.
       routing: escalate (suite never ran / app won't boot / e2e skipped) → ESCALATE immediately (NOT a budget iteration).
@@ -231,9 +231,9 @@ TO RESUME re-run /sdd-auto:
 ## Status transitions   `you make them; gatekeepers never do`
 ```
 step 5d      analysis PASS             → slice spec index_rows.status: draft → reviewed.
-step 7c      test PASS (green + full     → reviewed → approved.
-             coverage, implies code PASS)
-step 6b      code PASS alone            → advances nothing.
+step 6b      code PASS                 → reviewed → implemented.
+step 7c      test PASS (green + full   → implemented → approved.
+             coverage)
 any REJECT                             → status unchanged (never regresses).
 ```
 

@@ -9,7 +9,6 @@ id: CLS-<lowerCamel>          # required — matches filename
 name: <ClassName>            # required
 kind: <service|controller>   # required — behavioral → SCoT body
 module: MOD-<kebab>          # required — home module
-status: draft                # MIRRORS the index
 depends_on: [<CLS-*|SHR-*|ENT-* ids, deps first>]
 requirements: [REQ-<nnn>]    # back-link
 source: [<src/… from target.md conventions>]

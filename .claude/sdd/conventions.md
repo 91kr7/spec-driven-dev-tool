@@ -76,7 +76,6 @@ name: RegistrationController    # required
 kind: controller                # required — drives the FORM (table below)
 module: MOD-api                 # required for class/model/feature/gui
 layer: organism                 # ui-components only: atom|molecule|organism|layout
-status: draft                   # draft|reviewed|approved — MIRRORS the index (index is canonical)
 depends_on: [CLS-userRepo, ENT-user]   # ids — topological order
 requirements: [REQ-001]         # back-link id(s)
 source: [src/api/RegistrationController.ts]   # AUTHORITATIVE spec→source mapping
@@ -86,6 +85,7 @@ error_style: result             # behavioral specs only: result|raise (canonical
 ---
 ```
 
+- **`status` is NOT a front-matter field — it lives ONLY in the index row** (§5, the canonical home): `draft → reviewed → implemented → approved`, advanced by the orchestrator. Read an entity's state from its index row, never from the spec.
 - `source:` is the **single authoritative** spec→source map. The index `source` column is **derived** from it by the authoring agent — never hand-edited later. NEW entity → propose paths from `target.md`; EXISTING → real files; `[]` for a purely-compositional feature.
 - `requirements:` is the back-link to the `REQ-*` id(s) the spec realizes — **real ids or, ONLY for `MOD-build`, `—`; never a prose annotation**. Every other spec needs ≥1 real `REQ-*`. `MOD-build` is the **sole** exemption: it is scaffolding for the *whole* app, tied to no single requirement (test: removing any one `REQ-*` never removes it). Two kinds of spec own no requirement directly but still carry one, drawn from a related set's `REQ-*` (never empty — empty ⇒ **orphan**, blocking): **`MOD-schema`** → the **union** of the `REQ-*` of the `ENT-*` whose schema it materializes (it realizes them all; the DB exists for those persistence requirements); **shared/library** specs (`SHR-*`, baseline-or-promoted `COMP-*`) → a **non-empty subset** of the `REQ-*` carried by their consumers (the specs that `depends_on` them), where each listed id is both *consumer-backed* (some real consumer carries it) **and** *genuinely realized here* — so a fine-grained atom lists only the consumer `REQ-*` it actually serves, not its screen's whole set. A cell `REQ-*` that **no consumer carries** is **excess** (gold-plating, blocking). So traceability is explicit at every node, and "no requirement" — or an unbacked one — always signals a real defect.
 - **One file ↔ one spec by default.** A shared aggregator MAY be co-owned only if every co-owner declares it in `source:` and names `owns_sections:`. Undeclared shared ownership is blocking.
@@ -139,12 +139,13 @@ Agents **read the index first**, then open only the specs they need (lazy loadin
 
 ## 5. Status lifecycle & separation of duties
 
-Per-entity status lives in the **index row**: `draft → reviewed → approved`.
+Per-entity status lives in the **index row**: `draft → reviewed → implemented → approved` — one state per gate.
 - `draft` — authored, not yet through the analysis gate.
-- `reviewed` — passed the analysis gate.
-- `approved` — implemented + code gate PASS + tests green + test gate PASS.
+- `reviewed` — passed the **analysis** gate (spec OK); code not yet written.
+- `implemented` — passed the **code** gate (code matches spec, compiles); tests pending.
+- `approved` — passed the **test** gate (suite green + full coverage).
 
-**Backward transition (spec change after `reviewed`).** Code is only generated from a `reviewed` spec. So whenever a spec changes after `reviewed`/`approved` — a gate routing a **spec bug**, a **feature evolution**, or a **reuse-analyst promotion** that rewrites a gated spec — the **command demotes** it `→ draft`, `spec-writer` fixes it, then it re-flows the forward path. A **code** or **test** bug never demotes the spec.
+**Backward transition (spec change after `reviewed`).** Code is only generated from a `reviewed` spec. So whenever a spec changes after `reviewed`/`implemented`/`approved` — a gate routing a **spec bug**, a **feature evolution**, or a **reuse-analyst promotion** that rewrites a gated spec — the **command demotes** it `→ draft`, `spec-writer` fixes it, then it re-flows the forward path. A **code** or **test** bug never demotes the spec.
 
 **Separation of duties (strict):**
 - **Gatekeepers JUDGE only** — write one verdict **file** to `.sdd/verdicts/` (§6); never edit specs/code/tests/`status`.
@@ -188,10 +189,10 @@ Per-entity status lives in the **index row**: `draft → reviewed → approved`.
 - iteration: 1/3
 - verdict: PASS
 - reasons:
-  - §3 front-matter: 9/9 valid (id↔filename↔index, status=draft, error_style on the 5 behavioral specs).
+  - §3 front-matter: 9/9 valid (id↔filename↔index, error_style on the 5 behavioral specs).
   - §13 traceability: REQ-003..009 each reachable; consumers(SHR-passwordHasher)={CLS-authService}, requirements={004,005,006} ⊆ consumers', no orphan/excess.
   - §5 AC testability: every spec ≥1 AC (G/W/T); behavioral ACs map to SCoT arms.
-  - §4/§6 consistency: every depends_on/CALL/collaborator resolves; indexes mirror front-matter.
+  - §4/§6 consistency: every depends_on/CALL/collaborator resolves; index source/ids match front-matter.
   - §12 cycles: acyclic. §9 duplication: REUSE-REPORT promoted=none, ownership=clean (consumer set re-verified).
 - routing: none
 ```

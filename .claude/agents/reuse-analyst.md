@@ -38,5 +38,5 @@ NON-GOALS: never judge or write a verdict (the analysis-gatekeeper is the only s
 
 ## Hand-off
 - Writes only promoted/edited specs, index rows (not `status`), and `REUSE-REPORT.md`.
-- **Demote flag:** if a rewrite touches a spec already at `reviewed`/`approved`, list its id under a **`Demote-for-re-gate:`** heading in `REUSE-REPORT.md` — you cannot set `status`, so this tells the command to demote it `→ draft` for re-gating.
+- **Demote flag:** if a rewrite touches a spec already at `reviewed`/`implemented`/`approved`, list its id under a **`Demote-for-re-gate:`** heading in `REUSE-REPORT.md` — you cannot set `status`, so this tells the command to demote it `→ draft` for re-gating.
 - The analysis-gatekeeper and spec-writer consume these files next. Re-run whenever specs change.

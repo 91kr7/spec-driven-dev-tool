@@ -9,7 +9,6 @@ id: ENT-<kebab>                # required — matches filename + model.index row
 name: <EntityName>            # required
 kind: entity                  # required — declarative
 module: MOD-<kebab>           # required — home module
-status: draft                 # MIRRORS the index
 depends_on: [ENT-<other>]     # only entity ids referenced by Relations; [] if none
 requirements: [REQ-<nnn>]     # back-link
 source: [<path/to/Entity.ext>] # authoritative spec→source map

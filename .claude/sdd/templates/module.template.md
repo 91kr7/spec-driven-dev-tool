@@ -9,7 +9,6 @@ id: MOD-<kebab>                 # required — matches filename
 name: <HumanModuleName>         # required
 kind: module                   # required — drives the structural-overview FORM
 module: MOD-<kebab>             # required — self-reference (a module is its own home)
-status: draft                  # MIRRORS modules.index (index is canonical)
 depends_on: [MOD-<other>]      # other MODULE ids — topological; [] if none
 requirements: [REQ-<nnn>]      # back-link; [] if purely infra
 source: []                     # usually [] — EXCEPTION: MOD-build / MOD-schema own their infra FILES here (conventions §2)
@@ -52,7 +51,6 @@ id: MOD-build
 name: Build & Infrastructure
 kind: module
 module: MOD-build
-status: draft
 depends_on: []
 requirements: []
 source: [package.json, tsconfig.json, .github/workflows/ci.yml]
@@ -82,7 +80,6 @@ id: MOD-schema
 name: Database Schema
 kind: module
 module: MOD-schema
-status: draft
 depends_on: [MOD-model, ENT-user]
 requirements: [REQ-001]         # NOT exempt — the union of the REQ-* of the ENT-* it materializes
 source: [db/schema/V1__create_user.sql]

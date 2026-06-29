@@ -12,12 +12,12 @@
 > (only the command advances it). `source` is **derived** from each spec's `source:`
 > front-matter by the authoring agent. The authoring agent fills **every** column.
 
-**Columns (conventions §4):** `id` (§2 prefix) · `name` · `description` (WHAT, one line, never how) · `module` (home MOD-*) · `depends_on` (comma-separated ids, deps first, `—` if none) · `spec` (path, `—` if none) · `source` (derived, `—` when `source: []`) · `status` (draft|reviewed|approved).
+**Columns (conventions §4):** `id` (§2 prefix) · `name` · `description` (WHAT, one line, never how) · `module` (home MOD-*) · `depends_on` (comma-separated ids, deps first, `—` if none) · `spec` (path, `—` if none) · `source` (derived, `—` when `source: []`) · `status` (draft|reviewed|implemented|approved).
 **ui-components.index.md only** adds two columns after `module`: `layer` (atom|molecule|organism|layout) + `variants` (or `—`).
 
 | id | name | description (WHAT, one line) | module | depends_on | spec | source | status |
 |----|------|------------------------------|--------|------------|------|--------|--------|
-| `<PREFIX-id>` | `<Name>` | `<one-line WHAT>` | `<MOD-id>` | `<dep-id, … | —>` | `<specs/<level>/<id>.spec.md>` | `<src/… | —>` | `<draft|reviewed|approved>` |
+| `<PREFIX-id>` | `<Name>` | `<one-line WHAT>` | `<MOD-id>` | `<dep-id, … | —>` | `<specs/<level>/<id>.spec.md>` | `<src/… | —>` | `<draft|reviewed|implemented|approved>` |
 
 ---
 

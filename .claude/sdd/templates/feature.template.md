@@ -9,7 +9,6 @@ id: FEAT-<nnn>                  # required — matches filename + features.index
 name: <FeatureName>            # required
 kind: use-case                 # required — behavioral orchestration
 module: MOD-<kebab>            # required — home module
-status: draft                  # MIRRORS the index
 depends_on: [CLS-<id>, ENT-<id>]   # every collaborator id, topological
 requirements: [REQ-<nnn>]      # back-link
 source: []                     # [] if purely compositional (integration tests only); else one coordinator file
