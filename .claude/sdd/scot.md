@@ -7,9 +7,14 @@
 
 ## 1. Scope & purpose
 
-Used by `kind:` **behavioral** specs (`service`, `controller`, `use-case`). Not for structural specs (declarative) or `gui` specs (→ `ui-schema.md`). A `gui` spec MAY embed a small SCoT snippet for a non-trivial handler.
+- Used by `kind:` **behavioral** specs: `service`, `controller`, `use-case`.
+- NOT for structural specs (declarative) or `gui` specs (→ `ui-schema.md`).
+- A `gui` spec MAY embed a small SCoT snippet for a non-trivial handler.
 
-**Why a fixed grammar:** faithful (not 1:1) translation to any language; **stable branch ids** make coverage mechanical and edit-resistant; equivalence is judged by **tests**, never by textual diff.
+**Why a fixed grammar:**
+- Faithful (not 1:1) translation to any language.
+- **Stable branch ids** make coverage mechanical and edit-resistant.
+- Equivalence is judged by **tests**, never by textual diff.
 
 ---
 
@@ -24,9 +29,13 @@ Used by `kind:` **behavioral** specs (`service`, `controller`, `use-case`). Not 
 | Literal | `"text"`, `42`, `true`, `null` |
 | Field access | `user.email` |
 
-Indentation = 2 spaces (readability only); `END` is authoritative for block scope.
+- Indentation = 2 spaces (readability only).
+- `END` is authoritative for block scope.
 
-**Neutral types** (implementer **and** test-writer both map via `target.md` §2's language-idioms map — same map ⇒ converging call sites, so a spec-derived test compiles against the real code without reading `src/`): `Int Long Float Decimal Bool String Char Bytes Date DateTime UUID`, `List<T> Set<T> Map<K,V> Option<T> Result<T,E> Void Any`. Domain/structural types referenced by id/name (`User` = ENT-user).
+**Neutral types.** Implementer **and** test-writer both map them via `target.md` §2's language-idioms map. Same map ⇒ converging call sites, so a spec-derived test compiles against the real code without reading `src/`.
+- Primitives: `Int Long Float Decimal Bool String Char Bytes Date DateTime UUID`
+- Generics: `List<T> Set<T> Map<K,V> Option<T> Result<T,E> Void Any`
+- Domain/structural types referenced by id/name (`User` = ENT-user).
 
 ---
 
@@ -42,7 +51,8 @@ FUNCTION <name>(<param>: <Type>, …) -> <ReturnType>
   <body>
 END
 ```
-- `ASYNC FUNCTION` + `AWAIT` at call sites; `PURE FUNCTION` marks side-effect-free.
+- `ASYNC FUNCTION` + `AWAIT` at call sites.
+- `PURE FUNCTION` marks side-effect-free.
 - Error style is **declared in front-matter** `error_style: result|raise` (§6); the body MAY restate it for readability.
 
 ---
@@ -99,7 +109,7 @@ END
 | `EMIT <Event>(payload)` | publish a domain event |
 | `ASSERT <cond>` | an invariant the code must enforce |
 
-`LOG`/`EMIT`/`ASSERT` express **intent**; the concrete mechanism goes in impl-notes.
+`LOG`/`EMIT`/`ASSERT` express **intent**. The concrete mechanism goes in impl-notes.
 
 ---
 
@@ -109,18 +119,19 @@ Declared in front-matter `error_style:` (conventions §3, the canonical home):
 - **`result`** — functions return `Result<T,E>` (`Ok`/`Err`).
 - **`raise`** — functions `RAISE`; callers `TRY/CATCH`.
 
-The implementer maps it to the target idiom. The **Public interface** table lists error cases regardless of style.
+- The implementer maps it to the target idiom.
+- The **Public interface** table lists error cases regardless of style.
 
 ---
 
 ## 7. Branch-id rules (coverage contract)
 
-1. Branch ids are **unique within a `FUNCTION`**, assigned top-to-bottom, **stable** across re-writes (new branches take the next free number).
+1. Branch ids are **unique within a `FUNCTION`**, assigned top-to-bottom, and **stable** across re-writes (new branches take the next free number).
 2. A branch's **arms** (§4) are its **coverage set**.
 3. **§7.3 — canonical coverage id** (used everywhere, no other spelling):
    - branch arm → `<spec-id>::<function>#<arm-id>` (e.g. `CLS-regCtrl::register#B1.else`)
    - acceptance criterion → `<spec-id>#ACn` (e.g. `CLS-regCtrl#AC2`)
-   The test-writer tags each test with it, the test-runner echoes it **verbatim**, the test-gatekeeper joins on it.
+   - The test-writer tags each test with it, the test-runner echoes it **verbatim**, the test-gatekeeper joins on it.
 4. test-writer creates **≥1 test per arm id and per `ACn`**; test-gatekeeper REJECTs any uncovered.
 5. Nested branches use flat function-level numbering; a nested arm is reached only through its parent's path.
 
@@ -159,4 +170,4 @@ Coverage set: `B1.then`, `B1.else`, `B2.then`, `B2.else` + the spec's `ACn`.
 - SQL/ORM specifics — persistence is `CALL repo.method(...)`; schema derives from the **entity** spec.
 - Exact third-party API signatures — express call *intent*.
 
-Anything needing a concrete mechanism is a **concretization** → `.sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md`, never the spec.
+Anything needing a concrete mechanism is a **concretization**: it goes in `.sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md`, never the spec.

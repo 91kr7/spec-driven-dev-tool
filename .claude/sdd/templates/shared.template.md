@@ -26,7 +26,7 @@ error_style: <result|raise>  # ONLY for kind: service (scot.md §6) — omit oth
 <WHAT this abstraction is and WHY it is shared (who reuses it). For kind: interface, name the implementing class(es).>
 
 # Public interface
-<Callable surface, neutral types; errors regardless of error_style. For interface = SIGNATURES ONLY (SCoT lives in the implementing class). For dto/enum/type/config, replace with the matching table below.>
+<The callable surface, in neutral types; list errors regardless of error_style. For interface, give SIGNATURES ONLY (the SCoT lives in the implementing class). For dto/enum/type/config, replace this table with the matching table below.>
 
 | Method | Inputs | Output | Errors |
 |--------|--------|--------|--------|
@@ -38,7 +38,7 @@ error_style: <result|raise>  # ONLY for kind: service (scot.md §6) — omit oth
   Keys (config):    | Key | Type | Default | Meaning / constraint | -->
 
 # Invariants & rules
-<Properties that always hold for any implementation + caller-relied rules. For an interface these are contract obligations every implementer must honour.>
+<Properties that hold for any implementation, plus rules callers rely on. For an interface, these are contract obligations every implementer must honour.>
 - <Invariant / contract obligation, traceable to a requirement>
 
 # SCoT

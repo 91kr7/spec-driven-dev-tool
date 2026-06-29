@@ -6,9 +6,15 @@ argument-hint: "<free-text requirement or feature description>"
 # /sdd-auto — SDD orchestrator
 
 Run the full flow for `$ARGUMENTS`, one vertical slice at a time, with automatic gates and feedback loops.
-Steps run in order 1 → 9; steps 5–8 repeat once per slice.
-**The main session only orchestrates** — it never authors an artifact: it invokes agents, reads each
-`verdict_record`, advances index `status`, routes on REJECT, drives the loop, and owns the human touch-points.
+- Steps run in order 1 → 9.
+- Steps 5–8 repeat once per slice.
+- **The main session only orchestrates** — it never authors an artifact. It only:
+  - invokes agents,
+  - reads each `verdict_record`,
+  - advances index `status`,
+  - routes on REJECT,
+  - drives the loop,
+  - owns the human touch-points.
 
 ```
 DATAFLOW
@@ -22,19 +28,22 @@ DATAFLOW
 
 ```
 ROLE   you (main session) = orchestrator; subagents do ALL authoring/judging via Task.
-        you read verdicts from .sdd/verdicts/ (one file per gate; latest = highest <nn> via Glob),
-        set index `status` yourself, loop on REJECT.
-LAW    Markdown spec = source of truth (authority). Reuse over repetition (DRY).
-        A red test never makes code authoritative — fix the wrong spec first, then regenerate code.
-STATE  durable state is in FILES, never in this conversation: `slice_list` (PLAN.md) · `index_rows.status`
-        (the indexes) · `.sdd/verdicts/`. A slice's in-loop output — verdict bodies, agent return payloads,
-        TEST-/REUSE-REPORT text, the reasons[] threaded between iterations — is per-slice SCRATCH: re-derive,
-        don't recall (re-Glob/re-Read when a step needs a fact; never lean on conversation memory), and
-        garbage-collect it once the slice is `approved` (step 8). Every slice boundary is a cold start — the
-        same file-only reconstruction the Resume section performs.
-RULES  obey .claude/sdd/conventions.md: ids §2 · front-matter §3 · index rows §4 · status/duties §5
+        - read verdicts from .sdd/verdicts/ (one file per gate; latest = highest <nn> via Glob).
+        - set index `status` yourself.
+        - loop on REJECT.
+LAW    - Markdown spec = source of truth (authority).
+        - Reuse over repetition (DRY).
+        - A red test never makes code authoritative — fix the wrong spec first, then regenerate code.
+STATE  Durable state is in FILES, never in this conversation: `slice_list` (PLAN.md) · `index_rows.status`
+        (the indexes) · `.sdd/verdicts/`.
+        A slice's in-loop output — verdict bodies, agent return payloads, TEST-/REUSE-REPORT text, the
+        reasons[] threaded between iterations — is per-slice SCRATCH:
+        - re-derive, don't recall: re-Glob/re-Read when a step needs a fact; never lean on conversation memory.
+        - garbage-collect it once the slice is `approved` (step 8).
+        Every slice boundary is a cold start — the same file-only reconstruction the Resume section performs.
+RULES  Obey .claude/sdd/conventions.md: ids §2 · front-matter §3 · index rows §4 · status/duties §5
         · verdict format §6 · budgets/routing §7 · change policy §8 · roster §9 · topo/slices §12.
-HUMAN  touched twice only: (a) an unstated stack, (b) an escalation.
+HUMAN  Touched twice only: (a) an unstated stack, (b) an escalation.
 ```
 
 ## Preconditions
@@ -43,7 +52,7 @@ REQUIRE  requirement_text present in $ARGUMENTS (raw text ok; step 2 refines it)
 REQUIRE  resolvable stack:
            IF .sdd/target.md missing AND stack not inferable from requirement_text
            THEN ask the human the single stack question now, capture answer, then run unattended.
-           (this is the only prompt besides escalation.)
+                (this is the only prompt besides escalation.)
 HAVE     read-only contracts shipped with the tool: conventions.md, scot.md, ui-schema.md.
 ```
 
@@ -129,7 +138,8 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
 ```
 5a ··  YOU   demote (feature-evolution only) — ONLY the entities this change rewrites
      IN  index_rows of the slice's `MODIFY` members (per the PLAN delta) whose status ∈ {reviewed, implemented, approved}
-     OUT those rows → status: draft (§5).  `NEW` members start at draft; unchanged `depends_on`-closure members stay `approved` (read-only deps — never demoted, never re-worked).
+     OUT those rows → status: draft (§5).
+         `NEW` members start at draft; unchanged `depends_on`-closure members stay `approved` (read-only deps — never demoted, never re-worked).
 
 5b ▶▶ INVOKE spec-writer   (the narrative authority)
      IN  conventions ; scot ; ui-schema ; target.md ; PLAN.md ; REQUIREMENT.md ; the indexes + existing specs ; REUSE-REPORT.md (hand-off edits) ; templates ; slice ; [spec-bug re-INVOKE: + reasons[]]
@@ -138,14 +148,17 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
 5c ▶▶ INVOKE reuse-analyst
      IN  conventions ; ui-schema ; target.md ; the indexes (modules.index.md + per-module <MOD>.index.md) ; spec_paths (this slice) + existing SHR-*/COMP-* specs
      OUT promoted/re-homed SHR-*/COMP-* specs ; updated index_rows (re-home: old row removed, new row carries the new spec path) ; REUSE-REPORT.md { promoted, demote_ids[], re_homed[]: {id, old_path → new_path} }
-   ··  YOU   then: (1) for each re_homed {old_path → new_path} → `mv old_path new_path` AND move its exact mirror `.impl-notes.md` file (Bash — authors have no move/delete tool); (2) for each id in demote_ids → set index_rows.status: draft
+   ··  YOU   then:
+     (1) for each re_homed {old_path → new_path} → `mv old_path new_path` AND move its exact mirror `.impl-notes.md` file (Bash — authors have no move/delete tool);
+     (2) for each id in demote_ids → set index_rows.status: draft
 
 5d ▶▶ GATE analysis-gatekeeper   (the only spec-phase blocker)
      IN  conventions ; scot ; ui-schema ; target.md ; REQUIREMENT.md ; the indexes (full depends_on graph) + in-scope spec_paths ; REUSE-REPORT.md ; current_date
      OUT verdict_record { phase: analysis, scope: slice_id, iteration: n/3 }
       PASS         → YOU set slice spec index_rows.status: draft → reviewed; step 6.
-      REJECT       → by routing (each re-invoke carries the verdict reasons[]): spec defect → spec-writer (5b) · duplication → reuse-analyst (5c);
-                     re-run reuse-analyst if spec_paths changed; loop step 5d.
+      REJECT       → by routing (each re-invoke carries the verdict reasons[]):
+                       spec defect → spec-writer (5b) · duplication → reuse-analyst (5c);
+                       re-run reuse-analyst if spec_paths changed; loop step 5d.
       OVERFLOW(>3) → ESCALATE; stop slice.
 ```
 
@@ -197,9 +210,11 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
 ··  YOU
 IN   slice_list ; index_rows.status   (re-read from PLAN.md + the indexes — not from memory of prior slices)
 DO   (1) GARBAGE-COLLECT the just-approved slice — drop its scratch from working context (its verdict bodies,
-        agent return payloads, TEST-/REUSE-REPORT text, reasons[]): it is spent, the durable record is on disk.
+         agent return payloads, TEST-/REUSE-REPORT text, reasons[]): it is spent, the durable record is on disk.
      (2) compute remaining = slices in slice_list whose index_rows.status ≠ approved.
-OUT  next_target : if remaining ≠ ∅ → (next slice, entered as a COLD START — reconstruct from files per the STATE law, → step 5) ; else → (→ step 9)
+OUT  next_target :
+       if remaining ≠ ∅ → next slice, entered as a COLD START — reconstruct from files per the STATE law, → step 5 ;
+       else            → → step 9
 ```
 
 ### Step 9 — Final unscoped sweep
@@ -228,12 +243,13 @@ Slices already approved stay approved.
 
 ## Resume   `from files only`
 ```
-Loop state is reconstructable: Glob `.sdd/verdicts/` (highest `<nn>` per scope = that scope's latest
-verdict_record, carrying `iteration: n/<budget>`); index_rows.status shows which slices are done.
+Loop state is reconstructable:
+  - Glob `.sdd/verdicts/` → highest `<nn>` per scope = that scope's latest verdict_record, carrying `iteration: n/<budget>`.
+  - index_rows.status shows which slices are done.
 TO RESUME re-run /sdd-auto:
-  skip every approved slice;
-  re-enter the first non-approved slice at the step its latest verdict_record implies;
-  continue that step's iteration count.
+  - skip every approved slice;
+  - re-enter the first non-approved slice at the step its latest verdict_record implies;
+  - continue that step's iteration count.
 The per-slice loop performs this SAME file-only reconstruction at every slice boundary (the STATE law),
 not only after an interruption — so a long run never depends on accumulated conversation history.
 ```

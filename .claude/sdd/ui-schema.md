@@ -5,10 +5,13 @@
 > Svelte/…); the concrete framework is chosen at implementation time from `target.md`.
 
 **Two kinds of `gui` spec:**
-- **Shared component** (`.sdd/specs/<MOD>/ui-components/COMP-*.spec.md`; `<MOD>` = its owning module, `MOD-shared` when composed across ≥2 modules) — a reusable atom/molecule/organism/layout. Specified **once**, referenced everywhere by id.
+- **Shared component** (`.sdd/specs/<MOD>/ui-components/COMP-*.spec.md`; `<MOD>` = its owning module, `MOD-shared` when composed across ≥2 modules) — a reusable atom/molecule/organism/layout. Specify **once**; reference everywhere by id.
 - **Screen** (`.sdd/specs/<MOD>/classes/CLS-*.spec.md`, `kind: gui`) — composes library components **by id**; specifies layout + screen-specific behavior only. Never re-describes a widget already indexed.
 
-**Discover before create:** read the `ui-component` rows in `MOD-shared.index.md` (and the module's own `<MOD>.index.md`) before specifying any widget; if it exists, reference by id; if a recurring widget is missing, the reuse-analyst promotes it.
+**Discover before create:**
+- Before specifying any widget, read the `ui-component` rows in `MOD-shared.index.md` and the module's own `<MOD>.index.md`.
+- If it exists, reference by id.
+- If a recurring widget is missing, the reuse-analyst promotes it.
 
 ---
 
@@ -24,12 +27,17 @@
 ---
 
 ## 2. Wireframe notation
-Box-drawing for structure (not pixels). Bind dynamic text with `{stateVar}`. Mark interactive elements: `[ ]` button, `(•)`/`( )` radio, `[x]`/`[ ]` checkbox, `▼` dropdown, `___` text field. The wireframe is **indicative**; the authoritative composition is the component tree (§3).
+- Use box-drawing for structure (not pixels).
+- Bind dynamic text with `{stateVar}`.
+- Mark interactive elements: `[ ]` button, `(•)`/`( )` radio, `[x]`/`[ ]` checkbox, `▼` dropdown, `___` text field.
+- The wireframe is **indicative**; the authoritative composition is the component tree (§3).
 
 ---
 
 ## 3. Component tree (composition by id)
-Indented tree; each node is a **library component referenced by id** (with its props) or a layout slot. Never inline a library component.
+- Indented tree.
+- Each node is a **library component referenced by id** (with its props) or a layout slot.
+- Never inline a library component.
 
 ```
 COMP-appShell
@@ -47,7 +55,8 @@ COMP-appShell
 ---
 
 ## 4. State table
-Local view state only. Cross-screen/shared state is named here but **owned** by a service/shared spec and referenced by id.
+- Local view state only.
+- Cross-screen/shared state: name it here, but it is **owned** by a service/shared spec and referenced by id.
 
 | Name | Type | Initial | Description |
 |---|---|---|---|
@@ -91,9 +100,20 @@ Trivial handlers (single assignment / navigation) need no SCoT.
 - **journey AC** — tagged `(journey)` after the id (`**AC1** (journey) — …`): outcome **crosses the running stack** (nav-on-success, persisted/emitted effect, rendered service-error banner). Validated **end-to-end by a Playwright test**.
 - **view AC** (untagged) — inline validation, disabled-while-busy, clear-on-edit, accessibility: covered by an in-process **component** test with the feature mocked.
 
-A screen that **calls a feature** (a `CALL FEAT-…`/`CALL CLS-…` on its handler's success path) MUST declare **≥1 `(journey)` AC** (primary success) + a `(journey)` AC per rendered end-to-end failure. test-writer writes one e2e per `(journey)` AC; test-gatekeeper requires it; analysis-gatekeeper blocks a feature-calling screen with no `(journey)` AC.
+A screen that **calls a feature** (a `CALL FEAT-…`/`CALL CLS-…` on its handler's success path) MUST declare:
+- **≥1 `(journey)` AC** (primary success), plus
+- a `(journey)` AC per rendered end-to-end failure.
 
-**Call target:** a screen invokes its feature **by id** — the feature's coordinator if it owns one, else the controller it orchestrates (e.g. `CLS-regCtrl.register`). A purely-compositional feature (`source: []`) has no callable code, so the screen calls its controller.
+Enforcement:
+- test-writer writes one e2e per `(journey)` AC.
+- test-gatekeeper requires it.
+- analysis-gatekeeper blocks a feature-calling screen with no `(journey)` AC.
+
+**Call target:** a screen invokes its feature **by id**:
+- the feature's coordinator if it owns one, else
+- the controller it orchestrates (e.g. `CLS-regCtrl.register`).
+
+A purely-compositional feature (`source: []`) has no callable code, so the screen calls its controller.
 
 ---
 
@@ -126,7 +146,12 @@ Every component declares `layer:`; higher layers compose lower layers **by id** 
 ---
 
 ## 9. Reusable component catalog (compose, don't hand-roll)
-A GUI project composes its screens from reusable components instead of hand-rolling duplicated markup — but it creates **only the components a screen actually composes**. The table below is a **catalog of common candidates** (canonical ids/layers to reuse when you need them), **NOT a mandatory set**: reach for a frame component (`appShell`/`header`/`footer`/…) only when the app's views share that structure — a single-screen app may need none of it. The `spec-writer` materializes a catalog component (from `templates/ui-component.template.md`) into its owning module's `ui-components/` (or `MOD-shared/ui-components/` when composed across ≥2 modules — §1) + index the **first time a screen composes it**, never up front. The `analysis-gatekeeper` blocks a screen that **inlines/hand-rolls** a component instead of composing one by id, and any **unused (orphan)** component (each must carry its consumers' `requirements:` — conventions §13).
+- A GUI project composes its screens from reusable components instead of hand-rolling duplicated markup — but it creates **only the components a screen actually composes**.
+- The table below is a **catalog of common candidates** (canonical ids/layers to reuse when you need them), **NOT a mandatory set**. Reach for a frame component (`appShell`/`header`/`footer`/…) only when the app's views share that structure — a single-screen app may need none of it.
+- The `spec-writer` materializes a catalog component (from `templates/ui-component.template.md`) into its owning module's `ui-components/` (or `MOD-shared/ui-components/` when composed across ≥2 modules — §1) + index the **first time a screen composes it**, never up front.
+- The `analysis-gatekeeper` blocks:
+  - a screen that **inlines/hand-rolls** a component instead of composing one by id, and
+  - any **unused (orphan)** component (each must carry its consumers' `requirements:` — conventions §13).
 
 | id | layer | Purpose |
 |---|---|---|
@@ -139,4 +164,4 @@ A GUI project composes its screens from reusable components instead of hand-roll
 | `COMP-grid` | layout | 2-D grid helper (columns, gap, areas) |
 | `COMP-section` | layout | titled content section |
 
-**Progressive enrichment:** beyond this catalog, recurring widgets (Button, TextInput, Select, Modal, Table, Toast, …) are promoted by the `reuse-analyst` the moment a **second** screen needs one — specified once (layer per §7), referenced by id.
+**Progressive enrichment:** beyond this catalog, the `reuse-analyst` promotes recurring widgets (Button, TextInput, Select, Modal, Table, Toast, …) the moment a **second** screen needs one — specified once (layer per §7), referenced by id.

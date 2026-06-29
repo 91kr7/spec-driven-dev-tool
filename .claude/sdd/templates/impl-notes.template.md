@@ -5,9 +5,9 @@
 > edge-case handling, and lessons from bug-fixes. It is **NOT part of the gated
 > spec**; the implementer must **never edit the spec** to record these.
 >
-> **The `test-writer` never reads this file** (test independence). Spec (behavior)
-> + these notes (concretization) together make the code's behavior **regenerable**
-> — enough to pass the same tests and not re-introduce a fixed bug. Goal:
+> **The `test-writer` never reads this file** (test independence). The spec (behavior)
+> plus these notes (concretization) together make the code's behavior **regenerable**
+> — enough to pass the same tests and avoid re-introducing a fixed bug. Aim for
 > behavioral completeness, not byte-for-byte reproduction.
 
 - path: `.sdd/impl-notes/<MOD-id>/<level>/<SPEC-ID>.impl-notes.md` — the spec's path under `.sdd/specs/` mirrored EXACTLY (`.spec.md`→`.impl-notes.md`; a module's own note → `<MOD-id>/<MOD-id>.impl-notes.md`)

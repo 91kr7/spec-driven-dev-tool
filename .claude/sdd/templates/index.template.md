@@ -9,8 +9,8 @@
 
 # Global module index — `.sdd/specs/modules.index.md`
 
-> The architectural skeleton: **every** `MOD-*` + its `depends_on` + `status`. Agents read this
-> first to map the module graph, then open the per-module index they need (lazy loading).
+> The architectural skeleton: list **every** `MOD-*` with its `depends_on` and `status`. Agents read this
+> first to map the module graph, then open only the per-module index they need (lazy loading).
 
 **Columns (conventions §4):** `id` (`MOD-*`) · `name` · `description` (WHAT, one line) · `depends_on` (comma-separated `MOD-*`, deps first, `—` if none) · `spec` (`.sdd/specs/<MOD>/<MOD>.spec.md`) · `source` (derived, `—` when `source: []`) · `status` (draft|reviewed|implemented|approved).
 
@@ -22,9 +22,9 @@
 
 # Per-module index — `.sdd/specs/<MOD>/<MOD>.index.md`
 
-> Roster of **every** entity that lives in this module, across all levels. It **drops** the `module`
-> column (it IS the folder) and **adds** `level`. A module that contains any `ui-component` row
-> **appends** `layer` + `variants` after `level`. `status` is the canonical lifecycle home (only the
+> Roster of **every** entity in this module, across all levels. It **drops** the `module`
+> column (the folder IS the module) and **adds** `level`. If the module contains any `ui-component` row,
+> **append** `layer` + `variants` after `level`. `status` is the canonical lifecycle home (only the
 > command advances it); `source` is **derived** from each spec's `source:`. Fill **every** column.
 
 **Columns:** `id` (§2 prefix) · `name` · `description` (WHAT, one line) · `level` (feature|class|entity|ui-component|shared) · `depends_on` (ids, deps first, `—` if none) · `spec` (path) · `source` (derived, `—` when `source: []`) · `status`.

@@ -1,8 +1,8 @@
 <!--
   TEMPLATE — class/service/controller spec (behavioral, SCoT). Copy to .sdd/specs/<MOD>/classes/CLS-<lowerCamel>.spec.md (<MOD> = the module: below).
   Authority: conventions §3 + scot.md (the ONLY behavioral grammar — branch ids [Bn], arm enumeration, §6 error style).
-  Discover before create: read the module's <MOD>.index.md first; reuse SHR-*/CLS-* by id.
-  Markdown is the source of truth; reuse over repetition (DRY). Delete the "## Filled example".
+  Before creating anything, read the module's <MOD>.index.md first and reuse existing SHR-*/CLS-* by id.
+  Markdown is the source of truth; prefer reuse over repetition (DRY). Delete the "## Filled example" before saving.
 -->
 ---
 id: CLS-<lowerCamel>          # required — matches filename
@@ -20,18 +20,18 @@ error_style: <result|raise>  # behavioral only (scot.md §6) — canonical home 
 <One paragraph: WHAT this class is responsible for and WHY. Responsibility/behavior, never implementation/library/framework.>
 
 # Public interface
-<Every public method; neutral types (scot.md §2); errors listed regardless of error_style.>
+<List every public method; use neutral types (scot.md §2); list errors regardless of error_style.>
 
 | Method | Inputs | Output | Errors |
 |--------|--------|--------|--------|
 | `<method>(<p>: <Type>)` | `<p>` — <meaning> | `<ReturnType>` | `<ErrorCase>` — <when> |
 
 # Invariants & rules
-<Properties that always hold + business rules enforced; reference deps by id.>
+<List properties that always hold plus the business rules enforced; reference deps by id.>
 - <Invariant / rule, traceable to a requirement>
 
 # SCoT
-<One FUNCTION per public method. Grammar = scot.md. Every branch a stable [Bn] with ALL arms enumerated. No library/syntax/SQL — those go to impl-notes.>
+<Write one FUNCTION per public method, using the grammar in scot.md. Give every branch a stable [Bn] id and enumerate ALL its arms. No library/syntax/SQL — those go to impl-notes.>
 
 ```
 FUNCTION <method>(<param>: <Type>) -> <ReturnType>
@@ -47,7 +47,7 @@ END
 ```
 
 # Acceptance criteria
-<Each `ACn` Given/When/Then; cover the happy path AND every branch arm (≥1 test per ACn + per arm — scot.md §7).>
+<Write each `ACn` as Given/When/Then; cover the happy path AND every branch arm (≥1 test per ACn and per arm — scot.md §7).>
 - **AC1** — Given <state>, When <call>, Then <observable outcome>.
 - **AC2** — Given <state>, When <branch-triggering call>, Then <expected error/result>.
 

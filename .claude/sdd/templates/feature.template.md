@@ -1,7 +1,7 @@
 <!--
   TEMPLATE — FEATURE / USE-CASE spec (kind: use-case, behavioral orchestration).
   Copy to .sdd/specs/<MOD>/features/<FEAT-nnn>.spec.md. Authority: conventions §2/§3/§5; body = SCoT (scot.md,
-  cross-class CALLs only). Markdown is the source of truth; reuse over repetition — name collaborators
+  cross-class CALLs only). Markdown is the source of truth. Reuse over repetition: name collaborators
   by id, never re-describe them. Delete the "## Filled example" from a real spec.
 -->
 ---
@@ -16,7 +16,7 @@ error_style: result            # result|raise (scot.md §6) — canonical home f
 ---
 
 # Purpose
-<One paragraph: the end-to-end scenario (actor, goal, outcome). WHAT happens across collaborators, never HOW.>
+<One paragraph: the end-to-end scenario (actor, goal, outcome). State WHAT happens across collaborators, never HOW.>
 
 # Public interface
 - **Inputs:** `<Cmd/DTO>` — `{ <field>: <NeutralType>, … }`
@@ -32,11 +32,11 @@ error_style: result            # result|raise (scot.md §6) — canonical home f
 | `ENT-<id>` | entity | <object created/loaded/mutated> |
 
 # Invariants & rules
-<Cross-class rules for the whole orchestration: ordering, transactionality, idempotency, on-success/failure guarantees.>
+<Cross-class rules that govern the whole orchestration: ordering, transactionality, idempotency, on-success/on-failure guarantees.>
 - <Invariant 1>
 
 # Orchestration SCoT
-<One FUNCTION (the entry point), cross-class CALLs by id only. Grammar = scot.md; every branch a stable [Bn] with named arms; no library/syntax/internals.>
+<One FUNCTION (the entry point), with cross-class CALLs by id only. Grammar = scot.md; label every branch with a stable [Bn] and name its arms; no library, syntax, or internals.>
 
 ```
 FUNCTION <entryPoint>(<param>: <Type>) -> <ReturnType>
@@ -53,7 +53,7 @@ END
 ```
 
 # Integration acceptance criteria
-<End-to-end Given/When/Then, stable `ACn`, observable cross-class outcomes; together cover every orchestration arm. (GUI: the screen's e2e tests own the user-facing journey ACs.)>
+<End-to-end Given/When/Then, each with a stable `ACn` and observable cross-class outcomes; together they must cover every orchestration arm. (GUI: the screen's e2e tests own the user-facing journey ACs.)>
 - **AC1** — *Given* <state>, *When* `<entryPoint>` is invoked with `<input>`, *Then* <observable outcome + persisted/emitted effects>.
 - **AC2** — *Given* <branch-triggering state>, *When* invoked, *Then* <alternate outcome, e.g. error + no side effects>.
 

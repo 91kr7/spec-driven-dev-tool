@@ -5,7 +5,7 @@
 > `ui-schema.md` (UI form).
 
 **Two cross-cutting values bind every agent:**
-1. **Markdown is the source of truth (authority).** Specs decide WHAT the system does. On any conflict the **spec wins and code is corrected**, never the reverse. Code/tests are derived.
+1. **Markdown is the source of truth (authority).** Specs decide WHAT the system does. Code/tests are derived. On any conflict the **spec wins and code is corrected**, never the reverse.
 2. **Reuse over repetition (DRY).** Discover-before-create. Duplication above a small threshold is blocking.
 
 ---
@@ -40,7 +40,13 @@ src/                         # GENERATED source (or framework roots, e.g. backen
 tests/                       # GENERATED test files (unit←classes, integration←features, constraint←entities, component←gui, e2e←gui screens)
 ```
 
-**Organized by module, level inside.** Every entity lives under its home module: `.sdd/specs/<module:>/<level>/<id>.spec.md` — the **`module:` front-matter is the folder**, the **id prefix is the level** (`CLS-`→`classes`, `FEAT-`→`features`, `ENT-`→`model`, `COMP-`→`ui-components`, `SHR-`→`shared`; a `MOD-` spec sits at its folder root). Level subfolders and the per-module `<MOD>.index.md` are created **lazily** (only when populated). The single global `modules.index.md` is the architectural skeleton. A single-module project still uses `specs/<MOD>/…` (no flattening). **Cross-cutting placement (Rule A / LCA):** an `SHR-*`/`COMP-*` whose consumers all live in **one** module stays in that module's `shared/`/`ui-components/`; one whose consumers span **≥2** modules goes to **`MOD-shared`** (§13).
+**Organized by module, level inside.** Every entity lives under its home module: `.sdd/specs/<module:>/<level>/<id>.spec.md`.
+- The **`module:` front-matter is the folder**.
+- The **id prefix is the level**: `CLS-`→`classes`, `FEAT-`→`features`, `ENT-`→`model`, `COMP-`→`ui-components`, `SHR-`→`shared`. A `MOD-` spec sits at its folder root.
+- Level subfolders and the per-module `<MOD>.index.md` are created **lazily** (only when populated).
+- The single global `modules.index.md` is the architectural skeleton.
+- A single-module project still uses `specs/<MOD>/…` (no flattening).
+- **Cross-cutting placement (Rule A / LCA):** an `SHR-*`/`COMP-*` whose consumers all live in **one** module stays in that module's `shared/`/`ui-components/`; one whose consumers span **≥2** modules goes to **`MOD-shared`** (§13).
 
 ---
 
@@ -58,14 +64,24 @@ tests/                       # GENERATED test files (unit←classes, integration
 | `AC` | acceptance criterion | `AC<n>` | `AC1` |
 | `B` | SCoT branch | `B<n>` + arm | `B1.then`, `B3.empty` |
 
-**Terminology — "entity" (generic) vs `ENT-` (specific).** Unqualified, **entity** means *any planned node at any level* — one index row / one spec, whatever its prefix (`MOD-`/`FEAT-`/`ENT-`/`CLS-`/`COMP-`/`SHR-`). It is the generic word for "a thing in the plan/index" (e.g. "one row per entity", "every `REQ-*` covered by ≥1 entity", "process entities in `depends_on` order"). The prefix **`ENT-`** is the *narrow* sense — a **domain entity** (the `entity` kind: field table + relations + invariants). When the narrow sense is meant the text says `ENT-` or "`entity` **kind/spec**"; bare "entity" is always the generic node.
+**Terminology — "entity" (generic) vs `ENT-` (specific).**
+- Unqualified, **entity** means *any planned node at any level* — one index row / one spec, whatever its prefix (`MOD-`/`FEAT-`/`ENT-`/`CLS-`/`COMP-`/`SHR-`). It is the generic word for "a thing in the plan/index" (e.g. "one row per entity", "every `REQ-*` covered by ≥1 entity", "process entities in `depends_on` order").
+- The prefix **`ENT-`** is the *narrow* sense — a **domain entity** (the `entity` kind: field table + relations + invariants).
+- When the narrow sense is meant the text says `ENT-` or "`entity` **kind/spec**". Bare "entity" is always the generic node.
 
 - Ids are **stable**: never renumber/rename; new entries take the next free id; deprecate rather than rename.
 - A spec file is named after its id and lives under its home module (`.sdd/specs/MOD-domain/classes/CLS-userRepo.spec.md`).
 - **`MOD-build` is mandatory in every project.** It owns build files, manifests, config, CI, and framework/build/entry scaffolding (e.g. `tsconfig.json`, the app entry, `playwright.config.*` for a GUI project's e2e). It carries **no `depends_on`** itself, and **every other module declares `depends_on: MOD-build`**, so it is always the **first slice** — generated code cannot compile/build without the scaffolding.
   - GUI project (Frontend ≠ `none`) → `MOD-build` owns the e2e harness (`playwright.config.*` + `webServer`) and `target.md`'s `test-e2e` must be a real command, not `n/a`.
-- **`MOD-schema` is mandatory for a DB project** (`target.md` DB ≠ `none`) with any persisted `ENT-*`. It owns the **DB schema changes derived from the entity specs** (never hand-authored; forward-only, append-only once shipped) and MUST declare ≥1 forward schema-change script in `source:`. Its `depends_on` reaches the persistence module + the `ENT-*` it evolves, so it is ordered **after** the entities. Unlike `MOD-build`, it is **not requirement-exempt**: its `requirements` = the union of the `REQ-*` of the `ENT-*` whose schema it materializes (the DB exists for those persistence requirements). A non-DB project has no `MOD-schema`.
-- **`MOD-shared` is the cross-cutting home** — the single module that owns every `SHR-*`/`COMP-*` whose consumers span **≥2** modules (Rule A / LCA; an abstraction whose consumers all live in one module stays in *that* module — §13). It is a dependency **SINK**: it declares `depends_on: [MOD-build]` and **never** depends on a feature module (a gate REJECTs an upward edge). Created only when ≥1 cross-module shared abstraction exists — the plan-architect provisions it when foreseen, else the reuse-analyst creates it on the first cross-module promotion (so it is never empty); its `requirements` = the union of its members' `REQ-*`. Like `MOD-build`/`MOD-schema`, the id `MOD-shared` is reserved.
+- **`MOD-schema` is mandatory for a DB project** (`target.md` DB ≠ `none`) with any persisted `ENT-*`.
+  - It owns the **DB schema changes derived from the entity specs** (never hand-authored; forward-only, append-only once shipped) and MUST declare ≥1 forward schema-change script in `source:`.
+  - Its `depends_on` reaches the persistence module + the `ENT-*` it evolves, so it is ordered **after** the entities.
+  - Unlike `MOD-build`, it is **not requirement-exempt**: its `requirements` = the union of the `REQ-*` of the `ENT-*` whose schema it materializes (the DB exists for those persistence requirements).
+  - A non-DB project has no `MOD-schema`.
+- **`MOD-shared` is the cross-cutting home** — the single module that owns every `SHR-*`/`COMP-*` whose consumers span **≥2** modules (Rule A / LCA; an abstraction whose consumers all live in one module stays in *that* module — §13).
+  - It is a dependency **SINK**: it declares `depends_on: [MOD-build]` and **never** depends on a feature module (a gate REJECTs an upward edge).
+  - Created only when ≥1 cross-module shared abstraction exists — the plan-architect provisions it when foreseen, else the reuse-analyst creates it on the first cross-module promotion (so it is never empty); its `requirements` = the union of its members' `REQ-*`.
+  - Like `MOD-build`/`MOD-schema`, the id `MOD-shared` is reserved.
 
 ---
 
@@ -88,8 +104,13 @@ error_style: result             # behavioral specs only: result|raise (canonical
 ```
 
 - **`status` is NOT a front-matter field — it lives ONLY in the index row** (§5, the canonical home): `draft → reviewed → implemented → approved`, advanced by the orchestrator. Read an entity's state from its index row, never from the spec.
-- `source:` is the **single authoritative** spec→source map. The index `source` column is **derived** from it by the authoring agent — never hand-edited later. NEW entity → propose paths from `target.md`; EXISTING → real files; `[]` for a purely-compositional feature.
-- `requirements:` is the back-link to the `REQ-*` id(s) the spec realizes — **real ids or, ONLY for `MOD-build`, `—`; never a prose annotation**. Every other spec needs ≥1 real `REQ-*`. `MOD-build` is the **sole** exemption: it is scaffolding for the *whole* app, tied to no single requirement (test: removing any one `REQ-*` never removes it). Two kinds of spec own no requirement directly but still carry one, drawn from a related set's `REQ-*` (never empty — empty ⇒ **orphan**, blocking): **`MOD-schema`** → the **union** of the `REQ-*` of the `ENT-*` whose schema it materializes (it realizes them all; the DB exists for those persistence requirements); **shared/library** specs (`SHR-*`, baseline-or-promoted `COMP-*`) → a **non-empty subset** of the `REQ-*` carried by their consumers (the specs that `depends_on` them), where each listed id is both *consumer-backed* (some real consumer carries it) **and** *genuinely realized here* — so a fine-grained atom lists only the consumer `REQ-*` it actually serves, not its screen's whole set. A cell `REQ-*` that **no consumer carries** is **excess** (gold-plating, blocking). So traceability is explicit at every node, and "no requirement" — or an unbacked one — always signals a real defect.
+- `source:` is the **single authoritative** spec→source map. The index `source` column is **derived** from it by the authoring agent — never hand-edited later. Paths: NEW entity → propose from `target.md`; EXISTING → real files; `[]` for a purely-compositional feature.
+- `requirements:` is the back-link to the `REQ-*` id(s) the spec realizes — **real ids or, ONLY for `MOD-build`, `—`; never a prose annotation**. Every other spec needs ≥1 real `REQ-*`.
+  - `MOD-build` is the **sole** exemption: it is scaffolding for the *whole* app, tied to no single requirement (test: removing any one `REQ-*` never removes it).
+  - Two kinds of spec own no requirement directly but still carry one, drawn from a related set's `REQ-*` (never empty — empty ⇒ **orphan**, blocking):
+    - **`MOD-schema`** → the **union** of the `REQ-*` of the `ENT-*` whose schema it materializes (it realizes them all; the DB exists for those persistence requirements).
+    - **shared/library** specs (`SHR-*`, baseline-or-promoted `COMP-*`) → a **non-empty subset** of the `REQ-*` carried by their consumers (the specs that `depends_on` them), where each listed id is both *consumer-backed* (some real consumer carries it) **and** *genuinely realized here* — so a fine-grained atom lists only the consumer `REQ-*` it actually serves, not its screen's whole set.
+  - A cell `REQ-*` that **no consumer carries** is **excess** (gold-plating, blocking). So traceability is explicit at every node, and "no requirement" — or an unbacked one — always signals a real defect.
 - **One file ↔ one spec by default.** A shared aggregator MAY be co-owned only if every co-owner declares it in `source:` and names `owns_sections:`. Undeclared shared ownership is blocking.
 - `error_style:` lives **only** in front-matter (canonical). scot.md restates the style atop a body for readability but the front-matter field is authority.
 
@@ -117,7 +138,10 @@ A **stub/mock is never specced** — it is auto-derived from its `interface` spe
 Every `ACn` is verified at exactly one of three altitudes, **marked** so coverage is mechanical:
 - **test-covered** (default, untagged) — an authored test asserts it (unit / integration / component). The `test-writer` writes ≥1 mapped test (scot.md §7.3 id); the `test-gatekeeper` REJECTs if any is uncovered.
 - **`(journey)`** — a screen outcome that crosses the running stack; verified **end-to-end by a Playwright test** (ui-schema §5).
-- **`(pipeline)`** — the outcome **is** the success of a canonical `target.md §3` command (install / build / run-boot / migrate); verified by that command reaching green in `.sdd/TEST-REPORT.md`, **not** by an authored test (a test that re-asserts "the build passes" is circular; one that re-asserts a manifest value against the spec is tautological — neither is an independent oracle). **Allowed ONLY on an infra-module AC** (`MOD-build`, `MOD-schema`) whose assertion is literally "the build / boot / migration command succeeds". A behavioral spec (`CLS-*` / `FEAT-*` / `ENT-*`) may **never** tag `(pipeline)` to dodge a real test, and a genuine boot **smoke** check (e.g. application-context-loads, which exercises runtime wiring the spec left open) stays **test-covered**, not `(pipeline)`. The `test-writer` authors **no** test for a `(pipeline)` AC; the `test-gatekeeper` counts it covered from the green run result and REJECTs a `(pipeline)` tag on a non-infra spec.
+- **`(pipeline)`** — the outcome **is** the success of a canonical `target.md §3` command (install / build / run-boot / migrate); verified by that command reaching green in `.sdd/TEST-REPORT.md`, **not** by an authored test (a test that re-asserts "the build passes" is circular; one that re-asserts a manifest value against the spec is tautological — neither is an independent oracle).
+  - **Allowed ONLY on an infra-module AC** (`MOD-build`, `MOD-schema`) whose assertion is literally "the build / boot / migration command succeeds".
+  - A behavioral spec (`CLS-*` / `FEAT-*` / `ENT-*`) may **never** tag `(pipeline)` to dodge a real test, and a genuine boot **smoke** check (e.g. application-context-loads, which exercises runtime wiring the spec left open) stays **test-covered**, not `(pipeline)`.
+  - The `test-writer` authors **no** test for a `(pipeline)` AC; the `test-gatekeeper` counts it covered from the green run result and REJECTs a `(pipeline)` tag on a non-infra spec.
 
 ---
 
@@ -157,7 +181,7 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
 - `implemented` — passed the **code** gate (code matches spec, compiles); tests pending.
 - `approved` — passed the **test** gate (suite green + full coverage).
 
-**Backward transition (spec change after `reviewed`).** Code is only generated from a `reviewed` spec. So whenever a spec changes after `reviewed`/`implemented`/`approved` — a gate routing a **spec bug**, a **feature evolution**, or a **reuse-analyst promotion** that rewrites a gated spec — the **command demotes** it `→ draft`, `spec-writer` fixes it, then it re-flows the forward path. A **code** or **test** bug never demotes the spec.
+**Backward transition (spec change after `reviewed`).** Code is only generated from a `reviewed` spec. So whenever a spec changes after `reviewed`/`implemented`/`approved` — a gate routing a **spec bug**, a **feature evolution**, or a **reuse-analyst promotion** that rewrites a gated spec — the sequence is: the **command demotes** it `→ draft`, `spec-writer` fixes it, then it re-flows the forward path. A **code** or **test** bug never demotes the spec.
 
 **Separation of duties (strict):**
 - **Gatekeepers JUDGE only** — write one verdict **file** to `.sdd/verdicts/` (§6); never edit specs/code/tests/`status`.
@@ -191,7 +215,7 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
   - **PASS** → one terse line per check group: the conclusion + the minimal rebuilt datum where the check is a forcing-function (a traceability **consumer set**, an **orphan-scan** result). NEVER a paragraph re-narrating what held, never the whole front-matter/SCoT/AC list echoed back.
   - **REJECT** → one line per *blocking* defect: the offending `id`/path + what is wrong + the **resolution** (this is what the routed author consumes) + `routing:`. Do not also transcribe the checks that passed.
 - `routing: escalate` = a REJECT no author can fix (missing dependency, unresolved `<…>` placeholder, e2e-setup app-won't-boot) — the command surfaces it to the human.
-- **Why per-file:** a single shared log forced every gate to Read-whole + Write-whole to append, so the k-th of N gates re-emitted the first k records — O(N²) output for an O(N) log. One file per gate makes each append O(1); this was the dominant token sink of the whole flow.
+- **Why per-file:** a single shared log forced every gate to Read-whole + Write-whole to append, so the k-th of N gates re-emitted the first k records — O(N²) output for an O(N) log. One file per gate makes each append O(1). This was the dominant token sink of the whole flow.
 
 **Example — compact PASS** (the full rebuilt evidence collapses to conclusions):
 ```
@@ -255,7 +279,7 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
 
 ## 9. Agent roster & isolation matrix
 
-Twelve roles; **eleven are subagents** in `.claude/agents/`. The **orchestrator is NOT a subagent** — it is the main session running `sdd-auto`. Subagents are single-purpose: read files in, write files/verdicts out; they never spawn subagents.
+Twelve roles; **eleven are subagents** in `.claude/agents/`. The **orchestrator is NOT a subagent** — it is the main session running `sdd-auto`. Subagents are single-purpose: read files in, write files/verdicts out. They never spawn subagents.
 
 | Agent | Role | May WRITE | tools | Reads `src/`? | model |
 |---|---|---|---|---|---|
@@ -317,7 +341,11 @@ The MINDSET MUST carry both: **"Markdown is the source of truth (authority); reu
 
 Chain **REQUIREMENT → FEATURE → CLASS → SOURCE → TEST** is rebuilt on demand from: indexes + each spec's `requirements:`/`source:` + source-file traceability headers + test coverage ids.
 
-**Shared/library nodes carry a subset of their consumers' requirements.** A `SHR-*`/`COMP-*` invents no `REQ-*`; it lists a **non-empty subset** of the `REQ-*` carried by the specs that `depends_on` it — each id both *consumer-backed* (some consumer carries it) **and** *genuinely realized by this node* (a leaf atom serves only some of its screen's requirements, not all) — so the chain `REQ → FEATURE/CLASS/screen → SHR/COMP` is explicit at every node, never inferred. A promoted abstraction therefore always carries ≥1 `REQ-*`: those of the duplicators it replaced that it actually realizes. Two failure modes a gate REJECTs: **empty** `requirements:` (no consumer, or nothing realized) → **orphan**; a listed `REQ-*` that **no consumer carries** → **excess** (gold-plating). The invariant "every spec carries ≥1 real `REQ-*`" stays universal — only `MOD-build` (whole-app scaffolding) is outside the requirement graph; `MOD-schema` carries the **union** of the `REQ-*` of the `ENT-*` whose schema it materializes (it realizes them all).
+**Shared/library nodes carry a subset of their consumers' requirements.** A `SHR-*`/`COMP-*` invents no `REQ-*`; it lists a **non-empty subset** of the `REQ-*` carried by the specs that `depends_on` it — each id both *consumer-backed* (some consumer carries it) **and** *genuinely realized by this node* (a leaf atom serves only some of its screen's requirements, not all) — so the chain `REQ → FEATURE/CLASS/screen → SHR/COMP` is explicit at every node, never inferred. A promoted abstraction therefore always carries ≥1 `REQ-*`: those of the duplicators it replaced that it actually realizes. Two failure modes a gate REJECTs:
+- **empty** `requirements:` (no consumer, or nothing realized) → **orphan**.
+- a listed `REQ-*` that **no consumer carries** → **excess** (gold-plating).
+
+The invariant "every spec carries ≥1 real `REQ-*`" stays universal — only `MOD-build` (whole-app scaffolding) is outside the requirement graph; `MOD-schema` carries the **union** of the `REQ-*` of the `ENT-*` whose schema it materializes (it realizes them all).
 
 **Placement of shared nodes (Rule A / LCA).** A shared node lives in the module that owns it: the **single** module if every consumer (the specs that `depends_on` it) lives there, else **`MOD-shared`**, the cross-cutting dependency sink (§1–§2). So the home module = the lowest common ancestor of the consumers. When a *second* module starts consuming an intra-module `SHR-*`/`COMP-*`, the reuse-analyst **re-homes** it to `MOD-shared` (file moves folder, id unchanged — id stability §2). `MOD-shared` itself depends only on `MOD-build`; a gate REJECTs any `MOD-shared → feature-module` edge.
 
@@ -328,13 +356,19 @@ Every generated source file carries a header pointing back to its spec:
 - Comment syntax per target language; placed at the **top but after any mandatory first-line construct** (shebang, `<?php`, `"use client"`, XML/encoding decl).
 - **Comment-less formats are exempt** (pure JSON like `package.json`/`tsconfig.json`, lockfiles): the spec↔source link is the `source:` declaration alone — the gatekeeper never demands a header for them.
 
-**Comment economy — the header is the *only* mandatory comment.** The **spec is the narrative** (Purpose, SCoT arms, invariants, ACs); the generated code is its concretization and **must not re-narrate it**. Forbidden as noise: a comment restating a `[Bn]` branch / AC / rule already in the spec; docstrings paraphrasing the Purpose; section-banner comments (`// ---- helpers ----`); "what" comments on self-evident statements. The reader who wants *why* follows the header to the spec; a genuinely non-obvious concretization rationale goes to `impl-notes`, **not** an inline comment. Default to **comment-free bodies under the header** (plus only what the language *requires* — e.g. a mandated annotation). Over-commenting is duplication that costs tokens to write **and** re-read on every downstream pass, and silently drifts from the spec.
+**Comment economy — the header is the *only* mandatory comment.** The **spec is the narrative** (Purpose, SCoT arms, invariants, ACs); the generated code is its concretization and **must not re-narrate it**. Forbidden as noise:
+- a comment restating a `[Bn]` branch / AC / rule already in the spec;
+- docstrings paraphrasing the Purpose;
+- section-banner comments (`// ---- helpers ----`);
+- "what" comments on self-evident statements.
+
+The reader who wants *why* follows the header to the spec; a genuinely non-obvious concretization rationale goes to `impl-notes`, **not** an inline comment. Default to **comment-free bodies under the header** (plus only what the language *requires* — e.g. a mandated annotation). Over-commenting is duplication that costs tokens to write **and** re-read on every downstream pass, and silently drifts from the spec.
 
 ---
 
 ## 14. `.sdd/TEST-REPORT.md` format (test-runner → test-gatekeeper contract)
 
-`test-runner` writes it (overwritten each run); `test-gatekeeper` parses it. Fixed structure (no heuristics). **Coverage** (every test-covered `ACn`/arm has a test) is verified by the gatekeeper from the tagged test files; this report supplies the **run result**. A **`(pipeline)`** AC (§3 altitudes) is the exception: it carries no tagged test — the gatekeeper counts it covered from this report's **green run result** (the install/build/boot/migrate command it asserts necessarily ran as part of reaching `phase-reached: complete`).
+`test-runner` writes it (overwritten each run); `test-gatekeeper` parses it. Fixed structure (no heuristics). **Coverage** (every test-covered `ACn`/arm has a test) is verified by the gatekeeper from the tagged test files; this report supplies the **run result**. A **`(pipeline)`** AC (§3 altitudes) is the exception: it carries no tagged test, so the gatekeeper counts it covered from this report's **green run result** (the install/build/boot/migrate command it asserts necessarily ran as part of reaching `phase-reached: complete`).
 
 ```
 # Test Report

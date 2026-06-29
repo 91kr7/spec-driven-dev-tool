@@ -1,7 +1,7 @@
 <!--
   TEMPLATE — feature SCREEN spec (CLS-*, kind: gui). Copy to .sdd/specs/<MOD>/classes/CLS-<lowerCamel>.spec.md.
-  UI form = ui-schema.md EXACTLY. A screen COMPOSES library components BY ID; never re-describes one.
-  Discover before create: read MOD-shared.index.md + the module's <MOD>.index.md first. Markdown is the source of truth; reuse over repetition (DRY).
+  The UI form is ui-schema.md EXACTLY. A screen COMPOSES library components BY ID; it never re-describes one.
+  Discover before you create: read MOD-shared.index.md and the module's <MOD>.index.md first. Markdown is the source of truth; prefer reuse over repetition (DRY).
   Sections: # Purpose · # Public interface · # Invariants & rules · then the FIVE ui-schema sections
   (Wireframe · Component tree · State · Events · Acceptance criteria). No framework code, no CSS/colors —
   only design-token names; no business logic beyond view orchestration (call a feature/service by id).
@@ -32,7 +32,7 @@ owns_sections: []
 - <e.g. a field error clears as soon as the user edits that field>
 
 # Wireframe
-<ASCII per ui-schema §2; bind dynamic text with {stateVar}. Indicative; the component tree is authoritative.>
+<ASCII per ui-schema §2; bind dynamic text with {stateVar}. This is indicative only — the component tree is authoritative.>
 ```
 ┌──────── <Region> (COMP-<id>) ────────┐
 │ <Label> [______]  {errors.<field>}   │
@@ -41,7 +41,7 @@ owns_sections: []
 ```
 
 # Component tree
-<Indented tree per ui-schema §3: library components BY ID with props; {name}=state binding; onClick:<handler>=an Events row. Never inline a library component.>
+<Indented tree per ui-schema §3: list library components BY ID with their props. Write {name} for a state binding, and onClick:<handler> to point at an Events row. Never inline a library component.>
 ```
 COMP-<rootLayoutId>
 ├─ COMP-<id>  props: { <prop>: {binding} }
@@ -49,13 +49,13 @@ COMP-<rootLayoutId>
 ```
 
 # State
-<Local view state only (ui-schema §4); shared state is named here but owned by a service/shared spec by id.>
+<List local view state only (ui-schema §4). Name any shared state here, but it is owned by a service/shared spec by id.>
 | Name | Type | Initial | Description |
 |------|------|---------|-------------|
 | `<var>` | `<NeutralType>` | `<val>` | <what it holds> |
 
 # Events
-<Map each event → handler → effect. Trivial handlers need only the row; a non-trivial one gets a SCoT snippet (scot.md) with [Bn] arms.>
+<Map each event → handler → effect. A trivial handler needs only the table row; a non-trivial one also gets a SCoT snippet (scot.md) with [Bn] arms.>
 | Event | Trigger | Handler | Effect |
 |-------|---------|---------|--------|
 | `<setField>` | types in <Field> | `<field> <- value` | re-render; clear `errors.<field>` |
@@ -78,7 +78,7 @@ END
 ```
 
 # Acceptance criteria
-<Given/When/Then, stable `ACn`; cover every non-trivial arm + visible rule. TAG the altitude (ui-schema §5): a **`(journey)`** AC crosses the running stack (nav-on-success / persisted effect / service-error banner) → Playwright e2e; an untagged **view** AC → component test (feature mocked). A feature-calling screen MUST declare ≥1 `(journey)` AC.>
+<Write each as Given/When/Then with a stable `ACn` id; cover every non-trivial arm and every visible rule. Tag the altitude (ui-schema §5): tag a **`(journey)`** AC when it crosses the running stack (nav-on-success / persisted effect / service-error banner) — these become Playwright e2e tests. Leave a **view** AC untagged — it becomes a component test (feature mocked). A feature-calling screen MUST declare at least one `(journey)` AC.>
 - **AC1** (journey) — Given <context>, When <action>, Then <observable cross-stack outcome>.
 - **AC2** — Given <context>, When <action>, Then <observable view outcome>.
 

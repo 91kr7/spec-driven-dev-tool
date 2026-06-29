@@ -1,8 +1,8 @@
 <!--
   TEMPLATE — ENTITY spec (kind: entity, DECLARATIVE — no SCoT, no UI). Authority: conventions §3/§4.
-  Copy to .sdd/specs/<MOD>/model/<ENT-id>.spec.md. An entity describes WHAT data it holds + the rules that bind it,
+  Copy to .sdd/specs/<MOD>/model/<ENT-id>.spec.md. An entity describes WHAT data it holds and the rules that bind it,
   never HOW it is stored. Both the code entity AND the DB schema change DERIVE from this spec.
-  Markdown is the source of truth; reuse over repetition (DRY). Delete the "## Filled example".
+  Markdown is the source of truth; prefer reuse over repetition (DRY). Delete the "## Filled example" before saving.
 -->
 ---
 id: ENT-<kebab>                # required — matches filename + a <MOD>.index.md row
@@ -25,21 +25,21 @@ owns_sections: []
 - **Errors (validation):** <named failures, each tied to an invariant below>.
 
 # Fields
-<Neutral types (scot.md §2). Constraints are declarative facts (required/unique/format/range/default/derived), not storage directives.>
+<Use neutral types (scot.md §2). State each constraint as a declarative fact (required/unique/format/range/default/derived), not as a storage directive.>
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
 | `<field>` | `<NeutralType>` | `<required \| unique \| range \| format \| default \| derived>` | <meaning> |
 
 # Relations
-<Associations to other entities by id + cardinality (1, 0..1, 1..*, 0..*); each related id also in depends_on.>
+<List associations to other entities by id and cardinality (1, 0..1, 1..*, 0..*). Add each related id to depends_on.>
 
 | Relation | Target (id) | Cardinality | Via field | Rule |
 |----------|-------------|-------------|-----------|------|
 | `<name>` | `ENT-<other>` | `<1 \| 0..1 \| 1..* \| 0..*>` | `<fkField>` | <e.g. required; cascade/restrict on delete> |
 
 # Invariants & rules
-<Truths that always hold; both the schema (NOT NULL/UNIQUE/CHECK/FK) and code validation derive from these. Testable, each with a short tag.>
+<State truths that always hold; both the schema (NOT NULL/UNIQUE/CHECK/FK) and code validation derive from these. Make each one testable and give it a short tag.>
 - **INV-<tag>:** <e.g. `email` is unique.>
 - **INV-<tag>:** <e.g. `total` = sum of line subtotals, never negative.>
 
@@ -49,7 +49,7 @@ This spec is the single source for two derived artifacts, never hand-authored in
 2. **DB schema change** — owned by **MOD-schema**, derived here (NOT NULL/UNIQUE/CHECK/FK from the tables above). If the entity changes, the spec is corrected first, then the schema follows.
 
 # Acceptance criteria
-<Each `ACn` Given/When/Then, tied to a constraint or INV-<tag>; cover every invariant.>
+<Write each `ACn` as Given/When/Then, tied to a constraint or INV-<tag>. Cover every invariant.>
 - **AC1** — Given <a valid instance>, When constructed/validated, Then it is accepted and INV-<tag> holds.
 - **AC2** — Given <an instance violating INV-<tag>>, When validated, Then it fails with `<NamedError>`.
 

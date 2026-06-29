@@ -41,7 +41,7 @@ How each spec `kind` maps to a path (used to propose `source:` for new specs):
 
 ### Language idioms — neutral-type → concrete calling convention
 
-Specs/SCoT stay concretization-free (scot.md §2); the implementer **and** the test-writer BOTH derive the concrete callable form from this single map — so a spec-derived test compiles and calls the real code **without reading `src/`**. Pin it up front (this is the contract that makes the two sides converge instead of guessing):
+Specs/SCoT stay concretization-free (scot.md §2); the implementer **and** the test-writer BOTH derive the concrete callable form from this single map — so a spec-derived test compiles and calls the real code **without reading `src/`**. Fill this map up front: it is the contract that makes both sides converge instead of guessing.
 
 | Neutral form (specs/SCoT) | Concrete idiom for this stack | Example call |
 |---|---|---|
@@ -72,7 +72,7 @@ db-schema: <e.g. pnpm prisma migrate deploy>   # applies the entity-derived sche
 ```
 
 - **Path discipline in `cd`-ing commands:** if a command changes into a build-unit dir (`cd frontend && …`), every path in it (output files, configs, selectors) is **relative to that dir or absolute** — never re-prefix the dir name. `cd frontend && … --outputFile=frontend/test-results/…` writes to `frontend/frontend/test-results/…`. One working dir, one path origin.
-- **`{scope}`** — put the token where the framework's test selector goes; the runner substitutes the in-scope selector (file globs or an id-alternation `--grep`/`--tests`). Empty `{scope}` = whole suite. The runner fills it only — never adds/alters any other flag.
+- **`{scope}`** — put the token where the framework's test selector goes; the runner replaces it with the in-scope selector (file globs or an id-alternation `--grep`/`--tests`). Empty `{scope}` = whole suite. The runner only fills this token — it never adds or alters any other flag.
 - **Two reporters baked in:** a compact **`dot`** console reporter (tiny captured output) **and** a machine-readable **file** reporter (JUnit-XML/JSON/TAP) the runner parses with `xmllint`/`jq`. Both belong here, in the canonical command — never added ad-hoc.
 
 ## 4. Iteration budgets (optional override of conventions §7)
