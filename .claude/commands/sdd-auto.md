@@ -146,7 +146,7 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
 ### Step 6 — Implement the slice   `[code budget 3]`   *(writes src/ + impl-notes only)*
 ```
 6a ▶▶ INVOKE code-implementer   (per spec, in depends_on order)
-     IN  one reviewed spec ; target.md ; existing src_paths
+     IN  one reviewed spec + every spec it references by id (depends_on + each CALL/COMP — bind against their real interfaces, via Glob .sdd/specs/**/<id>.spec.md) ; target.md ; existing src_paths
      DO  minimal Edit by default; regenerate only by exception (§8).
      OUT src_paths (the spec's declared `source:` paths) ; impl_note
 
