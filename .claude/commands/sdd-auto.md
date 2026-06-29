@@ -135,7 +135,7 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
    ··  YOU   then: for each id in REUSE-REPORT.md.demote_ids → set index_rows.status: draft
 
 5d ▶▶ GATE analysis-gatekeeper   (the only spec-phase blocker)
-     IN  spec_paths ; REUSE-REPORT.md ; REQUIREMENT.md ; conventions.md ; current_date
+     IN  spec_paths ; REUSE-REPORT.md ; REQUIREMENT.md ; conventions.md ; target.md ; current_date
      OUT verdict_record { phase: analysis, scope: slice_id, iteration: n/3 }
       PASS         → YOU set slice spec index_rows.status: draft → reviewed; step 6.
       REJECT       → by routing (each re-invoke carries the verdict reasons[]): spec defect → spec-writer (5b) · duplication → reuse-analyst (5c);
@@ -152,7 +152,7 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
 
 6b ··  YOU   run canonical `install` → install_result
    ▶▶ GATE code-gatekeeper
-     IN  src_paths ; spec_paths (this slice) ; impl_note ; install_result ; current_date
+     IN  src_paths ; spec_paths (this slice) ; impl_note ; install_result ; target.md (build/lint commands) ; current_date
      OUT verdict_record { phase: code, scope: slice_id, iteration: n/3 }
       PASS         → YOU set slice index_rows.status: reviewed → implemented; step 7.
       REJECT       → by routing (each re-invoke carries the verdict reasons[]):
@@ -175,7 +175,7 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
      OUT TEST-REPORT.md (unit + integration + component, + e2e for GUI)
 
 7c ▶▶ GATE test-gatekeeper
-     IN  TEST-REPORT.md ; spec_paths (for coverage) ; conventions.md ; current_date
+     IN  TEST-REPORT.md ; spec_paths (for coverage) ; conventions.md ; target.md ; current_date
      OUT verdict_record { phase: test, scope: slice_id, coverage, routing, iteration: n/5 }
       PASS (green + full coverage) → YOU set slice index_rows.status: implemented → approved; step 8.
       REJECT → route per triage (§7); each loop returns to the sub-step that re-gates the fix:
