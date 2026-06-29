@@ -1,25 +1,25 @@
 # UI Schematic — canonical convention (source form of every GUI spec)
 
 > **Canonical contract.** How `kind: gui` specs describe a UI — the UI's **source
-> form**, not SCoT and not framework code. Framework-agnostic (React/Angular/Vue/
-> Svelte/…); the concrete framework is chosen at implementation time from `target.md`.
+> form**, not SCoT, not framework code. Framework-agnostic (React/Angular/Vue/
+> Svelte/…); concrete framework chosen at implementation time from `target.md`.
 
 **Two kinds of `gui` spec:**
-- **Shared component** (`.sdd/specs/<MOD>/ui-components/COMP-*.spec.md`; `<MOD>` = its owning module, `MOD-shared` when composed across ≥2 modules) — a reusable atom/molecule/organism/layout. Specify **once**; reference everywhere by id.
-- **Screen** (`.sdd/specs/<MOD>/classes/CLS-*.spec.md`, `kind: gui`) — composes library components **by id**; specifies layout + screen-specific behavior only. Never re-describes a widget already indexed.
+- **Shared component** (`.sdd/specs/<MOD>/ui-components/COMP-*.spec.md`; `<MOD>` = owning module, `MOD-shared` when composed across ≥2 modules) — reusable atom/molecule/organism/layout. Specify **once**; reference everywhere by id.
+- **Screen** (`.sdd/specs/<MOD>/classes/CLS-*.spec.md`, `kind: gui`) — composes library components **by id**; specifies layout + screen-specific behavior only. Never re-describes an already-indexed widget.
 
 **Discover before create:**
-- Before specifying any widget, read the `ui-component` rows in `MOD-shared.index.md` and the module's own `<MOD>.index.md`.
+- Before specifying any widget, read the `ui-component` rows in `MOD-shared.index.md` + the module's own `<MOD>.index.md`.
 - If it exists, reference by id.
-- If a recurring widget is missing, the reuse-analyst promotes it.
+- If a recurring widget is missing, reuse-analyst promotes it.
 
 ---
 
 ## 1. The five sections of a GUI spec (in order)
-1. **Wireframe** — ASCII sketch of the layout.
+1. **Wireframe** — ASCII sketch of layout.
 2. **Component tree** — composition referencing library components by id.
 3. **State** — table (name, type, initial, description).
-4. **Events** — table mapping events → handlers → effects.
+4. **Events** — table: events → handlers → effects.
 5. **Acceptance criteria** — Given/When/Then, each with a stable `ACn` id.
 
 `COMP-*` specs add **Props · Variants · Visual states · Events · Slots/children · Accessibility** (§6).
@@ -27,16 +27,16 @@
 ---
 
 ## 2. Wireframe notation
-- Use box-drawing for structure (not pixels).
+- Box-drawing for structure (not pixels).
 - Bind dynamic text with `{stateVar}`.
 - Mark interactive elements: `[ ]` button, `(•)`/`( )` radio, `[x]`/`[ ]` checkbox, `▼` dropdown, `___` text field.
-- The wireframe is **indicative**; the authoritative composition is the component tree (§3).
+- Wireframe is **indicative**; authoritative composition = component tree (§3).
 
 ---
 
 ## 3. Component tree (composition by id)
 - Indented tree.
-- Each node is a **library component referenced by id** (with its props) or a layout slot.
+- Each node = a **library component referenced by id** (with its props) or a layout slot.
 - Never inline a library component.
 
 ```
@@ -50,13 +50,13 @@ COMP-appShell
 │        └─ COMP-button props: { variant: "primary", label: "Register", onClick: submit, loading: {submitting} }
 └─ COMP-footer   props: { version: {appVersion} }
 ```
-`{name}` = binding to a state var (§4); `onClick: submit` = a handler in the Events table (§5).
+`{name}` = binding to a state var (§4); `onClick: submit` = a handler in Events table (§5).
 
 ---
 
 ## 4. State table
 - Local view state only.
-- Cross-screen/shared state: name it here, but it is **owned** by a service/shared spec and referenced by id.
+- Cross-screen/shared state: name it here, but **owned** by a service/shared spec and referenced by id.
 
 | Name | Type | Initial | Description |
 |---|---|---|---|
@@ -74,7 +74,7 @@ COMP-appShell
 | `submit` | click Register | SCoT snippet below | calls `FEAT-001`; nav on success |
 | `cancel` | click Cancel | navigate `/home` | leaves screen |
 
-**Non-trivial** handler → attach a small SCoT snippet (grammar = `scot.md`) with branch ids so it is covered:
+**Non-trivial** handler → attach a small SCoT snippet (grammar = `scot.md`) with branch ids so it's covered:
 
 ```
 # handler: submit   (error_style: result if it returns/raises)
@@ -100,7 +100,7 @@ Trivial handlers (single assignment / navigation) need no SCoT.
 - **journey AC** — tagged `(journey)` after the id (`**AC1** (journey) — …`): outcome **crosses the running stack** (nav-on-success, persisted/emitted effect, rendered service-error banner). Validated **end-to-end by a Playwright test**.
 - **view AC** (untagged) — inline validation, disabled-while-busy, clear-on-edit, accessibility: covered by an in-process **component** test with the feature mocked.
 
-A screen that **calls a feature** (a `CALL FEAT-…`/`CALL CLS-…` on its handler's success path) MUST declare:
+A screen that **calls a feature** (`CALL FEAT-…`/`CALL CLS-…` on its handler's success path) MUST declare:
 - **≥1 `(journey)` AC** (primary success), plus
 - a `(journey)` AC per rendered end-to-end failure.
 
@@ -113,7 +113,7 @@ Enforcement:
 - the feature's coordinator if it owns one, else
 - the controller it orchestrates (e.g. `CLS-regCtrl.register`).
 
-A purely-compositional feature (`source: []`) has no callable code, so the screen calls its controller.
+A purely-compositional feature (`source: []`) has no callable code → screen calls its controller.
 
 ---
 
@@ -124,7 +124,7 @@ A purely-compositional feature (`source: []`) has no callable code, so the scree
 - **Visual states** — `default/hover/focus/active/disabled/loading/error` (behavior, no colors/pixels — those are design tokens from `target.md`).
 - **Events** — table (event, payload, when).
 - **Slots / children** — named composition slots.
-- **Accessibility** — roles, keyboard, focus order, ARIA intent (e.g. "Tab-reachable; Enter/Space activate; `aria-busy` while `loading`") — as behavior, turned into ACs where testable.
+- **Accessibility** — roles, keyboard, focus order, ARIA intent (e.g. "Tab-reachable; Enter/Space activate; `aria-busy` while `loading`") — as behavior, → ACs where testable.
 
 ---
 
@@ -141,15 +141,15 @@ Every component declares `layer:`; higher layers compose lower layers **by id** 
 - Framework code (JSX, templates, `useState`, signals…).
 - CSS/colors/pixels — only design-token **names** (`gap: "md"`), resolved from `target.md`.
 - Re-description of an existing library component — reference by id.
-- Business logic beyond view orchestration — that lives in a `service`/`use-case` spec, called by id.
+- Business logic beyond view orchestration — lives in a `service`/`use-case` spec, called by id.
 
 ---
 
 ## 9. Reusable component catalog (compose, don't hand-roll)
-- A GUI project composes its screens from reusable components instead of hand-rolling duplicated markup — but it creates **only the components a screen actually composes**.
-- The table below is a **catalog of common candidates** (canonical ids/layers to reuse when you need them), **NOT a mandatory set**. Reach for a frame component (`appShell`/`header`/`footer`/…) only when the app's views share that structure — a single-screen app may need none of it.
-- The `spec-writer` materializes a catalog component (from `templates/ui-component.template.md`) into its owning module's `ui-components/` (or `MOD-shared/ui-components/` when composed across ≥2 modules — §1) + index the **first time a screen composes it**, never up front.
-- The `analysis-gatekeeper` blocks:
+- A GUI project composes screens from reusable components instead of hand-rolling duplicated markup — but creates **only the components a screen actually composes**.
+- The table below = a **catalog of common candidates** (canonical ids/layers to reuse when needed), **NOT a mandatory set**. Reach for a frame component (`appShell`/`header`/`footer`/…) only when the app's views share that structure — a single-screen app may need none.
+- `spec-writer` materializes a catalog component (from `templates/ui-component.template.md`) into its owning module's `ui-components/` (or `MOD-shared/ui-components/` when composed across ≥2 modules — §1) + index the **first time a screen composes it**, never up front.
+- `analysis-gatekeeper` blocks:
   - a screen that **inlines/hand-rolls** a component instead of composing one by id, and
   - any **unused (orphan)** component (each must carry its consumers' `requirements:` — conventions §13).
 
@@ -164,4 +164,4 @@ Every component declares `layer:`; higher layers compose lower layers **by id** 
 | `COMP-grid` | layout | 2-D grid helper (columns, gap, areas) |
 | `COMP-section` | layout | titled content section |
 
-**Progressive enrichment:** beyond this catalog, the `reuse-analyst` promotes recurring widgets (Button, TextInput, Select, Modal, Table, Toast, …) the moment a **second** screen needs one — specified once (layer per §7), referenced by id.
+**Progressive enrichment:** beyond this catalog, `reuse-analyst` promotes recurring widgets (Button, TextInput, Select, Modal, Table, Toast, …) the moment a **second** screen needs one — specified once (layer per §7), referenced by id.

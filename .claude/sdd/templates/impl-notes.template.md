@@ -1,18 +1,18 @@
 # Impl-notes — <SPEC-ID> <Name>
 
-> **Owned by the `code-implementer`.** This file holds the **concretization** the
-> SCoT deliberately omits — library/version, exact API usage, language idioms,
-> edge-case handling, and lessons from bug-fixes. It is **NOT part of the gated
-> spec**; the implementer must **never edit the spec** to record these.
+> **Owned by the `code-implementer`.** Holds the **concretization** the
+> SCoT omits — library/version, exact API usage, language idioms,
+> edge-case handling, bug-fix lessons. **NOT part of the gated
+> spec**; implementer must **never edit the spec** to record these.
 >
-> **The `test-writer` never reads this file** (test independence). The spec (behavior)
-> plus these notes (concretization) together make the code's behavior **regenerable**
+> **The `test-writer` never reads this file** (test independence). Spec (behavior)
+> + these notes (concretization) make the code's behavior **regenerable**
 > — enough to pass the same tests and avoid re-introducing a fixed bug. Aim for
 > behavioral completeness, not byte-for-byte reproduction.
 
-- path: `.sdd/impl-notes/<MOD-id>/<level>/<SPEC-ID>.impl-notes.md` — the spec's path under `.sdd/specs/` mirrored EXACTLY (`.spec.md`→`.impl-notes.md`; a module's own note → `<MOD-id>/<MOD-id>.impl-notes.md`)
+- path: `.sdd/impl-notes/<MOD-id>/<level>/<SPEC-ID>.impl-notes.md` — spec's path under `.sdd/specs/` mirrored EXACTLY (`.spec.md`→`.impl-notes.md`; a module's own note → `<MOD-id>/<MOD-id>.impl-notes.md`)
 - spec: `.sdd/specs/<MOD-id>/<level>/<SPEC-ID>.spec.md`
-- source: `<the file(s) from the spec's source: front-matter>`
+- source: `<file(s) from the spec's source: front-matter>`
 
 ## Chosen libraries / versions
 
@@ -42,4 +42,4 @@
 
 ## Open concretization decisions
 
-- `<anything provisional that a future change should revisit>`
+- `<anything provisional a future change should revisit>`

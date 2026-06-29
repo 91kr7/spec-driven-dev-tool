@@ -1,7 +1,7 @@
 # SCoT — Structured Chain-of-Thought (canonical grammar)
 
 > **Canonical contract.** The *only* pseudo-code grammar allowed in behavioral specs.
-> Language- and framework-agnostic: it describes **behavior** (sequence / branch /
+> Language- & framework-agnostic; describes **behavior** (sequence / branch /
 > loop, explicit I/O, invariants) — never library choices, API signatures, or syntax
 > (those live in code + `.sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md`).
 
@@ -13,8 +13,8 @@
 
 **Why a fixed grammar:**
 - Faithful (not 1:1) translation to any language.
-- **Stable branch ids** make coverage mechanical and edit-resistant.
-- Equivalence is judged by **tests**, never by textual diff.
+- **Stable branch ids** make coverage mechanical & edit-resistant.
+- Equivalence judged by **tests**, never by textual diff.
 
 ---
 
@@ -32,7 +32,7 @@
 - Indentation = 2 spaces (readability only).
 - `END` is authoritative for block scope.
 
-**Neutral types.** Implementer **and** test-writer both map them via `target.md` §2's language-idioms map. Same map ⇒ converging call sites, so a spec-derived test compiles against the real code without reading `src/`.
+**Neutral types.** Implementer **and** test-writer both map via `target.md` §2's language-idioms map. Same map ⇒ converging call sites, so a spec-derived test compiles against real code without reading `src/`.
 - Primitives: `Int Long Float Decimal Bool String Char Bytes Date DateTime UUID`
 - Generics: `List<T> Set<T> Map<K,V> Option<T> Result<T,E> Void Any`
 - Domain/structural types referenced by id/name (`User` = ENT-user).
@@ -53,7 +53,7 @@ END
 ```
 - `ASYNC FUNCTION` + `AWAIT` at call sites.
 - `PURE FUNCTION` marks side-effect-free.
-- Error style is **declared in front-matter** `error_style: result|raise` (§6); the body MAY restate it for readability.
+- Error style **declared in front-matter** `error_style: result|raise` (§6); body MAY restate it for readability.
 
 ---
 
@@ -67,7 +67,7 @@ ELSE IF <cond2> THEN         # arm B1.elif1
 ELSE                         # arm B1.else
 END
 ```
-No `ELSE`? the implicit fall-through is still arm `B1.else` (must be tested).
+No `ELSE`? implicit fall-through is still arm `B1.else` (must be tested).
 
 ```
 [B2] SWITCH <expr>
@@ -107,9 +107,9 @@ END
 | `BREAK` / `CONTINUE` | loop control |
 | `LOG <level> "msg"` | logging intent |
 | `EMIT <Event>(payload)` | publish a domain event |
-| `ASSERT <cond>` | an invariant the code must enforce |
+| `ASSERT <cond>` | invariant the code must enforce |
 
-`LOG`/`EMIT`/`ASSERT` express **intent**. The concrete mechanism goes in impl-notes.
+`LOG`/`EMIT`/`ASSERT` express **intent**. Concrete mechanism goes in impl-notes.
 
 ---
 
@@ -119,19 +119,19 @@ Declared in front-matter `error_style:` (conventions §3, the canonical home):
 - **`result`** — functions return `Result<T,E>` (`Ok`/`Err`).
 - **`raise`** — functions `RAISE`; callers `TRY/CATCH`.
 
-- The implementer maps it to the target idiom.
+- Implementer maps it to the target idiom.
 - The **Public interface** table lists error cases regardless of style.
 
 ---
 
 ## 7. Branch-id rules (coverage contract)
 
-1. Branch ids are **unique within a `FUNCTION`**, assigned top-to-bottom, and **stable** across re-writes (new branches take the next free number).
+1. Branch ids are **unique within a `FUNCTION`**, assigned top-to-bottom, **stable** across re-writes (new branches take the next free number).
 2. A branch's **arms** (§4) are its **coverage set**.
 3. **§7.3 — canonical coverage id** (used everywhere, no other spelling):
    - branch arm → `<spec-id>::<function>#<arm-id>` (e.g. `CLS-regCtrl::register#B1.else`)
    - acceptance criterion → `<spec-id>#ACn` (e.g. `CLS-regCtrl#AC2`)
-   - The test-writer tags each test with it, the test-runner echoes it **verbatim**, the test-gatekeeper joins on it.
+   - test-writer tags each test with it; test-runner echoes it **verbatim**; test-gatekeeper joins on it.
 4. test-writer creates **≥1 test per arm id and per `ACn`**; test-gatekeeper REJECTs any uncovered.
 5. Nested branches use flat function-level numbering; a nested arm is reached only through its parent's path.
 
@@ -170,4 +170,4 @@ Coverage set: `B1.then`, `B1.else`, `B2.then`, `B2.else` + the spec's `ACn`.
 - SQL/ORM specifics — persistence is `CALL repo.method(...)`; schema derives from the **entity** spec.
 - Exact third-party API signatures — express call *intent*.
 
-Anything needing a concrete mechanism is a **concretization**: it goes in `.sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md`, never the spec.
+Anything needing a concrete mechanism is a **concretization**: goes in `.sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md`, never the spec.

@@ -1,15 +1,15 @@
 <!--
-  TEMPLATE — index files. There are TWO kinds (conventions §4):
+  TEMPLATE — index files. TWO kinds (conventions §4):
     1. GLOBAL      .sdd/specs/modules.index.md          — one row per MODULE (the skeleton).
-    2. PER-MODULE  .sdd/specs/<MOD>/<MOD>.index.md       — one row per entity in that module, ALL levels (created lazily).
-  Authority: conventions §1 (layout), §4 (row schema), §2 (ids), §3 (front-matter — `source` is DERIVED), §5 (status lives HERE).
-  Markdown is the source of truth (authority); reuse over repetition (DRY).
-  Delete the "## Filled example" when authoring a real index.
+    2. PER-MODULE  .sdd/specs/<MOD>/<MOD>.index.md       — one row per entity in that module, ALL levels (lazy).
+  Authority: conventions §1 (layout), §4 (row schema), §2 (ids), §3 (front-matter — `source` DERIVED), §5 (status lives HERE).
+  Markdown = source of truth (authority); reuse over repetition (DRY).
+  Delete "## Filled example" when authoring a real index.
 -->
 
 # Global module index — `.sdd/specs/modules.index.md`
 
-> The architectural skeleton: list **every** `MOD-*` with its `depends_on` and `status`. Agents read this
+> Architectural skeleton: list **every** `MOD-*` with its `depends_on` and `status`. Agents read this
 > first to map the module graph, then open only the per-module index they need (lazy loading).
 
 **Columns (conventions §4):** `id` (`MOD-*`) · `name` · `description` (WHAT, one line) · `depends_on` (comma-separated `MOD-*`, deps first, `—` if none) · `spec` (`.sdd/specs/<MOD>/<MOD>.spec.md`) · `source` (derived, `—` when `source: []`) · `status` (draft|reviewed|implemented|approved).
@@ -22,10 +22,10 @@
 
 # Per-module index — `.sdd/specs/<MOD>/<MOD>.index.md`
 
-> Roster of **every** entity in this module, across all levels. It **drops** the `module`
-> column (the folder IS the module) and **adds** `level`. If the module contains any `ui-component` row,
-> **append** `layer` + `variants` after `level`. `status` is the canonical lifecycle home (only the
-> command advances it); `source` is **derived** from each spec's `source:`. Fill **every** column.
+> Roster of **every** entity in this module, across all levels. **Drops** the `module`
+> column (the folder IS the module); **adds** `level`. If the module contains any `ui-component` row,
+> **append** `layer` + `variants` after `level`. `status` = canonical lifecycle home (only the
+> command advances it); `source` **derived** from each spec's `source:`. Fill **every** column.
 
 **Columns:** `id` (§2 prefix) · `name` · `description` (WHAT, one line) · `level` (feature|class|entity|ui-component|shared) · `depends_on` (ids, deps first, `—` if none) · `spec` (path) · `source` (derived, `—` when `source: []`) · `status`.
 

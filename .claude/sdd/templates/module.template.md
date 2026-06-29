@@ -1,7 +1,7 @@
 <!--
   TEMPLATE — MODULE spec (kind: module, structural overview). Schema per conventions §3.
-  A module partitions the system and names the entries it contains — no SCoT, no UI schematic.
-  Copy to .sdd/specs/<MOD-id>/<MOD-id>.spec.md (the module spec sits at the root of its own folder; register it in the global modules.index.md). Markdown is the source of truth; reuse over repetition (DRY).
+  A module partitions the system; names the entries it contains — no SCoT, no UI schematic.
+  Copy to .sdd/specs/<MOD-id>/<MOD-id>.spec.md (module spec sits at root of its own folder; register in global modules.index.md). Markdown is source of truth; reuse over repetition (DRY).
   Delete the "## Filled example" from a real spec.
 -->
 ---
@@ -11,15 +11,15 @@ kind: module                   # required — drives the structural-overview FOR
 module: MOD-<kebab>             # required — self-reference (a module is its own home)
 depends_on: [MOD-<other>]      # other MODULE ids — topological; [] if none
 requirements: [REQ-<nnn>]      # back-link; [] if purely infra
-source: []                     # usually [] — EXCEPTION: MOD-build / MOD-schema own their infra FILES here (conventions §2)
+source: []                     # usually [] — EXCEPT MOD-build / MOD-schema own their infra FILES here (conventions §2)
 owns_sections: []
 ---
 
 # Purpose
-<One paragraph: the cohesive responsibility this module owns and what falls outside it. Boundary-defining, not a feature list.>
+<One paragraph: the cohesive responsibility this module owns + what falls outside it. Boundary-defining, not a feature list.>
 
 # Contained entries
-<Every id with `module: MOD-<this>` and a matching index row. Ids only, one line each. Omit empty groups.>
+<Every id with `module: MOD-<this>` + a matching index row. Ids only, one line each. Omit empty groups.>
 
 | Level | Entry id | What it represents (one line) |
 |-------|----------|-------------------------------|
@@ -30,7 +30,7 @@ owns_sections: []
 | Shared | `SHR-<lowerCamel>` | <shared non-UI abstraction> |
 
 # Boundaries & dependencies
-<Must equal `depends_on:` and the union of contained entries' cross-module deps (no hidden coupling). Acyclic at module level (§12).>
+<Must equal `depends_on:` + the union of contained entries' cross-module deps (no hidden coupling). Acyclic at module level (§12).>
 
 **Depends on** — | `MOD-<other>` | <what it uses from it> |
 **Exposes to** — | `MOD-<other>` | <entry ids other modules may reference> | (anything unlisted is internal)
@@ -43,7 +43,7 @@ owns_sections: []
 
 ## Filled examples — the infra modules `MOD-build` & `MOD-schema` (conventions §2)
 
-> Both are the documented exception to `source: []`: they own their infra **files directly**. `MOD-build` is pure scaffolding — **no domain `depends_on`** → it is the first slice; a GUI project also lists `playwright.config.ts` and sets `target.md` `test-e2e` to a real command. `MOD-schema` (DB projects only) owns the forward schema scripts — each append-only, traced to an `ENT-*`; the code-implementer materializes the SQL from the entity tables.
+> Both are the documented exception to `source: []`: they own their infra **files directly**. `MOD-build` is pure scaffolding — **no domain `depends_on`** → first slice; a GUI project also lists `playwright.config.ts` and sets `target.md` `test-e2e` to a real command. `MOD-schema` (DB projects only) owns the forward schema scripts — each append-only, traced to an `ENT-*`; the code-implementer materializes the SQL from the entity tables.
 
 ```markdown
 ---

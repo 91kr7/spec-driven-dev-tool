@@ -1,11 +1,11 @@
 # Target — stack, architecture & canonical commands
 
-> **Per-project file.** The `plan-architect` (in `/sdd-auto` step 3) writes this from the
-> user prompt. If the stack is unstated it leaves explicit `<…>` placeholders (never a silent
-> default); the `plan-gatekeeper` REJECTs on any placeholder and the command escalates the stack
-> question to the human. On an existing project it reflects the established stack; a feature may
-> only extend/override it. **Part of the source of truth** — every code-writing agent reads it.
-> Replace every `<…>`; unused fields read `n/a`, never a bare `<…>`.
+> **Per-project file.** `plan-architect` (`/sdd-auto` step 3) writes this from the user prompt.
+> Stack unstated ⇒ leave explicit `<…>` placeholders (never a silent default); `plan-gatekeeper`
+> REJECTs on any placeholder · command escalates the stack question to the human. Existing project
+> ⇒ reflect the established stack; a feature may only extend/override it. **Part of the source of
+> truth** — every code-writing agent reads it. Replace every `<…>`; unused fields read `n/a`,
+> never a bare `<…>`.
 
 ## 1. Stack
 
@@ -23,7 +23,7 @@
 
 ## 2. Source mapping, naming & language idioms
 
-How each spec `kind` maps to a path (used to propose `source:` for new specs):
+Each spec `kind` → path (used to propose `source:` for new specs):
 
 | Spec kind | Path convention | Example |
 |-----------|-----------------|---------|
@@ -37,11 +37,11 @@ How each spec `kind` maps to a path (used to propose `source:` for new specs):
 | schema changes | owned by `MOD-schema`, derived from entities | `db/schema/<n>_<name>.sql` |
 
 - Traceability-header comment syntax: `<// …>`. Design-token source: `<theme/token file>`.
-- **Test layout (one target per spec id, so a scoped run resolves mechanically):** `<unit/component → tests/unit/<id>.* ; integration → tests/integration/<FEAT-id>.* ; constraint → tests/model/<ENT-id>.* ; e2e → tests/e2e/<CLS-screen-id>.spec.*>`. Name each e2e file after the **screen id** (`CLS-*` gui), not the feature. Render `<id>` in a **filename/identifier-legal form** for the language (strip separators / PascalCase — e.g. `MOD-build` → `MODBuild`); the exact spec id is preserved verbatim only in each test's coverage-id comment (the matching source of truth), never forced into an illegal filename, and never as an empty "naming-stub" file.
+- **Test layout (one target per spec id, so a scoped run resolves mechanically):** `<unit/component → tests/unit/<id>.* ; integration → tests/integration/<FEAT-id>.* ; constraint → tests/model/<ENT-id>.* ; e2e → tests/e2e/<CLS-screen-id>.spec.*>`. Name each e2e file after the **screen id** (`CLS-*` gui), not the feature. Render `<id>` in a **filename/identifier-legal form** for the language (strip separators / PascalCase — e.g. `MOD-build` → `MODBuild`); the exact spec id survives verbatim only in each test's coverage-id comment (the matching source of truth), never forced into an illegal filename, never an empty "naming-stub" file.
 
 ### Language idioms — neutral-type → concrete calling convention
 
-Specs/SCoT stay concretization-free (scot.md §2); the implementer **and** the test-writer BOTH derive the concrete callable form from this single map — so a spec-derived test compiles and calls the real code **without reading `src/`**. Fill this map up front: it is the contract that makes both sides converge instead of guessing.
+Specs/SCoT stay concretization-free (scot.md §2); the implementer **and** the test-writer BOTH derive the concrete callable form from this single map — so a spec-derived test compiles and calls the real code **without reading `src/`**. Fill this map up front: the contract that makes both sides converge instead of guessing.
 
 | Neutral form (specs/SCoT) | Concrete idiom for this stack | Example call |
 |---|---|---|
@@ -57,7 +57,7 @@ The implementer MUST follow these idioms (never free-style its own); the test-wr
 
 ## 3. Canonical commands
 
-The `test-runner` and `code-gatekeeper` use exactly these (the runner fills only `{scope}`).
+`test-runner` and `code-gatekeeper` use exactly these (the runner fills only `{scope}`).
 
 ```
 install:   <e.g. pnpm install>          # GUI: also `pnpm playwright install --with-deps`
@@ -72,7 +72,7 @@ db-schema: <e.g. pnpm prisma migrate deploy>   # applies the entity-derived sche
 ```
 
 - **Path discipline in `cd`-ing commands:** if a command changes into a build-unit dir (`cd frontend && …`), every path in it (output files, configs, selectors) is **relative to that dir or absolute** — never re-prefix the dir name. `cd frontend && … --outputFile=frontend/test-results/…` writes to `frontend/frontend/test-results/…`. One working dir, one path origin.
-- **`{scope}`** — put the token where the framework's test selector goes; the runner replaces it with the in-scope selector (file globs or an id-alternation `--grep`/`--tests`). Empty `{scope}` = whole suite. The runner only fills this token — it never adds or alters any other flag.
+- **`{scope}`** — put the token where the framework's test selector goes; the runner replaces it with the in-scope selector (file globs or an id-alternation `--grep`/`--tests`). Empty `{scope}` = whole suite. The runner only fills this token — never adds or alters any other flag.
 - **Two reporters baked in:** a compact **`dot`** console reporter (tiny captured output) **and** a machine-readable **file** reporter (JUnit-XML/JSON/TAP) the runner parses with `xmllint`/`jq`. Both belong here, in the canonical command — never added ad-hoc.
 
 ## 4. Iteration budgets (optional override of conventions §7)

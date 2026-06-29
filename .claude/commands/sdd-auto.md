@@ -5,16 +5,16 @@ argument-hint: "<free-text requirement or feature description>"
 
 # /sdd-auto — SDD orchestrator
 
-Run the full flow for `$ARGUMENTS`, one vertical slice at a time, with automatic gates and feedback loops.
+Run full flow for `$ARGUMENTS`, one vertical slice at a time; automatic gates + feedback loops.
 - Steps run in order 1 → 9.
 - Steps 5–8 repeat once per slice.
-- **The main session only orchestrates** — it never authors an artifact. It only:
+- **Main session only orchestrates** — never authors an artifact. It only:
   - invokes agents,
   - reads each `verdict_record`,
   - advances index `status`,
   - routes on REJECT,
   - drives the loop,
-  - owns the human touch-points.
+  - owns human touch-points.
 
 ```
 DATAFLOW
@@ -34,16 +34,16 @@ ROLE   you (main session) = orchestrator; subagents do ALL authoring/judging via
 LAW    - Markdown spec = source of truth (authority).
         - Reuse over repetition (DRY).
         - A red test never makes code authoritative — fix the wrong spec first, then regenerate code.
-STATE  Durable state is in FILES, never in this conversation: `slice_list` (PLAN.md) · `index_rows.status`
+STATE  Durable state in FILES, never in this conversation: `slice_list` (PLAN.md) · `index_rows.status`
         (the indexes) · `.sdd/verdicts/`.
-        A slice's in-loop output — verdict bodies, agent return payloads, TEST-/REUSE-REPORT text, the
+        A slice's in-loop output — verdict bodies, agent return payloads, TEST-/REUSE-REPORT text,
         reasons[] threaded between iterations — is per-slice SCRATCH:
         - re-derive, don't recall: re-Glob/re-Read when a step needs a fact; never lean on conversation memory.
-        - garbage-collect it once the slice is `approved` (step 8).
-        Every slice boundary is a cold start — the same file-only reconstruction the Resume section performs.
+        - garbage-collect once the slice is `approved` (step 8).
+        Every slice boundary = cold start — same file-only reconstruction the Resume section performs.
 RULES  Obey .claude/sdd/conventions.md: ids §2 · front-matter §3 · index rows §4 · status/duties §5
         · verdict format §6 · budgets/routing §7 · change policy §8 · roster §9 · topo/slices §12.
-HUMAN  Touched twice only: (a) an unstated stack, (b) an escalation.
+HUMAN  Touched twice only: (a) unstated stack, (b) escalation.
 ```
 
 ## Preconditions
@@ -52,7 +52,7 @@ REQUIRE  requirement_text present in $ARGUMENTS (raw text ok; step 2 refines it)
 REQUIRE  resolvable stack:
            IF .sdd/target.md missing AND stack not inferable from requirement_text
            THEN ask the human the single stack question now, capture answer, then run unattended.
-                (this is the only prompt besides escalation.)
+                (only prompt besides escalation.)
 HAVE     read-only contracts shipped with the tool: conventions.md, scot.md, ui-schema.md.
 ```
 
@@ -61,14 +61,14 @@ HAVE     read-only contracts shipped with the tool: conventions.md, scot.md, ui-
 | token | type / structure | origin / note |
 |-------|------------------|---------------|
 | requirement_text | string | raw $ARGUMENTS |
-| current_date | ISO-8601 date | supplied by the orchestrator to every dated artifact (requirement-analyst + each GATE); subagents have no clock — never invent it |
+| current_date | ISO-8601 date | orchestrator supplies to every dated artifact (requirement-analyst + each GATE); subagents have no clock — never invent it |
 | stack_decision | { lang, framework, … } | resolved target stack — held in memory until step 3 |
 | REQUIREMENT.md | file { raw, refined, req_ids: REQ-* } | authored by requirement-analyst — refined list is a dated changelog |
 | PLAN.md | file { entities, Slice plan } | plan + ordered slice list; rewritten per run — on existing-SDD a delta (only NEW/MODIFY + their slices) |
 | target.md | file | stack + canonical install/build/test commands |
 | slice | { slice_id, member_ids[], depends_on_closure[] } | |
 | slice_list | [ slice ] | execution order, authored by plan-architect inside PLAN.md |
-| index_rows | rows in the per-module `<MOD>.index.md` (+ the global `modules.index.md`), each with `status: draft\|reviewed\|implemented\|approved` | |
+| index_rows | rows in per-module `<MOD>.index.md` (+ global `modules.index.md`), each `status: draft\|reviewed\|implemented\|approved` | |
 | spec_paths | [ .sdd/specs/**/*.spec.md ] | 5 levels: module/feature/entity/class/UI, incl. MOD-build/MOD-schema |
 | REUSE-REPORT.md | file { promoted: SHR-*\|COMP-*, demote_ids[], re_homed[]: {id, old_path → new_path} } | |
 | src_paths | [ path ] | only the spec's declared `source:` paths |
@@ -76,17 +76,17 @@ HAVE     read-only contracts shipped with the tool: conventions.md, scot.md, ui-
 | install_result | { ok: bool, log } | |
 | test_paths | [ tests/** ] | |
 | TEST-REPORT.md | file { failures[], per-test status } | .sdd/TEST-REPORT.md |
-| verdict_record | .sdd/verdicts/<nn>-<gate-agent>-<scope>-<verdict>.md { phase, scope, verdict: PASS\|REJECT, reasons[], routing, iteration: n/budget } | one file per gate; read the latest by Glob — PASS/REJECT is in the filename, open the body only on REJECT |
+| verdict_record | .sdd/verdicts/<nn>-<gate-agent>-<scope>-<verdict>.md { phase, scope, verdict: PASS\|REJECT, reasons[], routing, iteration: n/budget } | one file per gate; read latest by Glob — PASS/REJECT in the filename, open body only on REJECT |
 
 ## How to read a step
 ```
-EXECUTOR MARKERS — who runs the step (always the first line of the step body)
+EXECUTOR MARKERS — who runs the step (always first line of the step body)
   ▶▶ INVOKE <agent>   call an AUTHOR subagent via Task (writes requirement / specs / code / tests)
   ▶▶ GATE   <agent>   call a GATEKEEPER subagent via Task → emits a verdict_record (PASS/REJECT)
-  ··  YOU             the orchestrator does this directly — NO subagent (control flow, status, human only)
+  ··  YOU             orchestrator does this directly — NO subagent (control flow, status, human only)
 
-The step TITLE names the ACTION only. The agent (if any) is the ▶▶ line, so it is always visible.
-Every step lists IN (tokens consumed) and OUT (tokens produced). After a GATE you act on its
+Step TITLE names the ACTION only. The agent (if any) is the ▶▶ line, always visible.
+Every step lists IN (tokens consumed) and OUT (tokens produced). After a GATE, act on its
 verdict_record via the PASS / REJECT / OVERFLOW branches.
 ```
 
@@ -97,13 +97,13 @@ verdict_record via the PASS / REJECT / OVERFLOW branches.
 ··  YOU   (human touch-point — only the orchestrator may prompt the human)
 IN   requirement_text ; target.md (if present)
 DO   from target.md → else infer from requirement_text → else ask the human once (Preconditions).
-OUT  stack_decision   (plan-architect writes the actual target.md in step 3)
+OUT  stack_decision   (plan-architect writes the real target.md in step 3)
 ```
 
 ### Step 2 — Capture the requirement
 ```
 ▶▶ INVOKE requirement-analyst
-IN   conventions ; requirement_text ; current_date (you hold the date; the subagent has no clock) ; existing REQUIREMENT.md (append, never renumber)
+IN   conventions ; requirement_text ; current_date (you hold the date; subagent has no clock) ; existing REQUIREMENT.md (append, never renumber)
 OUT  REQUIREMENT.md { raw, refined, req_ids: REQ-* }   — refined list is a dated changelog
 ```
 
@@ -111,7 +111,7 @@ OUT  REQUIREMENT.md { raw, refined, req_ids: REQ-* }   — refined list is a dat
 ```
 ▶▶ INVOKE plan-architect
 IN   conventions ; REQUIREMENT.md ; existing .sdd/specs/ + indexes (classify NEW vs existing-SDD) ; target.md (if present) ; scot/ui-schema (forms) ; stack_decision
-OUT  target.md ; PLAN.md { entities, ordered Slice plan } — rewritten afresh; on existing-SDD a **delta** (only NEW/MODIFY entities + the slices that contain them)   →  the orchestrator reads slice_list from here
+OUT  target.md ; PLAN.md { entities, ordered Slice plan } — rewritten afresh; on existing-SDD a **delta** (only NEW/MODIFY entities + their slices)   →  orchestrator reads slice_list from here
 ```
 
 ### Step 4 — Gate the plan
@@ -122,7 +122,7 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
  PASS                              → enter the per-slice loop (step 5) over slice_list.
  REJECT                            → by routing:
         plan-architect      → re-INVOKE plan-architect (step 3) with reasons[]; loop step 4.
-        requirement-analyst → the requirement itself is at fault: re-INVOKE requirement-analyst (step 2),
+        requirement-analyst → requirement itself at fault: re-INVOKE requirement-analyst (step 2),
                               then re-plan (step 3); loop step 4.
  OVERFLOW(>3) OR routing: escalate → ESCALATE; stop.   (escalate = unresolved <…> placeholder)
 ```
@@ -147,7 +147,7 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
 
 5c ▶▶ INVOKE reuse-analyst
      IN  conventions ; ui-schema ; target.md ; the indexes (modules.index.md + per-module <MOD>.index.md) ; spec_paths (this slice) + existing SHR-*/COMP-* specs
-     OUT promoted/re-homed SHR-*/COMP-* specs ; updated index_rows (re-home: old row removed, new row carries the new spec path) ; REUSE-REPORT.md { promoted, demote_ids[], re_homed[]: {id, old_path → new_path} }
+     OUT promoted/re-homed SHR-*/COMP-* specs ; updated index_rows (re-home: old row removed, new row carries new spec path) ; REUSE-REPORT.md { promoted, demote_ids[], re_homed[]: {id, old_path → new_path} }
    ··  YOU   then:
      (1) for each re_homed {old_path → new_path} → `mv old_path new_path` AND move its exact mirror `.impl-notes.md` file (Bash — authors have no move/delete tool);
      (2) for each id in demote_ids → set index_rows.status: draft
@@ -198,9 +198,9 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
      OUT verdict_record { phase: test, scope: slice_id, coverage, routing, iteration: n/5 }
       PASS (green + full coverage) → YOU set slice index_rows.status: implemented → approved; step 8.
       REJECT → route per triage (§7); each loop returns to the sub-step that re-gates the fix:
-        spec bug → spec-writer (5b)      : re-INVOKE with the verdict reasons[]; demote status → draft, loop step 5, then step 6 regenerates code.
-        code bug → code-implementer (6a) : re-INVOKE with the verdict reasons[]; loop step 6 (re-pass the code gate before re-testing).
-        test bug → test-writer (7a)      : re-INVOKE with the verdict reasons[] + the offending test_paths (minimal edit); loop step 7a.
+        spec bug → spec-writer (5b)      : re-INVOKE with verdict reasons[]; demote status → draft, loop step 5, then step 6 regenerates code.
+        code bug → code-implementer (6a) : re-INVOKE with verdict reasons[]; loop step 6 (re-pass the code gate before re-testing).
+        test bug → test-writer (7a)      : re-INVOKE with verdict reasons[] + the offending test_paths (minimal edit); loop step 7a.
       routing: escalate (suite never ran / app won't boot / e2e skipped) → ESCALATE immediately (NOT a budget iteration).
       OVERFLOW(>5) → ESCALATE; stop slice.
 ```
@@ -209,8 +209,8 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
 ```
 ··  YOU
 IN   slice_list ; index_rows.status   (re-read from PLAN.md + the indexes — not from memory of prior slices)
-DO   (1) GARBAGE-COLLECT the just-approved slice — drop its scratch from working context (its verdict bodies,
-         agent return payloads, TEST-/REUSE-REPORT text, reasons[]): it is spent, the durable record is on disk.
+DO   (1) GARBAGE-COLLECT the just-approved slice — drop its scratch from working context (verdict bodies,
+         agent return payloads, TEST-/REUSE-REPORT text, reasons[]): spent, the durable record is on disk.
      (2) compute remaining = slices in slice_list whose index_rows.status ≠ approved.
 OUT  next_target :
        if remaining ≠ ∅ → next slice, entered as a COLD START — reconstruct from files per the STATE law, → step 5 ;
@@ -232,7 +232,7 @@ OUT  TEST-REPORT.md (whole suite) ; verdict_record { phase: test, scope: PROJECT
 ## Escalation   `the only human touch-point after stack resolution`
 ```
 ON budget overflow OR routing: escalate:
-  STOP that slice (or step 1–4) and report concisely:
+  STOP that slice (or step 1–4); report concisely:
     · scope            (slice_id or PLAN)
     · step + iteration vs budget
     · failing verdict_record verbatim + its reasons[] from its `.sdd/verdicts/` file

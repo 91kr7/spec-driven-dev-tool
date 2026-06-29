@@ -1,7 +1,7 @@
 <!--
-  TEMPLATE — shared NON-UI abstraction (SHR-*). Copy to .sdd/specs/<MOD>/shared/SHR-<lowerCamel>.spec.md (<MOD> = owning module, MOD-shared when used across ≥2 modules — Rule A).
-  Authority: conventions §2/§3/§5 + scot.md (ONLY when kind: service). Discover before create: reuse SHR-*/ENT- by id.
-  Markdown is the source of truth; reuse over repetition (DRY). Delete the "## Filled example".
+  TEMPLATE — shared NON-UI abstraction (SHR-*). Copy to .sdd/specs/<MOD>/shared/SHR-<lowerCamel>.spec.md (<MOD> = owning module; MOD-shared when used across ≥2 modules — Rule A).
+  Authority: conventions §2/§3/§5 + scot.md (ONLY when kind: service). Discover before create; reuse SHR-*/ENT- by id.
+  Markdown is source of truth; reuse over repetition (DRY). Delete the "## Filled example".
 
   Sections by kind (keep yours, delete the rest):
     interface → Purpose · Public interface (SIGNATURES only, no body) · Invariants & rules · Acceptance criteria  (stub auto-derived — never specced)
@@ -26,7 +26,7 @@ error_style: <result|raise>  # ONLY for kind: service (scot.md §6) — omit oth
 <WHAT this abstraction is and WHY it is shared (who reuses it). For kind: interface, name the implementing class(es).>
 
 # Public interface
-<The callable surface, in neutral types; list errors regardless of error_style. For interface, give SIGNATURES ONLY (the SCoT lives in the implementing class). For dto/enum/type/config, replace this table with the matching table below.>
+<Callable surface in neutral types; list errors regardless of error_style. For interface, SIGNATURES ONLY (SCoT lives in the implementing class). For dto/enum/type/config, replace this table with the matching table below.>
 
 | Method | Inputs | Output | Errors |
 |--------|--------|--------|--------|
@@ -66,7 +66,7 @@ id: SHR-passwordHasher · name: PasswordHasher · kind: interface · module: MOD
 depends_on: [] · requirements: [REQ-002] · source: [src/auth/PasswordHasher.ts]
 ```
 
-**Purpose** — The shared contract for one-way password hashing/verification across auth flows, so no caller re-implements hashing. As an `interface` it carries signatures only; the SCoT lives in the implementing class (`CLS-argon2Hasher`); a no-op stub is auto-derived for tests.
+**Purpose** — Shared contract for one-way password hashing/verification across auth flows, so no caller re-implements hashing. As an `interface` it carries signatures only; the SCoT lives in the implementing class (`CLS-argon2Hasher`); a no-op stub is auto-derived for tests.
 
 **Public interface**
 
