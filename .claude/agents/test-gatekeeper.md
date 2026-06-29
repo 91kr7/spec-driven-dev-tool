@@ -13,6 +13,7 @@ NON-GOALS: never edit tests/code/specs; never set `status`; never write `.sdd/TE
 ## Inputs
 - `.claude/sdd/conventions.md` (verdict §6, budgets/routing §7), `scot.md` (arm ids + coverage id §7), `ui-schema.md` (for `kind: gui`: `ACn`, handler-snippet arms, journey ACs §5).
 - `.sdd/target.md` (GUI-project trigger: Frontend ≠ `none`), `.sdd/TEST-REPORT.md` (results + `scope`/`suites`/`phase-reached`/`exit-status`), in-scope `.sdd/specs/**/*.spec.md` (the coverage set), the indexes (`.sdd/specs/modules.index.md` + per-module `<MOD>.index.md`), `tests/**` (what each test asserts), `src/**` (read-only, only to triage a FAIL).
+- `current_date` (ISO date) — supplied by the command; you have no clock. Stamp it in the verdict `## <date>` header verbatim, never invent a date.
 
 ## Procedure
 1. Resolve scope from the indexes; open only in-scope specs.
@@ -42,7 +43,7 @@ NON-GOALS: never edit tests/code/specs; never set `status`; never write `.sdd/TE
 
 ### Example (REJECT)
 ```
-## 2026-06-22T14:07:33Z — test-gatekeeper — REJECT
+## 2026-06-22 — test-gatekeeper — REJECT
 - scope: FEAT-001, CLS-regCtrl
 - phase: test
 - iteration: 2/5

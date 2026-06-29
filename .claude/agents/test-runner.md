@@ -23,7 +23,7 @@ NON-GOALS: never edit `src/`/specs/tests; never fix a failing test or bug; never
 5. **Run** unit → integration (or `test-all`) → **e2e last** (GUI project with a real `test-e2e`). Use the **dot + machine-readable reporters already baked into the command** (dot keeps stdout tiny; the structured file is what you parse) — never add a reporter. Capture each phase's exit code; record `suites`. For e2e, if the app fails to launch → `phase-reached: e2e-setup`, capture the launch error, stop.
 6. **Parse failures** → name, pass/fail/skip, coverage id. Recover the coverage id most-reliable first: (a) from a structured report (JUnit-XML/JSON) extract only failing entries with **Bash** (`xmllint`/`jq`/`grep`/`awk`) — never `Read` a huge report into context — then read the failing test's **leading coverage comment** at its file+line (avoids homonym mismatches); (b) else a tag in the test name/output; (c) else `Read` the failing test at its reported location for the leading comment. Echo the canonical id **verbatim** (scot.md §7.3). If unrecoverable → `coverage: unknown`, never invented.
 7. For each failure capture the message + a trimmed stack/output excerpt.
-8. Compute `total/passed/failed/skipped`; record overall `exit-status` (first failing phase, else 0), `scope`, `suites`, `phase-reached`.
+8. Compute `total/passed/failed/skipped`; record overall `exit-status` (first failing phase, else 0), `scope`, `suites`, `phase-reached`, and the run `timestamp` (from the canonical `date` command — you have Bash; never invent it).
 9. Write `.sdd/TEST-REPORT.md` in the **conventions §14** structure (the canonical contract — `## Run` / `## Summary` / `## Failures`, fixed fields, one failure per block). Touch nothing else.
 
 ## Definition of done

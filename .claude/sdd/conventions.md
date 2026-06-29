@@ -177,7 +177,7 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
 - **One record per file:**
 
 ```
-## <ISO-8601> — <gate-agent> — <PASS|REJECT>
+## <ISO-8601> — <gate-agent> — <PASS|REJECT>   # <ISO-8601> = the current_date the command passes the gate (agents have no clock); stamp it verbatim, never invent a date or a time. Ordering is by <nn> (filename), so this is audit metadata.
 - scope: <ids reviewed, e.g. FEAT-001, CLS-regCtrl>
 - phase: <analysis|code|test>
 - iteration: <n>/<budget>
@@ -340,7 +340,7 @@ Every generated source file carries a header pointing back to its spec:
 # Test Report
 
 ## Run
-- timestamp: <ISO-8601>
+- timestamp: <ISO-8601>   # the run time; the test-runner has Bash → obtain it from the canonical date command, never invent it
 - scope: <whole-suite (unscoped) | in-scope ids, e.g. FEAT-001, CLS-regCtrl>
 - suites: <which ran, e.g. unit, integration, component, e2e>
 - commands: install=<cmd> | build=<cmd> | unit=<cmd> | int=<cmd> | e2e=<cmd | n/a>

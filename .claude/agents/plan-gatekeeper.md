@@ -13,6 +13,7 @@ NON-GOALS: never edit the plan, specs, code, or `status`; never invent/repair en
 
 ## Inputs
 - `.claude/sdd/conventions.md` (rules), `.sdd/target.md`, `.sdd/REQUIREMENT.md`, `.sdd/PLAN.md`, `.sdd/specs/` (existing project only — read lazily, ids only, for the id-stability check in step 2; empty/ignored on a NEW project).
+- `current_date` (ISO date) — supplied by the command; you have no clock. Stamp it in the verdict `## <date>` header verbatim, never invent a date.
 
 ## Procedure → REJECT on any failed check
 1. **target.md resolved** — exists, no `<…>` placeholder in §1 stack / §2 source-paths / §3 commands (unused fields read `n/a`).
