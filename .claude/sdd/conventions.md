@@ -21,25 +21,28 @@
 .claude/sdd/ui-schema.md     # UI convention (gui specs) + reusable component catalog (§9)
 .claude/sdd/templates/*.md   # forms new specs are copied from
 
-# THE PROJECT — written at runtime
-requirements/REQUIREMENT.md  # raw + refined requirement (REQ-* ids), refined list as a dated changelog
-plan/PLAN.md                 # plan output
-.sdd/target.md               # stack + canonical build/test/run commands
+# THE PROJECT — SDD process metadata: ALL under .sdd/ (only the SDD agents read/write it; no compiler / bundler / test-runner / human toolchain ever looks here)
+.sdd/target.md               # stack + canonical build/test/run commands (the env contract)
+.sdd/REQUIREMENT.md          # raw + refined requirement (REQ-* ids), refined list as a dated changelog
+.sdd/PLAN.md                 # plan output (a delta on existing-SDD)
+.sdd/specs/indexes/{modules,features,model,classes,ui-components}.index.md  # one index per level
+.sdd/specs/modules/<id>.spec.md   # incl. MOD-build (scaffolding) + MOD-schema (DB projects)
+.sdd/specs/features/<id>.spec.md  # use-case: orchestration + integration acceptance
+.sdd/specs/model/<id>.spec.md     # entities: fields, relations, constraints
+.sdd/specs/classes/<id>.spec.md   # per-method SCoT (+ feature gui screens)
+.sdd/specs/ui-components/<id>.spec.md  # UI components — created only as screens compose them (ui-schema §9 catalog)
+.sdd/specs/shared/<id>.spec.md    # shared non-UI abstractions — indexed in classes.index.md
+.sdd/specs/REUSE-REPORT.md        # reuse-analyst output: promotions + Demote-for-re-gate list
+.sdd/impl-notes/{modules,features,model,classes,ui-components,shared}/<id>.impl-notes.md  # concretization notes — MIRRORS the .sdd/specs/ hierarchy + basename; NOT the gated spec; the test-writer never reads this tree
 .sdd/verdicts/<nn>-<gate-agent>-<scope>-<verdict>.md  # one file per gate — the append-only verdict log (no rewrite)
-specs/indexes/{modules,features,model,classes,ui-components}.index.md  # one index per level
-specs/modules/<id>.spec.md   # incl. MOD-build (scaffolding) + MOD-schema (DB projects)
-specs/features/<id>.spec.md  # use-case: orchestration + integration acceptance
-specs/model/<id>.spec.md     # entities: fields, relations, constraints
-specs/classes/<id>.spec.md   # per-method SCoT (+ feature gui screens)
-specs/ui-components/<id>.spec.md  # UI components — created only as screens compose them (ui-schema §9 catalog)
-specs/shared/<id>.spec.md    # shared non-UI abstractions — indexed in classes.index.md
-specs/REUSE-REPORT.md        # reuse-analyst output: promotions + Demote-for-re-gate list
-impl-notes/{modules,features,model,classes,ui-components,shared}/<id>.impl-notes.md  # concretization notes — MIRRORS the specs/ hierarchy + basename; NOT the gated spec; the test-writer never reads this tree
-src/                         # GENERATED
-tests/                       # GENERATED (unit←classes, integration←features, constraint←entities, component←gui, e2e←gui screens)
+.sdd/TEST-REPORT.md          # test-runner → test-gatekeeper run result (§14; overwritten each run)
+
+# THE PROJECT — product: stays at the root the toolchain expects, NEVER under .sdd/ (build tools, import paths, test discovery, package/docker manifests all assume these roots)
+src/                         # GENERATED source (or framework roots, e.g. backend/ frontend/)
+tests/                       # GENERATED test files (unit←classes, integration←features, constraint←entities, component←gui, e2e←gui screens)
 ```
 
-**Scaling option (decided in the plan):** for a large multi-module project the fine-grained indexes (`classes`/`model`/`ui-components`) MAY split per module under `specs/indexes/<level>/<MOD-id>.index.md`; `modules`/`features` stay global. Default = single global index per level.
+**Scaling option (decided in the plan):** for a large multi-module project the fine-grained indexes (`classes`/`model`/`ui-components`) MAY split per module under `.sdd/specs/indexes/<level>/<MOD-id>.index.md`; `modules`/`features` stay global. Default = single global index per level.
 
 ---
 
@@ -60,7 +63,7 @@ tests/                       # GENERATED (unit←classes, integration←features
 **Terminology — "entity" (generic) vs `ENT-` (specific).** Unqualified, **entity** means *any planned node at any of the five levels* — one index row / one spec, whatever its prefix (`MOD-`/`FEAT-`/`ENT-`/`CLS-`/`COMP-`/`SHR-`). It is the generic word for "a thing in the plan/index" (e.g. "one row per entity", "every `REQ-*` covered by ≥1 entity", "process entities in `depends_on` order"). The prefix **`ENT-`** is the *narrow* sense — a **domain entity** (the `entity` kind: field table + relations + invariants). When the narrow sense is meant the text says `ENT-` or "`entity` **kind/spec**"; bare "entity" is always the generic node.
 
 - Ids are **stable**: never renumber/rename; new entries take the next free id; deprecate rather than rename.
-- A spec file is named after its id (`specs/classes/CLS-userRepo.spec.md`).
+- A spec file is named after its id (`.sdd/specs/classes/CLS-userRepo.spec.md`).
 - **`MOD-build` is mandatory in every project.** It owns build files, manifests, config, CI, and framework/build/entry scaffolding (e.g. `tsconfig.json`, the app entry, `playwright.config.*` for a GUI project's e2e). It carries **no `depends_on`** itself, and **every other module declares `depends_on: MOD-build`**, so it is always the **first slice** — generated code cannot compile/build without the scaffolding.
   - GUI project (Frontend ≠ `none`) → `MOD-build` owns the e2e harness (`playwright.config.*` + `webServer`) and `target.md`'s `test-e2e` must be a real command, not `n/a`.
 - **`MOD-schema` is mandatory for a DB project** (`target.md` DB ≠ `none`) with any persisted `ENT-*`. It owns the **DB schema changes derived from the entity specs** (never hand-authored; forward-only, append-only once shipped) and MUST declare ≥1 forward schema-change script in `source:`. Its `depends_on` reaches the persistence module + the `ENT-*` it evolves, so it is ordered **after** the entities. Unlike `MOD-build`, it is **not requirement-exempt**: its `requirements` = the union of the `REQ-*` of the `ENT-*` whose schema it materializes (the DB exists for those persistence requirements). A non-DB project has no `MOD-schema`.
@@ -115,7 +118,7 @@ A **stub/mock is never specced** — it is auto-derived from its `interface` spe
 Every `ACn` is verified at exactly one of three altitudes, **marked** so coverage is mechanical:
 - **test-covered** (default, untagged) — an authored test asserts it (unit / integration / component). The `test-writer` writes ≥1 mapped test (scot.md §7.3 id); the `test-gatekeeper` REJECTs if any is uncovered.
 - **`(journey)`** — a screen outcome that crosses the running stack; verified **end-to-end by a Playwright test** (ui-schema §5).
-- **`(pipeline)`** — the outcome **is** the success of a canonical `target.md §3` command (install / build / run-boot / migrate); verified by that command reaching green in `tests/REPORT.md`, **not** by an authored test (a test that re-asserts "the build passes" is circular; one that re-asserts a manifest value against the spec is tautological — neither is an independent oracle). **Allowed ONLY on an infra-module AC** (`MOD-build`, `MOD-schema`) whose assertion is literally "the build / boot / migration command succeeds". A behavioral spec (`CLS-*` / `FEAT-*` / `ENT-*`) may **never** tag `(pipeline)` to dodge a real test, and a genuine boot **smoke** check (e.g. application-context-loads, which exercises runtime wiring the spec left open) stays **test-covered**, not `(pipeline)`. The `test-writer` authors **no** test for a `(pipeline)` AC; the `test-gatekeeper` counts it covered from the green run result and REJECTs a `(pipeline)` tag on a non-infra spec.
+- **`(pipeline)`** — the outcome **is** the success of a canonical `target.md §3` command (install / build / run-boot / migrate); verified by that command reaching green in `.sdd/TEST-REPORT.md`, **not** by an authored test (a test that re-asserts "the build passes" is circular; one that re-asserts a manifest value against the spec is tautological — neither is an independent oracle). **Allowed ONLY on an infra-module AC** (`MOD-build`, `MOD-schema`) whose assertion is literally "the build / boot / migration command succeeds". A behavioral spec (`CLS-*` / `FEAT-*` / `ENT-*`) may **never** tag `(pipeline)` to dodge a real test, and a genuine boot **smoke** check (e.g. application-context-loads, which exercises runtime wiring the spec left open) stays **test-covered**, not `(pipeline)`. The `test-writer` authors **no** test for a `(pipeline)` AC; the `test-gatekeeper` counts it covered from the green run result and REJECTs a `(pipeline)` tag on a non-infra spec.
 
 ---
 
@@ -247,21 +250,21 @@ Twelve roles; **eleven are subagents** in `.claude/agents/`. The **orchestrator 
 
 | Agent | Role | May WRITE | tools | Reads `src/`? | model |
 |---|---|---|---|---|---|
-| `requirement-analyst` | capture raw → refined requirement + REQ ids | `requirements/` | `Read, Write, Edit, Glob, Grep` | no | opus |
-| `plan-architect` | requirement → plan (+ ordered slices) + target | `plan/`, `.sdd/target.md` | `Read, Write, Edit, Glob, Grep` | no | opus |
+| `requirement-analyst` | capture raw → refined requirement + REQ ids | `.sdd/REQUIREMENT.md` | `Read, Write, Edit, Glob, Grep` | no | opus |
+| `plan-architect` | requirement → plan (+ ordered slices) + target | `.sdd/PLAN.md`, `.sdd/target.md` | `Read, Write, Edit, Glob, Grep` | no | opus |
 | `plan-gatekeeper` | judge the plan | `.sdd/verdicts/` (one file) | `Read, Write, Glob, Grep` | no | opus |
-| `spec-writer` | write indexes + specs | `specs/` | `Read, Write, Edit, Glob, Grep` | no | opus |
-| `reuse-analyst` | dedupe + promote shared specs | `specs/` | `Read, Write, Edit, Glob, Grep` | no | opus |
+| `spec-writer` | write indexes + specs | `.sdd/specs/` | `Read, Write, Edit, Glob, Grep` | no | opus |
+| `reuse-analyst` | dedupe + promote shared specs | `.sdd/specs/` | `Read, Write, Edit, Glob, Grep` | no | opus |
 | `analysis-gatekeeper` | judge specs (only spec-phase blocker) | `.sdd/verdicts/` (one file) | `Read, Write, Glob, Grep` | no | opus |
-| `code-implementer` | specs → source | `src/` (declared paths), `impl-notes/` | `Read, Write, Edit, Glob, Grep` | yes (edit) | opus |
+| `code-implementer` | specs → source | `src/` (declared paths), `.sdd/impl-notes/` | `Read, Write, Edit, Glob, Grep` | yes (edit) | opus |
 | `code-gatekeeper` | judge code ≡ spec | `.sdd/verdicts/` (one file) | `Read, Write, Glob, Grep, Bash` (read-only) | yes (review) | opus |
 | `test-writer` | specs → tests (independent oracle) | `tests/` | `Read, Write, Edit, Glob` | **no — by role** | sonnet |
-| `test-runner` | run tests, write report | `tests/REPORT.md` | `Read, Write, Glob, Bash` | yes | sonnet |
+| `test-runner` | run tests, write report | `.sdd/TEST-REPORT.md` | `Read, Write, Glob, Bash` | yes | sonnet |
 | `test-gatekeeper` | verify coverage + triage | `.sdd/verdicts/` (one file) | `Read, Write, Glob, Grep` | yes | opus |
 
 - The `.claude/sdd/` contracts + templates ship with the tool — **read-only**, no agent edits them.
 - A gatekeeper's `Write` is scoped to **one new verdict file in `.sdd/verdicts/`** only — it never reads or rewrites the existing log (§6).
-- **test-writer independence is SOFT**: no `Bash`, explicit NON-GOAL (never read `src/` or `impl-notes/`), and the test-gatekeeper rejects tests that assert implementation detail.
+- **test-writer independence is SOFT**: no `Bash`, explicit NON-GOAL (never read `src/` or `.sdd/impl-notes/`), and the test-gatekeeper rejects tests that assert implementation detail.
 - The **test-runner** is the only agent that **executes** the suite (canonical `target.md` commands, filling only `{scope}`); for GUI e2e those commands launch/tear down the running app.
 - **Models:** Opus for under-specified authoring + high-consequence judgment; Sonnet for mechanical/checklist work a concrete contract constrains. A project MAY override any `model:`.
 
@@ -309,7 +312,7 @@ Chain **REQUIREMENT → FEATURE → CLASS → SOURCE → TEST** is rebuilt on de
 
 Every generated source file carries a header pointing back to its spec:
 ```
-// spec: CLS-regCtrl RegistrationController — specs/classes/CLS-regCtrl.spec.md
+// spec: CLS-regCtrl RegistrationController — .sdd/specs/classes/CLS-regCtrl.spec.md
 ```
 - Comment syntax per target language; placed at the **top but after any mandatory first-line construct** (shebang, `<?php`, `"use client"`, XML/encoding decl).
 - **Comment-less formats are exempt** (pure JSON like `package.json`/`tsconfig.json`, lockfiles): the spec↔source link is the `source:` declaration alone — the gatekeeper never demands a header for them.
@@ -318,7 +321,7 @@ Every generated source file carries a header pointing back to its spec:
 
 ---
 
-## 14. `tests/REPORT.md` format (test-runner → test-gatekeeper contract)
+## 14. `.sdd/TEST-REPORT.md` format (test-runner → test-gatekeeper contract)
 
 `test-runner` writes it (overwritten each run); `test-gatekeeper` parses it. Fixed structure (no heuristics). **Coverage** (every test-covered `ACn`/arm has a test) is verified by the gatekeeper from the tagged test files; this report supplies the **run result**. A **`(pipeline)`** AC (§3 altitudes) is the exception: it carries no tagged test — the gatekeeper counts it covered from this report's **green run result** (the install/build/boot/migrate command it asserts necessarily ran as part of reaching `phase-reached: complete`).
 

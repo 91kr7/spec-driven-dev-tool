@@ -12,16 +12,16 @@ NON-GOALS: never read `src/`; never inline a component that already exists (refe
 
 ## Inputs
 - `.claude/sdd/conventions.md` (ids §2, front-matter §3, index rows §4, status §5, topological §12, MOD-build/MOD-schema §2, traceability §13), `scot.md` (behavioral bodies), `ui-schema.md` (gui bodies).
-- `.sdd/target.md` (source-path conventions), `plan/PLAN.md` (work list + order), `requirements/REQUIREMENT.md` (back-links + acceptance intent).
-- `specs/indexes/*.index.md` + existing `specs/**/*.spec.md` (discover-before-create), `specs/REUSE-REPORT.md` (apply any hand-off edits), `templates/*.template.md` (copy source).
+- `.sdd/target.md` (source-path conventions), `.sdd/PLAN.md` (work list + order), `.sdd/REQUIREMENT.md` (back-links + acceptance intent).
+- `.sdd/specs/indexes/*.index.md` + existing `.sdd/specs/**/*.spec.md` (discover-before-create), `.sdd/specs/REUSE-REPORT.md` (apply any hand-off edits), `templates/*.template.md` (copy source).
 
 ## Outputs
-- One spec per planned entity in the right folder (§1) + the mandatory `specs/modules/MOD-build.spec.md` (and `specs/modules/MOD-schema.spec.md` for a DB project).
+- One spec per planned entity in the right folder (§1) + the mandatory `.sdd/specs/modules/MOD-build.spec.md` (and `.sdd/specs/modules/MOD-schema.spec.md` for a DB project).
 - One row per entity in the matching per-level index, **all columns filled** (§4), `status: draft`, `source` derived from the spec's `source:`.
 
 ## Procedure
 1. **Order** entities in `depends_on` topological order; on a cycle author the `interface` spec first.
-2. **Discover before create** — reuse an existing id rather than re-describe. **GUI project:** materialize a `COMP-*` from the ui-schema §9 catalog (via `templates/ui-component.template.md`) into `specs/ui-components/` + index **only when a screen composes it** — create what's used, not the whole catalog (an unused `COMP-*` is an orphan); then specify the screens that compose them by id.
+2. **Discover before create** — reuse an existing id rather than re-describe. **GUI project:** materialize a `COMP-*` from the ui-schema §9 catalog (via `templates/ui-component.template.md`) into `.sdd/specs/ui-components/` + index **only when a screen composes it** — create what's used, not the whole catalog (an unused `COMP-*` is an orphan); then specify the screens that compose them by id.
 3. **Copy the template** for the kind into the correct folder, named `<id>.spec.md`.
 4. **Front-matter** (§3): `id` · `name` · `kind` · `module` · `depends_on` · `requirements` · `source:` (propose from `target.md` for NEW; real files for EXISTING; `[]` for a purely-compositional feature) · `error_style:` for behavioral · `layer:`/`variants:` for `COMP-*` · `owns_sections:` for co-owned files.
 5. **Body by kind:** behavioral → **SCoT** (`scot.md`: explicit I/O, `error_style`, every branch a stable `[Bn]` with named arms; a `use-case` orchestrates by id `CALL CLS-…`/`CALL FEAT-…`). entity → field table + relations + invariants (the single source for code entity AND schema). structural → declarative tables (`interface` = signatures only). module → Purpose · Contained entries · Boundaries. gui → ui-schema five sections, composing `COMP-*` by id.
@@ -34,5 +34,5 @@ NON-GOALS: never read `src/`; never inline a component that already exists (refe
 - Every planned entity has a spec (right folder, valid §3 front-matter, required sections per kind) AND a complete index row, `status: draft`. Behavioral bodies = valid SCoT with stable arms; gui bodies compose `COMP-*` by id; no concretization leaked; no `src/` read. `MOD-build` present (scaffolding); for a DB project `MOD-schema` present with entity-derived schema scripts declared.
 
 ## Hand-off
-- Writes only `specs/**` (specs + index rows), all `status: draft`. Never writes `status` beyond draft or a verdict (`.sdd/verdicts/`).
+- Writes only `.sdd/specs/**` (specs + index rows), all `status: draft`. Never writes `status` beyond draft or a verdict (`.sdd/verdicts/`).
 - **On re-invocation after a REJECT:** the command passes the verdict reasons; fix only the named spec(s)/`ACn`/branch(es). A test-phase **`SPEC DEFECT` marker** means an `ACn`/branch is un-testable due to ambiguity — resolve it. The command then demotes the entity and re-flows it through the analysis gate.

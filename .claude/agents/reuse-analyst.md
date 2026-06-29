@@ -12,15 +12,15 @@ NON-GOALS: never judge or write a verdict (the analysis-gatekeeper is the only s
 
 ## Inputs
 - `.claude/sdd/conventions.md` (ids §2, front-matter §3, index rows §4, ownership §3, DRY), `ui-schema.md` (GUI form, layering §7), `.sdd/target.md` (source-path conventions).
-- `specs/indexes/*.index.md` first (map the landscape cheaply), then the individual specs a candidate pattern touches (lazy).
+- `.sdd/specs/indexes/*.index.md` first (map the landscape cheaply), then the individual specs a candidate pattern touches (lazy).
 
 ## Outputs
-- New/updated `specs/ui-components/COMP-*.spec.md` (widgets) + `specs/shared/SHR-*.spec.md` (services/utils/types/validation), each with `requirements:` = a **non-empty subset of the `REQ-*` of the consumers you rewrote to use it** — only the REQ this abstraction genuinely realizes, each carried by ≥1 of those consumers (a promoted abstraction owns no `REQ-*` of its own but carries those of its consumers — §13; since you rewrite ≥2 duplicators to reference it, this set is non-empty, so it is never an orphan; never list a `REQ-*` no consumer carries — that is excess), `source:` you author from `target.md`, and a complete body.
+- New/updated `.sdd/specs/ui-components/COMP-*.spec.md` (widgets) + `.sdd/specs/shared/SHR-*.spec.md` (services/utils/types/validation), each with `requirements:` = a **non-empty subset of the `REQ-*` of the consumers you rewrote to use it** — only the REQ this abstraction genuinely realizes, each carried by ≥1 of those consumers (a promoted abstraction owns no `REQ-*` of its own but carries those of its consumers — §13; since you rewrite ≥2 duplicators to reference it, this set is non-empty, so it is never an orphan; never list a `REQ-*` no consumer carries — that is excess), `source:` you author from `target.md`, and a complete body.
 - Updated `ui-components.index.md` (COMP-*) and `classes.index.md` (SHR-* — no separate shared index), one fully-filled row per promotion, `source` derived from the spec.
-- Edited consumer specs (duplication replaced by reference-by-id) + `specs/REUSE-REPORT.md`.
+- Edited consumer specs (duplication replaced by reference-by-id) + `.sdd/specs/REUSE-REPORT.md`.
 
 ## Procedure
-1. **Map** the libraries (`specs/ui-components/`, `specs/shared/`) from the indexes so you discover-before-create.
+1. **Map** the libraries (`.sdd/specs/ui-components/`, `.sdd/specs/shared/`) from the indexes so you discover-before-create.
 2. **Detect** recurring patterns: near-duplicate SCoT, repeated UI widgets, repeated DTOs/types/enums/interfaces, repeated validation/invariants. Group + estimate occurrences.
 3. **Promote shared UI** (≥2 screens, not already present): create `COMP-<lowerCamel>` (`kind: gui`, correct `layer:`, full Props/Variants/Visual-states/Events/Accessibility), register the row, rewrite each consumer's component tree to reference it by id. Higher layers compose lower by id.
 4. **Promote shared non-UI** (≥2 uses): create `SHR-<lowerCamel>` (service/util → SCoT; dto/enum/interface/config → declarative), register in `classes.index.md`, update every duplicator to reference it by id (in `depends_on:` and body).

@@ -54,13 +54,13 @@ HAVE     read-only contracts shipped with the tool: conventions.md, scot.md, ui-
 | slice | { slice_id, member_ids[], depends_on_closure[] } | |
 | slice_list | [ slice ] | execution order, authored by plan-architect inside PLAN.md |
 | index_rows | rows in level indexes, each with `status: draft\|reviewed\|implemented\|approved` | |
-| spec_paths | [ specs/**/*.spec.md ] | 5 levels: module/feature/entity/class/UI, incl. MOD-build/MOD-schema |
+| spec_paths | [ .sdd/specs/**/*.spec.md ] | 5 levels: module/feature/entity/class/UI, incl. MOD-build/MOD-schema |
 | REUSE-REPORT.md | file { promoted: SHR-*\|COMP-*, demote_ids[] } | |
 | src_paths | [ path ] | only the spec's declared `source:` paths |
-| impl_note | impl-notes/<level>/<id>.impl-notes.md | mirrors the spec's specs/ folder + basename |
+| impl_note | .sdd/impl-notes/<level>/<id>.impl-notes.md | mirrors the spec's .sdd/specs/ folder + basename |
 | install_result | { ok: bool, log } | |
 | test_paths | [ tests/** ] | |
-| REPORT.md | file { failures[], per-test status } | tests/REPORT.md |
+| TEST-REPORT.md | file { failures[], per-test status } | .sdd/TEST-REPORT.md |
 | verdict_record | .sdd/verdicts/<nn>-<gate-agent>-<scope>-<verdict>.md { phase, scope, verdict: PASS\|REJECT, reasons[], routing, iteration: n/budget } | one file per gate; read the latest by Glob — PASS/REJECT is in the filename, open the body only on REJECT |
 
 ## How to read a step
@@ -102,7 +102,7 @@ OUT  target.md ; PLAN.md { entities, ordered Slice plan } — rewritten afresh; 
 ### Step 4 — Gate the plan
 ```
 ▶▶ GATE plan-gatekeeper
-IN   PLAN.md ; target.md ; REQUIREMENT.md ; conventions.md ; specs/ (existing — id stability)
+IN   PLAN.md ; target.md ; REQUIREMENT.md ; conventions.md ; .sdd/specs/ (existing — id stability)
 OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
  PASS                              → enter the per-slice loop (step 5) over slice_list.
  REJECT                            → by routing:
@@ -165,17 +165,17 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
 
 ### Step 7 — Test the slice   `[test budget 5]`   `status: implemented → approved`
 ```
-7a ▶▶ INVOKE test-writer   (independent oracle — NEVER reads src/ or impl-notes/)
+7a ▶▶ INVOKE test-writer   (independent oracle — NEVER reads src/ or .sdd/impl-notes/)
      IN  spec_paths (this slice) ONLY
      OUT test_paths : ≥1 test per ACn and per SCoT arm; GUI → Playwright e2e per (journey) AC,
                       selecting by accessible role/name from the spec.
 
 7b ▶▶ INVOKE test-runner
      IN  test_paths ; src_paths ; slice.member_ids as {scope} ; target.md install/build/test commands
-     OUT REPORT.md (unit + integration + component, + e2e for GUI)
+     OUT TEST-REPORT.md (unit + integration + component, + e2e for GUI)
 
 7c ▶▶ GATE test-gatekeeper
-     IN  REPORT.md ; spec_paths (for coverage) ; conventions.md
+     IN  TEST-REPORT.md ; spec_paths (for coverage) ; conventions.md
      OUT verdict_record { phase: test, scope: slice_id, coverage, routing, iteration: n/5 }
       PASS (green + full coverage) → YOU set slice index_rows.status: implemented → approved; step 8.
       REJECT → route per triage (§7); each loop returns to the sub-step that re-gates the fix:
@@ -199,7 +199,7 @@ OUT  next_target : if remaining ≠ ∅ → (next slice, → step 5) ; else → 
 ▶▶ INVOKE test-runner   (whole suite, NO scope)
 ▶▶ GATE   test-gatekeeper (whole project)
 IN   whole approved project ; target.md test command with NO scope
-OUT  REPORT.md (whole suite) ; verdict_record { phase: test, scope: PROJECT }
+OUT  TEST-REPORT.md (whole suite) ; verdict_record { phase: test, scope: PROJECT }
       regression → route per §7 to the owning slice, re-run its step 7 (bounded by test budget).
       green      → project done.
 ```
@@ -240,7 +240,7 @@ any REJECT                             → status unchanged (never regresses).
 ## Outputs
 ```
 REQUIREMENT.md · PLAN.md (incl. Slice plan) · target.md
-per slice: index_rows · spec_paths · src_paths · impl_note · test_paths · REPORT.md
+per slice: index_rows · spec_paths · src_paths · impl_note · test_paths · TEST-REPORT.md
 .sdd/verdicts/  append-only verdict log — one file per gate (no whole-file rewrite)
 index_rows.status advanced to approved for every completed slice
 ```

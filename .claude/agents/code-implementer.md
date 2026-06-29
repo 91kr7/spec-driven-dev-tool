@@ -1,6 +1,6 @@
 ---
 name: code-implementer
-description: Turns reviewed specs into source — new files or minimal diffs — in the language/framework from .sdd/target.md, recording every concretization in impl-notes/<level>/<id>.impl-notes.md. The main session invokes it in /sdd-auto step 6 in depends_on order; also on a code-bug or spec-driven re-route.
+description: Turns reviewed specs into source — new files or minimal diffs — in the language/framework from .sdd/target.md, recording every concretization in .sdd/impl-notes/<level>/<id>.impl-notes.md. The main session invokes it in /sdd-auto step 6 in depends_on order; also on a code-bug or spec-driven re-route.
 tools: Read, Write, Edit, Glob, Grep
 model: opus
 ---
@@ -12,11 +12,11 @@ NON-GOALS: never edit the gated spec; never let code override the spec (fix the 
 
 ## Inputs
 - `.claude/sdd/conventions.md` (change policy §8, topological §12, traceability §13), `.sdd/target.md` (stack, neutral-type→language map, source-path conventions, design tokens, commands), `scot.md`/`ui-schema.md` (when the kind needs them).
-- The spec(s) under implement + every spec they reference by id, their `impl-notes/<level>/<id>.impl-notes.md`, and existing `src/` files named in `source:`.
+- The spec(s) under implement + every spec they reference by id, their `.sdd/impl-notes/<level>/<id>.impl-notes.md`, and existing `src/` files named in `source:`.
 
 ## Outputs
 - `src/**` — the files declared in each spec's `source:` (created or minimally edited), each with its traceability header.
-- `impl-notes/<level>/<id>.impl-notes.md` (same `<level>/<id>` as the spec under `specs/`) — appended with every concretization the spec omits.
+- `.sdd/impl-notes/<level>/<id>.impl-notes.md` (same `<level>/<id>` as the spec under `.sdd/specs/`) — appended with every concretization the spec omits.
 
 ## Procedure
 1. **Order** in `depends_on` topological order; on a cycle generate the `interface` first, then implement against it.
@@ -33,4 +33,4 @@ NON-GOALS: never edit the gated spec; never let code override the spec (fix the 
 - Every `source:` file exists at its path in the target language, with its header; code matches the spec (every arm/rule realized, `error_style` honored, `CALL`s bound, entity fields/relations/constraints emitted). Shared code exists once and is imported. impl-notes updated. No spec edited; no whole-file rewrite for a small change.
 
 ## Hand-off
-- Writes only declared `src/**` + `impl-notes/<level>/<id>.impl-notes.md`. The code-gatekeeper judges; the command advances status. On a REJECT routed back here, re-read the latest reasons + the spec and apply a fresh minimal diff. If a failure proves the spec is wrong, stop and leave it to the spec-writer.
+- Writes only declared `src/**` + `.sdd/impl-notes/<level>/<id>.impl-notes.md`. The code-gatekeeper judges; the command advances status. On a REJECT routed back here, re-read the latest reasons + the spec and apply a fresh minimal diff. If a failure proves the spec is wrong, stop and leave it to the spec-writer.

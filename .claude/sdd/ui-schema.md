@@ -5,10 +5,10 @@
 > Svelte/…); the concrete framework is chosen at implementation time from `target.md`.
 
 **Two kinds of `gui` spec:**
-- **Shared component** (`specs/ui-components/COMP-*.spec.md`) — a reusable atom/molecule/organism/layout. Specified **once**, referenced everywhere by id.
-- **Screen** (`specs/classes/CLS-*.spec.md`, `kind: gui`) — composes library components **by id**; specifies layout + screen-specific behavior only. Never re-describes a widget already in `ui-components.index.md`.
+- **Shared component** (`.sdd/specs/ui-components/COMP-*.spec.md`) — a reusable atom/molecule/organism/layout. Specified **once**, referenced everywhere by id.
+- **Screen** (`.sdd/specs/classes/CLS-*.spec.md`, `kind: gui`) — composes library components **by id**; specifies layout + screen-specific behavior only. Never re-describes a widget already in `ui-components.index.md`.
 
-**Discover before create:** read `specs/indexes/ui-components.index.md` before specifying any widget; if it exists, reference by id; if a recurring widget is missing, the reuse-analyst promotes it.
+**Discover before create:** read `.sdd/specs/indexes/ui-components.index.md` before specifying any widget; if it exists, reference by id; if a recurring widget is missing, the reuse-analyst promotes it.
 
 ---
 
@@ -126,7 +126,7 @@ Every component declares `layer:`; higher layers compose lower layers **by id** 
 ---
 
 ## 9. Reusable component catalog (compose, don't hand-roll)
-A GUI project composes its screens from reusable components instead of hand-rolling duplicated markup — but it creates **only the components a screen actually composes**. The table below is a **catalog of common candidates** (canonical ids/layers to reuse when you need them), **NOT a mandatory set**: reach for a frame component (`appShell`/`header`/`footer`/…) only when the app's views share that structure — a single-screen app may need none of it. The `spec-writer` materializes a catalog component (from `templates/ui-component.template.md`) into `specs/ui-components/` + index the **first time a screen composes it**, never up front. The `analysis-gatekeeper` blocks a screen that **inlines/hand-rolls** a component instead of composing one by id, and any **unused (orphan)** component (each must carry its consumers' `requirements:` — §traceability).
+A GUI project composes its screens from reusable components instead of hand-rolling duplicated markup — but it creates **only the components a screen actually composes**. The table below is a **catalog of common candidates** (canonical ids/layers to reuse when you need them), **NOT a mandatory set**: reach for a frame component (`appShell`/`header`/`footer`/…) only when the app's views share that structure — a single-screen app may need none of it. The `spec-writer` materializes a catalog component (from `templates/ui-component.template.md`) into `.sdd/specs/ui-components/` + index the **first time a screen composes it**, never up front. The `analysis-gatekeeper` blocks a screen that **inlines/hand-rolls** a component instead of composing one by id, and any **unused (orphan)** component (each must carry its consumers' `requirements:` — §traceability).
 
 | id | layer | Purpose |
 |---|---|---|

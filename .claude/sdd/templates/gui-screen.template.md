@@ -1,5 +1,5 @@
 <!--
-  TEMPLATE — feature SCREEN spec (CLS-*, kind: gui). Copy to specs/classes/CLS-<lowerCamel>.spec.md.
+  TEMPLATE — feature SCREEN spec (CLS-*, kind: gui). Copy to .sdd/specs/classes/CLS-<lowerCamel>.spec.md.
   UI form = ui-schema.md EXACTLY. A screen COMPOSES library components BY ID; never re-describes one.
   Discover before create: read ui-components.index.md first. Markdown is the source of truth; reuse over repetition (DRY).
   Sections: # Purpose · # Public interface · # Invariants & rules · then the FIVE ui-schema sections

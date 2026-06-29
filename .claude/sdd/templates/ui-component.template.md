@@ -1,5 +1,5 @@
 <!--
-  TEMPLATE — shared UI component (COMP-*, kind: gui). Copy to specs/ui-components/COMP-<lowerCamel>.spec.md.
+  TEMPLATE — shared UI component (COMP-*, kind: gui). Copy to .sdd/specs/ui-components/COMP-<lowerCamel>.spec.md.
   Authority: conventions §2/§3/§5 + ui-schema §6 (the EXTRA sections a COMP-* adds) + §7 (layers) + scot.md (only a non-trivial handler).
   Discover before create: read ui-components.index.md first; a higher layer composes lower layers BY ID, never re-described.
   No framework code, no CSS/colors/pixels — only design-token names. Markdown is the source of truth; reuse over repetition (DRY).

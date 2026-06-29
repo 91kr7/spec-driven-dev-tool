@@ -3,7 +3,7 @@
 > **Canonical contract.** The *only* pseudo-code grammar allowed in behavioral specs.
 > Language- and framework-agnostic: it describes **behavior** (sequence / branch /
 > loop, explicit I/O, invariants) — never library choices, API signatures, or syntax
-> (those live in code + `impl-notes/<level>/<id>.impl-notes.md`).
+> (those live in code + `.sdd/impl-notes/<level>/<id>.impl-notes.md`).
 
 ## 1. Scope & purpose
 
@@ -159,4 +159,4 @@ Coverage set: `B1.then`, `B1.else`, `B2.then`, `B2.else` + the spec's `ACn`.
 - SQL/ORM specifics — persistence is `CALL repo.method(...)`; schema derives from the **entity** spec.
 - Exact third-party API signatures — express call *intent*.
 
-Anything needing a concrete mechanism is a **concretization** → `impl-notes/<level>/<id>.impl-notes.md`, never the spec.
+Anything needing a concrete mechanism is a **concretization** → `.sdd/impl-notes/<level>/<id>.impl-notes.md`, never the spec.

@@ -12,11 +12,11 @@ NON-GOALS: never edit code/specs/tests/impl-notes/`status`; never run mutating c
 
 ## Inputs
 - `.claude/sdd/conventions.md` (front-matter, status, verdict §6, change policy §8, headers §13), `scot.md` (the SCoT contract), `ui-schema.md` (for `kind: gui`), `.sdd/target.md` (stack, read-only build/lint commands, header comment syntax).
-- The gated spec(s) (`source:`, `depends_on`, body), `impl-notes/<level>/<id>.impl-notes.md`, the `src/` files the specs map to, `specs/indexes/*.index.md`.
+- The gated spec(s) (`source:`, `depends_on`, body), `.sdd/impl-notes/<level>/<id>.impl-notes.md`, the `src/` files the specs map to, `.sdd/specs/indexes/*.index.md`.
 
 ## Procedure → REJECT on any veto
 1. Resolve scope ids in `depends_on` topological order. For each, record `source:`, `owns_sections:`, `error_style`, `depends_on`, index `status`.
-2. **Spec-untouched** — the implementer did NOT edit the gated spec (§8). Use `git diff`/`git log` read-only on `specs/**` if available. An altered spec → immediate REJECT routed `spec-writer`.
+2. **Spec-untouched** — the implementer did NOT edit the gated spec (§8). Use `git diff`/`git log` read-only on `.sdd/specs/**` if available. An altered spec → immediate REJECT routed `spec-writer`.
 3. **Mapping reality** — every `source:` path exists (Glob/Read). Enumerate tracked files with `git ls-files src/` (read-only) and flag any hand-authored, un-ignored file no spec claims as an **orphan**. **Fallback to Glob + `.gitignore`** (skip `node_modules/`, `dist/`, `build/`, `.next/`, `coverage/`, caches) when not a git repo OR when `git ls-files src/` is empty but `src/` has files (fresh, uncommitted) — else the orphan check is a no-op on every uncommitted project.
 4. **Traceability header + comment economy** — each comment-supporting `source:` file carries its §13 header (after any mandatory first-line construct). Comment-less formats (pure JSON, lockfiles) are exempt — verify mapping from `source:` alone. **The header is the only mandatory comment (§13):** flag **egregious re-narration** — a file whose comments paraphrase the spec/SCoT/ACs line-by-line, Purpose docstrings, section banners, "what" comments on self-evident code → REJECT route `code-implementer` (judge gross duplication of the spec, not tasteful one-offs; a single non-obvious rationale line is fine).
 5. **Co-ownership** — a shared/aggregator file: every co-owner declares it in `source:` + names `owns_sections:`, and the file carries those delimited sections.
