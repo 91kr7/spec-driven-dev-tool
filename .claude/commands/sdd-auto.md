@@ -26,6 +26,12 @@ ROLE   you (main session) = orchestrator; subagents do ALL authoring/judging via
         set index `status` yourself, loop on REJECT.
 LAW    Markdown spec = source of truth (authority). Reuse over repetition (DRY).
         A red test never makes code authoritative — fix the wrong spec first, then regenerate code.
+STATE  durable state is in FILES, never in this conversation: `slice_list` (PLAN.md) · `index_rows.status`
+        (the indexes) · `.sdd/verdicts/`. A slice's in-loop output — verdict bodies, agent return payloads,
+        TEST-/REUSE-REPORT text, the reasons[] threaded between iterations — is per-slice SCRATCH: re-derive,
+        don't recall (re-Glob/re-Read when a step needs a fact; never lean on conversation memory), and
+        garbage-collect it once the slice is `approved` (step 8). Every slice boundary is a cold start — the
+        same file-only reconstruction the Resume section performs.
 RULES  obey .claude/sdd/conventions.md: ids §2 · front-matter §3 · index rows §4 · status/duties §5
         · verdict format §6 · budgets/routing §7 · change policy §8 · roster §9 · topo/slices §12.
 HUMAN  touched twice only: (a) an unstated stack, (b) an escalation.
@@ -189,9 +195,11 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
 ### Step 8 — Next slice
 ```
 ··  YOU
-IN   slice_list ; index_rows.status
-DO   compute remaining = slices in slice_list not yet approved.
-OUT  next_target : if remaining ≠ ∅ → (next slice, → step 5) ; else → (→ step 9)
+IN   slice_list ; index_rows.status   (re-read from PLAN.md + the indexes — not from memory of prior slices)
+DO   (1) GARBAGE-COLLECT the just-approved slice — drop its scratch from working context (its verdict bodies,
+        agent return payloads, TEST-/REUSE-REPORT text, reasons[]): it is spent, the durable record is on disk.
+     (2) compute remaining = slices in slice_list whose index_rows.status ≠ approved.
+OUT  next_target : if remaining ≠ ∅ → (next slice, entered as a COLD START — reconstruct from files per the STATE law, → step 5) ; else → (→ step 9)
 ```
 
 ### Step 9 — Final unscoped sweep
@@ -226,6 +234,8 @@ TO RESUME re-run /sdd-auto:
   skip every approved slice;
   re-enter the first non-approved slice at the step its latest verdict_record implies;
   continue that step's iteration count.
+The per-slice loop performs this SAME file-only reconstruction at every slice boundary (the STATE law),
+not only after an interruption — so a long run never depends on accumulated conversation history.
 ```
 
 ## Status transitions   `you make them; gatekeepers never do`
