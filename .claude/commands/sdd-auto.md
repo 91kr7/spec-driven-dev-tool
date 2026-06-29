@@ -131,14 +131,14 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
      IN  index_rows of the slice's `MODIFY` members (per the PLAN delta) whose status ∈ {reviewed, implemented, approved}
      OUT those rows → status: draft (§5).  `NEW` members start at draft; unchanged `depends_on`-closure members stay `approved` (read-only deps — never demoted, never re-worked).
 
-5b ▶▶ INVOKE spec-writer
-     IN  conventions ; scot ; ui-schema ; target.md ; PLAN.md ; REQUIREMENT.md ; the indexes + existing specs ; REUSE-REPORT.md (hand-off edits) ; templates ; slice
+5b ▶▶ INVOKE spec-writer   (the narrative authority)
+     IN  conventions ; scot ; ui-schema ; target.md ; PLAN.md ; REQUIREMENT.md ; the indexes + existing specs ; REUSE-REPORT.md (hand-off edits) ; templates ; slice ; [spec-bug re-INVOKE: + reasons[]]
      OUT index_rows + spec_paths (5 levels incl. MOD-build/MOD-schema), all status: draft
 
 5c ▶▶ INVOKE reuse-analyst
      IN  conventions ; ui-schema ; target.md ; the indexes (modules.index.md + per-module <MOD>.index.md) ; spec_paths (this slice) + existing SHR-*/COMP-* specs
      OUT promoted/re-homed SHR-*/COMP-* specs ; updated index_rows (re-home: old row removed, new row carries the new spec path) ; REUSE-REPORT.md { promoted, demote_ids[], re_homed[]: {id, old_path → new_path} }
-   ··  YOU   then: (1) for each re_homed {old_path → new_path} → `mv old_path new_path` (Bash — authors have no move/delete tool); (2) for each id in demote_ids → set index_rows.status: draft
+   ··  YOU   then: (1) for each re_homed {old_path → new_path} → `mv old_path new_path` AND move its exact mirror `.impl-notes.md` file (Bash — authors have no move/delete tool); (2) for each id in demote_ids → set index_rows.status: draft
 
 5d ▶▶ GATE analysis-gatekeeper   (the only spec-phase blocker)
      IN  conventions ; scot ; ui-schema ; target.md ; REQUIREMENT.md ; the indexes (full depends_on graph) + in-scope spec_paths ; REUSE-REPORT.md ; current_date
@@ -149,10 +149,10 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
       OVERFLOW(>3) → ESCALATE; stop slice.
 ```
 
-### Step 6 — Implement the slice   `[code budget 3]`   *(writes src/ + impl-notes only)*
+### Step 6 — Implement the slice   `[code budget 3]`   `status: reviewed → implemented`
 ```
-6a ▶▶ INVOKE code-implementer   (per spec, in depends_on order)
-     IN  conventions ; target.md (idioms map) ; scot/ui-schema (per kind) ; one reviewed spec + every spec it references by id (depends_on + each CALL/COMP, via Glob .sdd/specs/**/<id>.spec.md — bind against their real interfaces) + their impl-notes ; existing src_paths
+6a ▶▶ INVOKE code-implementer   (minimal diffs over rewrites)
+     IN  conventions ; target.md (idioms map) ; scot/ui-schema (per kind) ; one reviewed spec + every spec it references by id (depends_on + each CALL/COMP, via Glob .sdd/specs/**/<id>.spec.md — bind against their real interfaces) + their impl-notes ; existing src_paths ; [code-bug re-INVOKE: + reasons[]]
      DO  minimal Edit by default; regenerate only by exception (§8).
      OUT src_paths (the spec's declared `source:` paths) ; impl_note
 
@@ -185,8 +185,8 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
      OUT verdict_record { phase: test, scope: slice_id, coverage, routing, iteration: n/5 }
       PASS (green + full coverage) → YOU set slice index_rows.status: implemented → approved; step 8.
       REJECT → route per triage (§7); each loop returns to the sub-step that re-gates the fix:
-        spec bug → spec-writer (5b)      : demote status → draft, loop step 5, then step 6 regenerates code.
-        code bug → code-implementer (6a) : loop step 6 (re-pass the code gate before re-testing).
+        spec bug → spec-writer (5b)      : re-INVOKE with the verdict reasons[]; demote status → draft, loop step 5, then step 6 regenerates code.
+        code bug → code-implementer (6a) : re-INVOKE with the verdict reasons[]; loop step 6 (re-pass the code gate before re-testing).
         test bug → test-writer (7a)      : re-INVOKE with the verdict reasons[] + the offending test_paths (minimal edit); loop step 7a.
       routing: escalate (suite never ran / app won't boot / e2e skipped) → ESCALATE immediately (NOT a budget iteration).
       OVERFLOW(>5) → ESCALATE; stop slice.
