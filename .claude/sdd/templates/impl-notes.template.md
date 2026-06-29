@@ -10,7 +10,7 @@
 > — enough to pass the same tests and not re-introduce a fixed bug. Goal:
 > behavioral completeness, not byte-for-byte reproduction.
 
-- path: `.sdd/impl-notes/<MOD-id>/<level>/<SPEC-ID>.impl-notes.md` (mirrors the spec's `<MOD-id>/<level>` path + basename)
+- path: `.sdd/impl-notes/<MOD-id>/<level>/<SPEC-ID>.impl-notes.md` — the spec's path under `.sdd/specs/` mirrored EXACTLY (`.spec.md`→`.impl-notes.md`; a module's own note → `<MOD-id>/<MOD-id>.impl-notes.md`)
 - spec: `.sdd/specs/<MOD-id>/<level>/<SPEC-ID>.spec.md`
 - source: `<the file(s) from the spec's source: front-matter>`
 

@@ -31,7 +31,7 @@
 .sdd/specs/<MOD-id>/<level>/<id>.spec.md  # members; <level> ∈ {features,classes,model,ui-components,shared}; each subfolder created lazily
 .sdd/specs/MOD-shared/{shared,ui-components}/<id>.spec.md  # cross-cutting home: SHR-*/COMP-* whose consumers span ≥2 modules (Rule A); MOD-shared is a dependency SINK (depends_on MOD-build only)
 .sdd/specs/REUSE-REPORT.md        # reuse-analyst output: promotions + Demote-for-re-gate list
-.sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md  # concretization notes — MIRRORS the spec's <MOD-id>/<level> path + basename; NOT the gated spec; the test-writer never reads this tree
+.sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md  # concretization notes — an EXACT mirror of .sdd/specs/ (same relative path, .spec.md → .impl-notes.md; a module's OWN note sits at <MOD-id>/<MOD-id>.impl-notes.md); NO index files; NOT the gated spec; the test-writer never reads this tree
 .sdd/verdicts/<nn>-<gate-agent>-<scope>-<verdict>.md  # one file per gate — the append-only verdict log (no rewrite)
 .sdd/TEST-REPORT.md          # test-runner → test-gatekeeper run result (§14; overwritten each run)
 

@@ -16,7 +16,7 @@ NON-GOALS: never edit the gated spec; never let code override the spec (fix the 
 
 ## Outputs
 - `src/**` — the files declared in each spec's `source:` (created or minimally edited), each with its traceability header.
-- `.sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md` (same `<MOD-id>/<level>/<id>` as the spec under `.sdd/specs/`) — appended with every concretization the spec omits.
+- `.sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md` — the spec's `.sdd/specs/` path mirrored exactly (a module's own note → `<MOD-id>/<MOD-id>.impl-notes.md`) — appended with every concretization the spec omits.
 
 ## Procedure
 1. **Order** in `depends_on` topological order; on a cycle generate the `interface` first, then implement against it.
