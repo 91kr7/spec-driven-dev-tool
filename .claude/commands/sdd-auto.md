@@ -55,7 +55,7 @@ HAVE     read-only contracts shipped with the tool: conventions.md, scot.md, ui-
 | slice_list | [ slice ] | execution order, authored by plan-architect inside PLAN.md |
 | index_rows | rows in the per-module `<MOD>.index.md` (+ the global `modules.index.md`), each with `status: draft\|reviewed\|implemented\|approved` | |
 | spec_paths | [ .sdd/specs/**/*.spec.md ] | 5 levels: module/feature/entity/class/UI, incl. MOD-build/MOD-schema |
-| REUSE-REPORT.md | file { promoted: SHR-*\|COMP-*, demote_ids[] } | |
+| REUSE-REPORT.md | file { promoted: SHR-*\|COMP-*, demote_ids[], re_homed[]: {id, old_path → new_path} } | |
 | src_paths | [ path ] | only the spec's declared `source:` paths |
 | impl_note | .sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md | mirrors the spec's .sdd/specs/<MOD-id>/<level> path + basename |
 | install_result | { ok: bool, log } | |
@@ -130,9 +130,9 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
      OUT index_rows + spec_paths (5 levels incl. MOD-build/MOD-schema), all status: draft
 
 5c ▶▶ INVOKE reuse-analyst
-     IN  spec_paths (this slice) ; existing SHR-* / COMP-* specs
-     OUT promoted SHR-*/COMP-* specs ; REUSE-REPORT.md
-   ··  YOU   then: for each id in REUSE-REPORT.md.demote_ids → set index_rows.status: draft
+     IN  spec_paths (this slice) ; existing SHR-*/COMP-* specs ; the indexes (modules.index.md + per-module <MOD>.index.md)
+     OUT promoted/re-homed SHR-*/COMP-* specs ; updated index_rows (re-home: old row removed, new row carries the new spec path) ; REUSE-REPORT.md { promoted, demote_ids[], re_homed[]: {id, old_path → new_path} }
+   ··  YOU   then: (1) for each re_homed {old_path → new_path} → `mv old_path new_path` (Bash — authors have no move/delete tool); (2) for each id in demote_ids → set index_rows.status: draft
 
 5d ▶▶ GATE analysis-gatekeeper   (the only spec-phase blocker)
      IN  spec_paths ; REUSE-REPORT.md ; REQUIREMENT.md ; conventions.md ; target.md ; current_date
