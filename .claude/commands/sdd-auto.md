@@ -88,21 +88,21 @@ OUT  stack_decision   (plan-architect writes the actual target.md in step 3)
 ### Step 2 — Capture the requirement
 ```
 ▶▶ INVOKE requirement-analyst
-IN   requirement_text ; current_date   (you hold the date; the subagent has no clock)
+IN   conventions ; requirement_text ; current_date (you hold the date; the subagent has no clock) ; existing REQUIREMENT.md (append, never renumber)
 OUT  REQUIREMENT.md { raw, refined, req_ids: REQ-* }   — refined list is a dated changelog
 ```
 
 ### Step 3 — Plan the indexes, slices & stack
 ```
 ▶▶ INVOKE plan-architect
-IN   REQUIREMENT.md ; stack_decision
+IN   conventions ; REQUIREMENT.md ; existing .sdd/specs/ + indexes (classify NEW vs existing-SDD) ; target.md (if present) ; scot/ui-schema (forms) ; stack_decision
 OUT  target.md ; PLAN.md { entities, ordered Slice plan } — rewritten afresh; on existing-SDD a **delta** (only NEW/MODIFY entities + the slices that contain them)   →  the orchestrator reads slice_list from here
 ```
 
 ### Step 4 — Gate the plan
 ```
 ▶▶ GATE plan-gatekeeper
-IN   PLAN.md ; target.md ; REQUIREMENT.md ; conventions.md ; current_date ; .sdd/specs/ (existing — id stability)
+IN   conventions ; target.md ; REQUIREMENT.md ; PLAN.md ; .sdd/specs/ indexes (existing — ids + depends_on) ; current_date
 OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
  PASS                              → enter the per-slice loop (step 5) over slice_list.
  REJECT                            → by routing:
@@ -126,16 +126,16 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
      OUT those rows → status: draft (§5).  `NEW` members start at draft; unchanged `depends_on`-closure members stay `approved` (read-only deps — never demoted, never re-worked).
 
 5b ▶▶ INVOKE spec-writer
-     IN  slice ; PLAN.md ; target.md ; conventions.md
+     IN  conventions ; scot ; ui-schema ; target.md ; PLAN.md ; REQUIREMENT.md ; the indexes + existing specs ; REUSE-REPORT.md (hand-off edits) ; templates ; slice
      OUT index_rows + spec_paths (5 levels incl. MOD-build/MOD-schema), all status: draft
 
 5c ▶▶ INVOKE reuse-analyst
-     IN  spec_paths (this slice) ; existing SHR-*/COMP-* specs ; the indexes (modules.index.md + per-module <MOD>.index.md)
+     IN  conventions ; ui-schema ; target.md ; the indexes (modules.index.md + per-module <MOD>.index.md) ; spec_paths (this slice) + existing SHR-*/COMP-* specs
      OUT promoted/re-homed SHR-*/COMP-* specs ; updated index_rows (re-home: old row removed, new row carries the new spec path) ; REUSE-REPORT.md { promoted, demote_ids[], re_homed[]: {id, old_path → new_path} }
    ··  YOU   then: (1) for each re_homed {old_path → new_path} → `mv old_path new_path` (Bash — authors have no move/delete tool); (2) for each id in demote_ids → set index_rows.status: draft
 
 5d ▶▶ GATE analysis-gatekeeper   (the only spec-phase blocker)
-     IN  spec_paths ; the indexes (modules.index.md + per-module <MOD>.index.md — the full depends_on graph) ; REUSE-REPORT.md ; REQUIREMENT.md ; conventions.md ; target.md ; current_date
+     IN  conventions ; scot ; ui-schema ; target.md ; REQUIREMENT.md ; the indexes (full depends_on graph) + in-scope spec_paths ; REUSE-REPORT.md ; current_date
      OUT verdict_record { phase: analysis, scope: slice_id, iteration: n/3 }
       PASS         → YOU set slice spec index_rows.status: draft → reviewed; step 6.
       REJECT       → by routing (each re-invoke carries the verdict reasons[]): spec defect → spec-writer (5b) · duplication → reuse-analyst (5c);
@@ -146,13 +146,13 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
 ### Step 6 — Implement the slice   `[code budget 3]`   *(writes src/ + impl-notes only)*
 ```
 6a ▶▶ INVOKE code-implementer   (per spec, in depends_on order)
-     IN  one reviewed spec + every spec it references by id (depends_on + each CALL/COMP — bind against their real interfaces, via Glob .sdd/specs/**/<id>.spec.md) ; target.md ; existing src_paths
+     IN  conventions ; target.md (idioms map) ; scot/ui-schema (per kind) ; one reviewed spec + every spec it references by id (depends_on + each CALL/COMP, via Glob .sdd/specs/**/<id>.spec.md — bind against their real interfaces) + their impl-notes ; existing src_paths
      DO  minimal Edit by default; regenerate only by exception (§8).
      OUT src_paths (the spec's declared `source:` paths) ; impl_note
 
 6b ··  YOU   run canonical `install` → install_result
    ▶▶ GATE code-gatekeeper
-     IN  src_paths ; spec_paths (this slice) ; impl_note ; install_result ; target.md (build/lint commands) ; current_date
+     IN  conventions ; scot ; ui-schema (gui) ; target.md (build/lint) ; the gated spec(s) + impl_note + src_paths + the indexes ; install_result ; current_date
      OUT verdict_record { phase: code, scope: slice_id, iteration: n/3 }
       PASS         → YOU set slice index_rows.status: reviewed → implemented; step 7.
       REJECT       → by routing (each re-invoke carries the verdict reasons[]):
@@ -166,16 +166,16 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
 ### Step 7 — Test the slice   `[test budget 5]`   `status: implemented → approved`
 ```
 7a ▶▶ INVOKE test-writer   (independent oracle — NEVER reads src/ or .sdd/impl-notes/; it DOES read its contracts: target.md §2 idioms map, conventions, scot/ui-schema)
-     IN  spec_paths (this slice) + target.md (§2 idioms map + tests/ layout)   (the firewall is src/ & impl-notes, NOT the contracts)
+     IN  conventions ; scot ; ui-schema ; target.md (§2 idioms map + tests/ layout) ; the indexes + in-scope spec_paths (behavioral sections only) ; [test-bug re-INVOKE: + reasons[] + prior test_paths]   (NEVER src/ or impl-notes — the firewall)
      OUT test_paths : ≥1 test per ACn and per SCoT arm; GUI → Playwright e2e per (journey) AC,
                       selecting by accessible role/name from the spec.
 
 7b ▶▶ INVOKE test-runner
-     IN  test_paths ; src_paths ; slice.member_ids as {scope} ; target.md install/build/test commands
+     IN  conventions (§14 report) ; target.md (install/build/test commands + layout) ; test_paths + src_paths ; slice.member_ids as {scope}
      OUT TEST-REPORT.md (unit + integration + component, + e2e for GUI)
 
 7c ▶▶ GATE test-gatekeeper
-     IN  TEST-REPORT.md ; spec_paths (for coverage) ; conventions.md ; target.md ; current_date
+     IN  conventions ; scot ; ui-schema (gui) ; target.md ; TEST-REPORT.md ; the indexes + in-scope spec_paths (coverage) ; tests/** ; src/** (read-only, triage only) ; current_date
      OUT verdict_record { phase: test, scope: slice_id, coverage, routing, iteration: n/5 }
       PASS (green + full coverage) → YOU set slice index_rows.status: implemented → approved; step 8.
       REJECT → route per triage (§7); each loop returns to the sub-step that re-gates the fix:
@@ -198,7 +198,7 @@ OUT  next_target : if remaining ≠ ∅ → (next slice, → step 5) ; else → 
 ```
 ▶▶ INVOKE test-runner   (whole suite, NO scope)
 ▶▶ GATE   test-gatekeeper (whole project)
-IN   whole approved project ; target.md test command with NO scope ; current_date
+IN   conventions ; target.md (test command, NO scope) ; whole approved project (indexes + all spec_paths + tests/** + src/**) ; current_date
 OUT  TEST-REPORT.md (whole suite) ; verdict_record { phase: test, scope: PROJECT }
       regression → route per §7 to the owning slice, re-run its step 7 (bounded by test budget).
       green      → project done.
