@@ -1,26 +1,27 @@
 <!--
-  TEMPLATE — MODULE spec (kind: module, structural overview). Schema per conventions §3.
-  A module partitions the system and names the entries it contains — no SCoT, no UI schematic.
-  Copy to .sdd/specs/<MOD-id>/<MOD-id>.spec.md (the module spec sits at the root of its own folder; register it in the global modules.index.md). Markdown is the source of truth; reuse over repetition (DRY).
-  Delete the "## Filled example" from a real spec.
+<instructions>
+TEMPLATE: MODULE spec (kind: module, structural overview). Schema per conventions §3.
+Partitions the system and names the entries it contains — no SCoT, no UI schematic.
+Copy to `.sdd/specs/<MOD-id>/<MOD-id>.spec.md`. Register in global `modules.index.md`.
+DRY. Delete `<example>` blocks before saving.
+</instructions>
 -->
 ---
-id: MOD-<kebab>                 # required — matches filename
+id: MOD-<kebab>                 # required
 name: <HumanModuleName>         # required
-kind: module                   # required — drives the structural-overview FORM
-module: MOD-<kebab>             # required — self-reference (a module is its own home)
-depends_on: [MOD-<other>]      # other MODULE ids — topological; [] if none
-requirements: [REQ-<nnn>]      # back-link; [] if purely infra
-source: []                     # usually [] — EXCEPTION: MOD-build / MOD-schema own their infra FILES here (conventions §2)
+kind: module                    # required — drives the structural-overview FORM
+module: MOD-<kebab>             # required — self-reference
+depends_on: [MOD-<other>]       # topological; [] if none
+requirements: [REQ-<nnn>]       # [] if purely infra
+source: []                      # [] UNLESS MOD-build / MOD-schema owning infra files (§2)
 owns_sections: []
 ---
 
 # Purpose
-<One paragraph: the cohesive responsibility this module owns and what falls outside it. Boundary-defining, not a feature list.>
+<instruction>Cohesive responsibility this module owns and what falls outside it. Boundary-defining.</instruction>
 
 # Contained entries
-<Every id with `module: MOD-<this>` and a matching index row. Ids only, one line each. Omit empty groups.>
-
+<instruction>Every id with `module: MOD-<this>` and matching index row. One line each. Omit empty groups.</instruction>
 | Level | Entry id | What it represents (one line) |
 |-------|----------|-------------------------------|
 | Feature | `FEAT-<nnn>` | <use-case orchestrated here> |
@@ -30,21 +31,17 @@ owns_sections: []
 | Shared | `SHR-<lowerCamel>` | <shared non-UI abstraction> |
 
 # Boundaries & dependencies
-<Must equal `depends_on:` and the union of contained entries' cross-module deps (no hidden coupling). Acyclic at module level (§12).>
+<instruction>Must equal `depends_on:` and union of contained entries' cross-module deps. Acyclic (§12).</instruction>
 
 **Depends on** — | `MOD-<other>` | <what it uses from it> |
 **Exposes to** — | `MOD-<other>` | <entry ids other modules may reference> | (anything unlisted is internal)
 
 # Conventions specific to the module
-<Only rules special to THIS module, not already in conventions/target. Else: "None beyond conventions.md.">
+<instruction>Only rules special to THIS module, not already in conventions/target. Else: "None beyond conventions.md."</instruction>
 - <module-local rule, or "None beyond conventions.md.">
 
 ---
-
-## Filled examples — the infra modules `MOD-build` & `MOD-schema` (conventions §2)
-
-> Both are the documented exception to `source: []`: they own their infra **files directly**. `MOD-build` is pure scaffolding — **no domain `depends_on`** → it is the first slice; a GUI project also lists `playwright.config.ts` and sets `target.md` `test-e2e` to a real command. `MOD-schema` (DB projects only) owns the forward schema scripts — each append-only, traced to an `ENT-*`; the code-implementer materializes the SQL from the entity tables.
-
+<example name="MOD-build (Infra Exception)">
 ```markdown
 ---
 id: MOD-build
@@ -58,7 +55,7 @@ owns_sections: []
 ---
 
 # Purpose
-The mandatory scaffolding module: build files, manifests, runtime config, CI, the app entry, and (GUI) the e2e harness config. Pure scaffolding — no domain dependency — so it builds first. Domain logic lives elsewhere and is merely built/shipped here.
+Mandatory scaffolding: build files, manifests, runtime config, CI, app entry, e2e harness config. Pure scaffolding — no domain dependency — builds first.
 
 # Contained entries
 | Level | Entry id | What it represents (one line) |
@@ -70,10 +67,12 @@ The mandatory scaffolding module: build files, manifests, runtime config, CI, th
 **Exposes to** — | `MOD-api`/`MOD-web` | built artifacts (+ GUI: the e2e harness) |
 
 # Conventions specific to the module
-- **Config keys declared once** (key/type/default); no module reads an undeclared env var.
-- **CI order fixed:** install → lint → build → test (incl. e2e for GUI) → package.
+- **Config keys declared once** (key/type/default)
+- **CI order fixed:** install → lint → build → test → package.
 ```
+</example>
 
+<example name="MOD-schema (Infra Exception)">
 ```markdown
 ---
 id: MOD-schema
@@ -81,13 +80,13 @@ name: Database Schema
 kind: module
 module: MOD-schema
 depends_on: [MOD-model, ENT-user]
-requirements: [REQ-001]         # NOT exempt — the union of the REQ-* of the ENT-* it materializes
+requirements: [REQ-001]
 source: [db/schema/V1__create_user.sql]
 owns_sections: []
 ---
 
 # Purpose
-The DB schema module (DB projects only): forward-only schema-change scripts **derived from the entity specs in MOD-model** (never hand-authored). Ordered after the entities it realizes.
+DB schema: forward-only schema-change scripts **derived from the entity specs in MOD-model** (never hand-authored). Ordered after the entities it realizes.
 
 # Contained entries
 | Level | Entry id | What it represents (one line) |
@@ -99,5 +98,6 @@ The DB schema module (DB projects only): forward-only schema-change scripts **de
 **Exposes to** — | `MOD-api`/`MOD-web` | the applied schema |
 
 # Conventions specific to the module
-- **Schema is derived, not authored:** each `Vn` script cites the `ENT-*` it realizes; shipped scripts are append-only/immutable — a change adds the next `Vn`.
+- **Schema is derived, not authored:** each `Vn` script cites the `ENT-*` it realizes; shipped scripts are append-only.
 ```
+</example>

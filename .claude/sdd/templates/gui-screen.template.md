@@ -1,38 +1,35 @@
 <!--
-  TEMPLATE — feature SCREEN spec (CLS-*, kind: gui). Copy to .sdd/specs/<MOD>/classes/CLS-<lowerCamel>.spec.md.
-  UI form = ui-schema.md EXACTLY. A screen COMPOSES library components BY ID; never re-describes one.
-  Discover before create: read MOD-shared.index.md + the module's <MOD>.index.md first. Markdown is the source of truth; reuse over repetition (DRY).
-  Sections: # Purpose · # Public interface · # Invariants & rules · then the FIVE ui-schema sections
-  (Wireframe · Component tree · State · Events · Acceptance criteria). No framework code, no CSS/colors —
-  only design-token names; no business logic beyond view orchestration (call a feature/service by id).
-  Delete the "## Filled example".
+<instructions>
+TEMPLATE: feature SCREEN spec (CLS-*, kind: gui). Copy to `.sdd/specs/<MOD>/classes/CLS-<lowerCamel>.spec.md`.
+UI form = ui-schema.md EXACTLY. COMPOSES library components BY ID; never re-describes one.
+Discover before create: read MOD-shared.index.md + `<MOD>.index.md` first. DRY.
+No framework code, no CSS/colors — only design-token names; no business logic beyond view orchestration.
+Delete the `<example>` block before saving.
+</instructions>
 -->
 ---
-id: CLS-<lowerCamel>          # required — matches filename + a <MOD>.index.md row
-name: <ScreenName>           # required
-kind: gui                    # required — feature-specific screen
-module: MOD-<web-or-ui>      # required
-depends_on: [COMP-<id>, FEAT-<nnn>]   # every COMP-* composed + any FEAT-*/CLS-* called; topological
-requirements: [REQ-<nnn>]    # back-link
+id: CLS-<lowerCamel>          # required
+name: <ScreenName>            # required
+kind: gui                     # required — feature-specific screen
+module: MOD-<web-or-ui>       # required
+depends_on: [COMP-<id>, FEAT-<nnn>] # every COMP-* composed + FEAT-*/CLS-* called; topological
+requirements: [REQ-<nnn>]
 source: [src/<web>/<ScreenName>.<ext>]
 owns_sections: []
 ---
 
 # Purpose
-<One paragraph: what the user accomplishes here, in WHAT terms not HOW.>
+<instruction>What the user accomplishes here, in WHAT terms not HOW.</instruction>
 
 # Public interface
-- **Inputs:** <route params / props, e.g. `redirectTo: String` (optional)>.
-- **Outputs:** <navigation targets / events on success>.
-- **Errors:** <visible failure modes: inline field errors; service error as a form-level banner>.
+<instruction>Inputs (route params/props), Outputs (nav targets/events), Errors (visible failure modes).</instruction>
 
 # Invariants & rules
-<Behavioral, testable where possible.>
-- <e.g. primary action disabled while a submit is in flight>
-- <e.g. a field error clears as soon as the user edits that field>
+<instruction>Behavioral, testable where possible.</instruction>
+- <rule>
 
 # Wireframe
-<ASCII per ui-schema §2; bind dynamic text with {stateVar}. Indicative; the component tree is authoritative.>
+<instruction>ASCII per ui-schema §2; bind dynamic text with {stateVar}. Indicative; component tree is authoritative.</instruction>
 ```
 ┌──────── <Region> (COMP-<id>) ────────┐
 │ <Label> [______]  {errors.<field>}   │
@@ -41,7 +38,7 @@ owns_sections: []
 ```
 
 # Component tree
-<Indented tree per ui-schema §3: library components BY ID with props; {name}=state binding; onClick:<handler>=an Events row. Never inline a library component.>
+<instruction>Indented tree per ui-schema §3: library components BY ID with props; {name}=state binding; onClick:<handler>=Events row. Never inline a library component.</instruction>
 ```
 COMP-<rootLayoutId>
 ├─ COMP-<id>  props: { <prop>: {binding} }
@@ -49,13 +46,13 @@ COMP-<rootLayoutId>
 ```
 
 # State
-<Local view state only (ui-schema §4); shared state is named here but owned by a service/shared spec by id.>
+<instruction>Local view state only (ui-schema §4); shared state named here but owned by service/shared spec.</instruction>
 | Name | Type | Initial | Description |
 |------|------|---------|-------------|
 | `<var>` | `<NeutralType>` | `<val>` | <what it holds> |
 
 # Events
-<Map each event → handler → effect. Trivial handlers need only the row; a non-trivial one gets a SCoT snippet (scot.md) with [Bn] arms.>
+<instruction>Map each event → handler → effect. Trivial = row only; non-trivial = SCoT snippet (scot.md) with [Bn] arms.</instruction>
 | Event | Trigger | Handler | Effect |
 |-------|---------|---------|--------|
 | `<setField>` | types in <Field> | `<field> <- value` | re-render; clear `errors.<field>` |
@@ -78,23 +75,29 @@ END
 ```
 
 # Acceptance criteria
-<Given/When/Then, stable `ACn`; cover every non-trivial arm + visible rule. TAG the altitude (ui-schema §5): a **`(journey)`** AC crosses the running stack (nav-on-success / persisted effect / service-error banner) → Playwright e2e; an untagged **view** AC → component test (feature mocked). A feature-calling screen MUST declare ≥1 `(journey)` AC.>
+<instruction>Given/When/Then, stable ACn; cover every non-trivial arm + visible rule. TAG altitude (ui-schema §5): `(journey)` = Playwright e2e; untagged = component test. Feature-calling screen MUST declare ≥1 `(journey)` AC.</instruction>
 - **AC1** (journey) — Given <context>, When <action>, Then <observable cross-stack outcome>.
 - **AC2** — Given <context>, When <action>, Then <observable view outcome>.
 
 ---
-
-## Filled example — `CLS-loginScreen` (MOD-web)
-
+<example name="CLS-loginScreen (MOD-web)">
 ```yaml
-id: CLS-loginScreen · name: Login Screen · kind: gui · module: MOD-web
+id: CLS-loginScreen
+name: Login Screen
+kind: gui
+module: MOD-web
 depends_on: [COMP-appShell, COMP-header, COMP-body, COMP-footer, COMP-panel, COMP-formField, COMP-textInput, COMP-button, FEAT-002]
-requirements: [REQ-003] · source: [src/web/screens/LoginScreen.tsx]
+requirements: [REQ-003]
+source: [src/web/screens/LoginScreen.tsx]
 ```
 
-**Purpose** — A returning user authenticates with email + password and lands on their dashboard; on failure they stay, with the typed email preserved.
+**Purpose**
+A returning user authenticates with email + password and lands on their dashboard; on failure they stay, with typed email preserved.
 
-**Invariants** — Sign in disabled while `submitting`; a field's error clears on edit; every widget is a `COMP-*` by id.
+**Invariants**
+- Sign in disabled while `submitting`
+- Field error clears on edit
+- Every widget is a `COMP-*` by id
 
 **Component tree**
 ```
@@ -110,8 +113,10 @@ COMP-appShell
 └─ COMP-footer  props: { version: {appVersion} }
 ```
 
-**State** — `email: String=""` · `password: String=""` · `errors: Map<String,String>={}` · `submitting: Bool=false`.
+**State**
+`email: String=""` · `password: String=""` · `errors: Map<String,String>={}` · `submitting: Bool=false`
 
+**Events**
 ```
 # handler: submit          # error_style: result
 ASYNC FUNCTION submit() -> Void
@@ -129,7 +134,8 @@ END
 ```
 Coverage set: `B1.then/else`, `B2.then/else`.
 
-- **AC1** (journey) — Given correct credentials, When the user submits, Then `FEAT-002.authenticate` is called and the screen navigates to `redirectTo`. *(B1.else, B2.then → e2e)*
-- **AC2** — Given an empty Email, When the user clicks Sign in, Then no call is made and `errors.email` shows a required message. *(B1.then)*
-- **AC3** (journey) — Given wrong credentials, When the user submits, Then `errors.form` shows the service error and the email is preserved. *(B2.else → e2e)*
-- **AC4** — Given a submit in flight, When `submitting` is true, Then Sign in is disabled + shows loading.
+- **AC1** (journey) — Given correct credentials, When user submits, Then `FEAT-002.authenticate` called and nav to `redirectTo`. *(B1.else, B2.then → e2e)*
+- **AC2** — Given empty Email, When user clicks Sign in, Then no call made and `errors.email` shows required message. *(B1.then)*
+- **AC3** (journey) — Given wrong credentials, When user submits, Then `errors.form` shows service error and email preserved. *(B2.else → e2e)*
+- **AC4** — Given submit in flight, When `submitting` is true, Then Sign in is disabled + shows loading.
+</example>
