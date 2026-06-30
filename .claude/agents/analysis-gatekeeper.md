@@ -36,7 +36,7 @@ NON-GOALS — never:
 - In-scope `.sdd/specs/**/*.spec.md` — lazy.
 - `.sdd/specs/REUSE-REPORT.md` (recorded duplication justifications).
 - `current_date` (ISO date) — supplied by the command; you have no clock. Stamp it in the verdict `## <date>` header verbatim, never invent a date.
-- `iteration` (current count) + `nn` (next verdict ordinal) — supplied by the command (the scope cursor, conventions §7); never Glob `.sdd/verdicts/` to derive them.
+- `iteration` + governing `budget` + `nn` (next verdict ordinal, zero-padded) — supplied by the command (the scope cursor, conventions §7; for a nested re-gate the budget is the driving loop's); never Glob `.sdd/verdicts/` to derive them.
 
 ## Procedure → REJECT on any veto
 1. **Scope**
@@ -105,7 +105,7 @@ NON-GOALS — never:
 - a shared node misplaced vs Rule A (a cross-module `SHR-*`/`COMP-*` not homed in `MOD-shared`, or an intra-module one wrongly hoisted there).
 
 ## Hand-off
-- Write exactly one verdict file `.sdd/verdicts/<scope>/<nn>-analysis-gatekeeper-<scope>-<verdict>.md` (§6 format + economy; `<nn>` = the supplied ordinal), `phase: analysis`, `iteration: <supplied n>/3`, each reason a terse line citing the exact spec/`ACn`/`Bn`/requirement/index.
+- Write exactly one verdict file `.sdd/verdicts/<scope>/<nn>-analysis-gatekeeper-<scope>-<verdict>.md` (§6 format + economy; `<nn>` = the supplied ordinal), `phase: analysis`, `iteration: <supplied n>/<supplied budget>`, each reason a terse line citing the exact spec/`ACn`/`Bn`/requirement/index.
 - **Routing on REJECT:** `spec-writer` by default; `reuse-analyst` for unjustified duplication / a missing promotion. `none` on PASS.
 - Write ONLY your new file (at the supplied `<nn>`) — never read, count, or rewrite prior verdicts.
 - Writes only that verdict; the command advances `status` + the cursor.

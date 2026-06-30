@@ -31,7 +31,7 @@ NON-GOALS (never):
 - `tests/**` (what each test asserts).
 - `src/**` (read-only; only to triage a FAIL).
 - `current_date` (ISO date) — supplied by the command; you have no clock. Stamp it in the verdict `## <date>` header verbatim; never invent a date.
-- `iteration` + `nn` (next verdict ordinal) — supplied by the command (test budget, scope cursor §7); never Glob `.sdd/verdicts/` to derive them.
+- `iteration` + governing `budget` + `nn` (next verdict ordinal, zero-padded) — supplied by the command (test budget = 5, scope cursor §7); never Glob `.sdd/verdicts/` to derive them.
 
 ## Procedure
 1. Resolve scope from indexes; open only in-scope specs.
@@ -63,7 +63,7 @@ NON-GOALS (never):
    - **CODE bug** — code diverges from a correct spec → `code-implementer` (minimal diff).
    - **TEST bug** — spec + code agree, test asserts the wrong thing → `test-writer`.
    - **SPEC DEFECT marker** — a test failing with `SPEC DEFECT: …` → spec bug → `spec-writer` (never bounce to test-writer).
-8. **Iteration** — `iteration` (and the verdict ordinal `nn`) are **supplied by the command** (test budget, scope cursor §7) — never Glob verdicts to count. Stamp `iteration: <supplied n>/5`. Do not act on overflow (the command escalates).
+8. **Iteration** — `iteration`, the governing `budget`, and the verdict ordinal `nn` are **supplied by the command** (test budget = 5, scope cursor §7) — never Glob verdicts to count. Stamp `iteration: <supplied n>/<supplied budget>`. Do not act on overflow (the command escalates).
 
 ## Veto criteria — REJECT if any of:
 - the suite didn't run to completion (`install|build|e2e-setup`);
