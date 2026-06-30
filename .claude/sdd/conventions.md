@@ -186,7 +186,7 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
 
 **Separation of duties (strict):**
 - **Gatekeepers JUDGE only** — write one verdict **file** to `.sdd/verdicts/` (§6); never edit specs/code/tests/`status`.
-- **The command (main session) ADVANCES `status`** from the latest verdict.
+- **The command (main session) ADVANCES `status`** from the gate's verdict.
 - **Authors WRITE artifacts** (requirements/specs/code/tests/impl-notes); never verdicts.
 
 ---
@@ -276,18 +276,18 @@ Twelve roles; **eleven are subagents** in `.claude/agents/`. The **orchestrator 
 |---|---|---|---|---|---|
 | `requirement-analyst` | capture raw → refined requirement + REQ ids | `.sdd/REQUIREMENT.md` | `Read, Write, Edit, Glob, Grep` | no | opus |
 | `plan-architect` | requirement → plan (+ ordered slices) + target | `.sdd/PLAN.md`, `.sdd/target.md` | `Read, Write, Edit, Glob, Grep` | no | opus |
-| `plan-gatekeeper` | judge the plan | `.sdd/verdicts/` (one file) | `Read, Write, Glob, Grep` | no | opus |
+| `plan-gatekeeper` | judge the plan | `.sdd/verdicts/<scope>/<phase>.md` | `Read, Write, Glob, Grep` | no | opus |
 | `spec-writer` | write indexes + specs | `.sdd/specs/` | `Read, Write, Edit, Glob, Grep` | no | opus |
 | `reuse-analyst` | dedupe + promote shared specs | `.sdd/specs/` | `Read, Write, Edit, Glob, Grep` | no | opus |
-| `analysis-gatekeeper` | judge specs (only spec-phase blocker) | `.sdd/verdicts/` (one file) | `Read, Write, Glob, Grep` | no | opus |
+| `analysis-gatekeeper` | judge specs (only spec-phase blocker) | `.sdd/verdicts/<scope>/<phase>.md` | `Read, Write, Glob, Grep` | no | opus |
 | `code-implementer` | specs → source | `src/` (declared paths), `.sdd/impl-notes/` | `Read, Write, Edit, Glob, Grep` | yes (edit) | opus |
-| `code-gatekeeper` | judge code ≡ spec | `.sdd/verdicts/` (one file) | `Read, Write, Glob, Grep, Bash` (read-only) | yes (review) | opus |
+| `code-gatekeeper` | judge code ≡ spec | `.sdd/verdicts/<scope>/<phase>.md` | `Read, Write, Glob, Grep, Bash` (read-only) | yes (review) | opus |
 | `test-writer` | specs → tests (independent oracle) | `tests/` | `Read, Write, Edit, Glob` | **no — by role** | sonnet |
 | `test-runner` | run tests, write report | `.sdd/verdicts/<scope>/_test-report.md` | `Read, Write, Glob, Bash` | yes | sonnet |
-| `test-gatekeeper` | verify coverage + triage | `.sdd/verdicts/` (one file) | `Read, Write, Glob, Grep` | yes | opus |
+| `test-gatekeeper` | verify coverage + triage | `.sdd/verdicts/<scope>/<phase>.md` | `Read, Write, Glob, Grep` | yes | opus |
 
 - The `.claude/sdd/` contracts + templates ship with the tool — **read-only**, no agent edits them.
-- A gatekeeper's `Write` is scoped to **one new verdict file in `.sdd/verdicts/`** only — never reads or rewrites the existing log (§6).
+- A gatekeeper's `Write` is scoped to its single phase verdict `.sdd/verdicts/<scope>/<phase>.md` (overwritten each gate) only (§6).
 - **test-writer independence is SOFT**: no `Bash`, explicit NON-GOAL (never read `src/` or `.sdd/impl-notes/`), and the test-gatekeeper rejects tests asserting implementation detail.
 - The **test-runner** is the only agent that **executes** the suite (canonical `target.md` commands, filling only `{scope}`); for GUI e2e those commands launch/tear down the running app.
 - **Models:** Opus for under-specified authoring + high-consequence judgment; Sonnet for mechanical/checklist work a concrete contract constrains. A project MAY override any `model:`.

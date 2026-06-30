@@ -76,4 +76,4 @@ NON-GOALS:
     - On REJECT rooted in `.sdd/REQUIREMENT.md` itself (a `REQ-*` untestable, contradictory, or impossible to cover — not merely missed by the plan): `routing: requirement-analyst`.
     - On PASS: `routing: none`.
   - Write ONLY that file (overwrite) — never read or count prior verdicts.
-- Never advances `status`; the command reads the latest record and decides (PASS → specify / REJECT → re-invoke plan-architect, or requirement-analyst then re-plan / escalate on overflow or `<…>`).
+- Never advances `status`; the command reads the verdict and decides (PASS → specify / REJECT → re-invoke plan-architect, or requirement-analyst then re-plan / escalate on an unresolved `<…>`).
