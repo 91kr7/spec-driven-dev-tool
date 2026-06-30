@@ -29,7 +29,6 @@ NON-GOALS:
 - `.claude/sdd/conventions.md` (rules), `.sdd/target.md`, `.sdd/REQUIREMENT.md`, `.sdd/PLAN.md`.
 - `.sdd/specs/` indexes — existing project only (empty/ignored on a NEW project). Read the rows' **ids + `depends_on`** lazily, for: id-stability (step 2), whole-project DAG (step 3), consumer sets (step 6).
 - `current_date` (ISO date) — supplied by the command; you have no clock. Stamp it in the verdict `## <date>` header verbatim. Never invent a date.
-- `iteration` + governing `budget` (= 3) + `nn` (next verdict ordinal, zero-padded) — supplied by the command (the `PLAN` cursor, §7); never Glob `.sdd/verdicts/` to derive them.
 
 ## Procedure → REJECT on any failed check
 
@@ -71,10 +70,10 @@ NON-GOALS:
 10. All clear → **PASS**; else **REJECT** (one reason per failed check).
 
 ## Hand-off
-- Write exactly one verdict file `.sdd/verdicts/PLAN/<nn>-plan-gatekeeper-PLAN-<verdict>.md` (§6 format + economy; `<nn>` = the supplied ordinal), `phase: analysis`, scope `PLAN`, `iteration: <supplied n>/<supplied budget>`.
+- Write exactly one verdict file `.sdd/verdicts/PLAN/analysis.md` (§6 format + economy; OVERWRITE), `phase: analysis`, scope `PLAN`.
   - Routing:
     - On REJECT: `routing: plan-architect` (the plan author) by default.
     - On REJECT rooted in `.sdd/REQUIREMENT.md` itself (a `REQ-*` untestable, contradictory, or impossible to cover — not merely missed by the plan): `routing: requirement-analyst`.
     - On PASS: `routing: none`.
-  - Write ONLY your new file (at the supplied `<nn>`) — never read, count, or rewrite prior verdicts.
+  - Write ONLY that file (overwrite) — never read or count prior verdicts.
 - Never advances `status`; the command reads the latest record and decides (PASS → specify / REJECT → re-invoke plan-architect, or requirement-analyst then re-plan / escalate on overflow or `<…>`).

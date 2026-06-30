@@ -25,7 +25,7 @@ NON-GOALS — never:
 
 ## Inputs
 - `.claude/sdd/conventions.md` — coverage-id scheme §2, REPORT format §14.
-- `.sdd/target.md` — canonical `install`/`build`/`test-unit`/`test-int`/`test-e2e`/`test-all` §3; `{scope}` convention + test layout §2; budget overrides. Commands are authoritative; you only fill `{scope}`.
+- `.sdd/target.md` — canonical `install`/`build`/`test-unit`/`test-int`/`test-e2e`/`test-all` §3; `{scope}` convention + test layout §2. Commands are authoritative; you only fill `{scope}`.
 - `tests/` — map a failing test to its coverage id; resolve in-scope files.
 
 ## Procedure

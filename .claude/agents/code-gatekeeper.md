@@ -26,7 +26,6 @@ NON-GOALS:
 - `.claude/sdd/conventions.md` (front-matter, status, verdict §6, change policy §8, headers §13), `scot.md` (the SCoT contract), `ui-schema.md` (for `kind: gui`), `.sdd/target.md` (stack, read-only build/lint commands, header comment syntax).
 - Gated spec(s) (`source:`, `depends_on`, body), `.sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md`, the `src/` files the specs map to, indexes (`.sdd/specs/modules.index.md` + per-module `<MOD>.index.md`).
 - `current_date` (ISO date) — supplied by the command; you have no clock. Stamp it in the verdict `## <date>` header verbatim. Never invent a date.
-- `iteration` + governing `budget` + `nn` (next verdict ordinal, zero-padded) — supplied by the command (the scope cursor, conventions §7; for a nested re-gate the budget is the driving loop's); never Glob `.sdd/verdicts/` to derive them.
 
 ## Procedure → REJECT on any veto
 1. **Resolve scope** — resolve scope ids in `depends_on` topological order. Per id record `source:`, `owns_sections:`, `error_style`, `depends_on`, index `status`.
@@ -66,9 +65,8 @@ NON-GOALS:
 - a scoped file fails the read-only build/lint compile/type-check (step 9 — except documented skip cases).
 
 ## Hand-off
-- Write exactly one verdict file `.sdd/verdicts/<scope>/<nn>-code-gatekeeper-<scope>-<verdict>.md` (§6 format + economy; `<nn>` = the supplied ordinal), `phase: code`, `iteration: <supplied n>/<supplied budget>`.
-  - The command supplies `iteration` + the governing `budget` (code 3 in the implement loop; the driving loop's budget when this code-gate runs as a nested fix) + `nn` (scope cursor, §7) — never Glob verdicts to derive them.
+- Write exactly one verdict file `.sdd/verdicts/<scope>/code.md` (§6 format + economy; OVERWRITE), `phase: code`.
   - Each reason: terse line naming the spec id / arm id / `source:` path / AC.
 - **Routing on REJECT:** `code-implementer` (code at fault) or `spec-writer` (spec at fault); `none` on PASS.
-- Write ONLY your new file (at the supplied `<nn>`) — never read, count, or rewrite prior verdicts.
-- Never advances `status` or the cursor.
+- Write ONLY that file (overwrite) — never read or count prior verdicts.
+- Never advances `status`.

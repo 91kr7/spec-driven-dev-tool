@@ -28,7 +28,7 @@ NON-GOALS (never do):
 - `.claude/sdd/conventions.md` — coverage-id rule, §6 verdict so you know what's checked.
 - `scot.md` — §4 arm ids, §6 error style, §7 coverage contract.
 - `ui-schema.md` — §5 Events + journey ACs, Accessibility.
-- `.sdd/target.md` — test framework(s), canonical commands, `tests/` layout, **§2 language-idioms map** (= calling convention to derive call sites from), budget overrides.
+- `.sdd/target.md` — test framework(s), canonical commands, `tests/` layout, **§2 language-idioms map** (= calling convention to derive call sites from).
 - Indexes (`.sdd/specs/modules.index.md` + per-module `<MOD>.index.md`) FIRST → in-scope ids in `depends_on` order. THEN open ONLY the behavioral sections of those specs (Public interface, ACs, SCoT body, entity field table + invariants, gui Events/Accessibility). Use `interface`/shared specs only to derive stubs.
 - **On a test-bug re-invoke:** command passes verdict `reasons[]` (which test mis-asserts + the `ACn`/arm it must assert) + prior `test_paths`. Read the offending test; fix with a **minimal edit**. (These are your own spec-derived tests; reading them is not a `src/`/impl-notes firewall breach.)
 

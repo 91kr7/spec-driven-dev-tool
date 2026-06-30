@@ -32,9 +32,8 @@
 .sdd/specs/MOD-shared/{shared,ui-components}/<id>.spec.md  # cross-cutting home: SHR-*/COMP-* whose consumers span ≥2 modules (Rule A); MOD-shared is a dependency SINK (depends_on MOD-build only)
 .sdd/specs/REUSE-REPORT.md        # reuse-analyst output: promotions + Demote-for-re-gate list
 .sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md  # concretization notes — EXACT mirror of .sdd/specs/ (same relative path, .spec.md → .impl-notes.md; a module's OWN note sits at <MOD-id>/<MOD-id>.impl-notes.md); NO index files; NOT the gated spec; the test-writer never reads this tree
-.sdd/verdicts/<scope>/                  # per-scope folder (scope = slice_id | PLAN | PROJECT) — the ONLY new structure; holds all of that scope's loop files:
-.sdd/verdicts/<scope>/_cursor.md        # orchestrator-owned loop CURSOR: {phase, iteration, verdict_seq}; fixed-size, overwritten each gate, NEVER appended — the loop's only control state (§7)
-.sdd/verdicts/<scope>/<nn>-<gate-agent>-<scope>-<verdict>.md  # verdict audit cronaca, one file per gate, append-only/immutable; the loop NEVER scans it to decide (§6) — prunable once approved
+.sdd/verdicts/<scope>/                  # per-scope folder (scope = slice_id | PLAN | PROJECT) — the ONLY new structure; holds that scope's verdicts + run report:
+.sdd/verdicts/<scope>/<phase>.md        # the verdict for that phase (analysis|code|test) — { verdict: PASS|REJECT, reasons[], routing }; OVERWRITTEN each gate; read by the command by known path (§6)
 .sdd/verdicts/<scope>/_test-report.md   # test-runner → test-gatekeeper run result (§14; overwritten each run)
 
 # THE PROJECT — product: stays at the root the toolchain expects, NEVER under .sdd/ (build tools, import paths, test discovery, package/docker manifests all assume these roots)
@@ -194,20 +193,18 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
 
 ## 6. `.sdd/verdicts/` verdict records
 
-**Per-scope, append-only by *file*, never by rewrite.** Every gate writes **one new file**; never reads or rewrites prior verdicts. The `<nn>-…` files in `.sdd/verdicts/<scope>/` are immutable audit **cronaca**: **the loop NEVER scans them to decide** (`iteration` + the ordinal come from the scope's `_cursor.md`, §7), so they are freely **prunable/archivable** once the scope is `approved`.
+**One file per (scope, phase), OVERWRITTEN each gate.** Each gate writes a single file `.sdd/verdicts/<scope>/<phase>.md` holding only its latest outcome; the command reads it by **known path** (no scan, no ordinal). A re-gate of the same phase overwrites it (the prior reasons[] were already consumed by the routed author).
 
-- **Path:** `.sdd/verdicts/<scope>/<nn>-<gate-agent>-<scope>-<verdict>.md`
-  - `<scope>` = the short scope key — folder AND filename: the `slice_id` (e.g. `FEAT-login`, `MOD-build`), `PLAN`, or `PROJECT`. The full member-id list goes in the body's `scope:` field.
-  - `<nn>` = zero-padded ordinal = the scope cursor's `verdict_seq` + 1 (§7), **supplied by the command** — the gate never counts files. Sorts that scope's records in execution order.
-  - `<verdict>` = `PASS` | `REJECT` — the command reads the outcome from the filename of the single just-written file (its `<nn>` is known), opening the body only on REJECT/escalation. No directory scan.
-  - The mutable `_cursor.md` / `_test-report.md` sit in the same folder (underscore-prefixed) — siblings of the immutable `<nn>-…` verdicts, never confused with them.
+- **Path:** `.sdd/verdicts/<scope>/<phase>.md`
+  - `<scope>` = the short scope key (folder): the `slice_id` (e.g. `FEAT-login`, `MOD-build`), `PLAN`, or `PROJECT`. The full member-id list goes in the body's `scope:` field.
+  - `<phase>` = `analysis` | `code` | `test` (the gate's phase; `PLAN`→`analysis`, the `PROJECT` sweep→`test`).
+  - The sibling `_test-report.md` (underscore-prefixed) is the test-runner's run result (§14), not a verdict.
 - **One record per file:**
 
 ```
-## <ISO-8601> — <gate-agent> — <PASS|REJECT>   # <ISO-8601> = the current_date the command passes the gate (agents have no clock); stamp it verbatim, never invent a date or a time. Ordering is by <nn> (filename), so this is audit metadata.
+## <ISO-8601> — <gate-agent> — <PASS|REJECT>   # <ISO-8601> = the current_date the command passes the gate (agents have no clock); stamp it verbatim, never invent a date or a time.
 - scope: <ids reviewed, e.g. FEAT-001, CLS-regCtrl>
 - phase: <analysis|code|test>
-- iteration: <n>/<budget>
 - verdict: PASS | REJECT
 - reasons:
   - <one terse line per check — see economy rule>
@@ -218,14 +215,13 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
   - **PASS** → one terse line per check group: the conclusion + the minimal rebuilt datum where the check is a forcing-function (a traceability **consumer set**, an **orphan-scan** result). NEVER a paragraph re-narrating what held, never the whole front-matter/SCoT/AC list echoed back.
   - **REJECT** → one line per *blocking* defect: the offending `id`/path + what is wrong + the **resolution** (what the routed author consumes) + `routing:`. Do not also transcribe the checks that passed.
 - `routing: escalate` = a REJECT no author can fix (missing dependency, unresolved `<…>` placeholder, e2e-setup app-won't-boot) — the command surfaces it to the human.
-- **Why per-file:** a single shared log forced every gate to Read-whole + Write-whole to append, so the k-th of N gates re-emitted the first k records — O(N²) output for an O(N) log. One file per gate makes each append O(1). This was the dominant token sink of the flow. The scope's `_cursor.md` (§7) removes the last remaining scan — deriving `iteration`/`nn` by counting files — so the loop's reads stay O(1) and the `<nn>-…` log can be pruned without touching control flow.
+- **Why overwrite-per-phase:** the loop reads/writes one fixed file per (scope, phase) — O(1), no ordinal, no directory scan, no accumulation. (The earlier monolithic `status.md` forced Read-whole + Write-whole on every gate → O(N²); per-phase files plus dropping the iteration budget removed the need for any cross-file counting.)
 
 **Example — compact PASS** (full rebuilt evidence collapses to conclusions):
 ```
 ## 2026-06-26 — analysis-gatekeeper — PASS
 - scope: FEAT-login (MOD-auth, ENT-credential, SHR-passwordHasher, CLS-credentialRepo, CLS-loginRequest, CLS-loginResponse, CLS-authService, CLS-authController, FEAT-login)
 - phase: analysis
-- iteration: 1/3
 - verdict: PASS
 - reasons:
   - §3 front-matter: 9/9 valid (id↔filename↔index, error_style on the 5 behavioral specs).
@@ -240,7 +236,6 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
 ## 2026-06-26 — code-gatekeeper — REJECT
 - scope: MOD-build
 - phase: code
-- iteration: 1/3
 - verdict: REJECT
 - reasons:
   - §3 orphan (veto): backend/src/main/resources/application.properties is on disk but in no spec's source:; load-bearing boot scaffolding (SQLite datasource, AC3). Resolution: add it to MOD-build.spec.md source: + re-derive the modules.index.md source column.
@@ -249,23 +244,9 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
 
 ---
 
-## 7. Iteration budgets & failure routing
+## 7. Failure routing
 
-| Loop | Budget | On overflow |
-|---|---|---|
-| analysis (plan + spec) | 3 | escalate |
-| code | 3 | escalate |
-| test | 5 | escalate |
-
-- Budgets are **per scope** (the `PLAN` scope and each slice scope count independently).
-- A **nested re-gate** (e.g. a spec or code fix triggered inside the test loop) counts against the **loop currently driving it** (the test loop) — a sub-step of that loop's current iteration, not a new counter.
-- **`iteration` is explicit cursor state, not a file count.** Each scope keeps `_cursor.md` **inside its own verdict folder** — `.sdd/verdicts/<scope>/_cursor.md` (`{phase, iteration, verdict_seq}`), owned/written by the command (gatekeepers never touch it; no separate `.sdd/progress/` tree).
-  - `verdict_seq` is **monotonic** (++ on every verdict, driving or nested; **never reset**) → new verdicts always continue past the prior run's `<nn>`, no collision.
-  - `iteration` counts the **driving loop** only: the command **resets it to 1 on TOP-LEVEL entry** — the PLAN gate; a slice's analysis loop on first entry (NEW) or an evolution demote (§5/§8) reached from the slice loop; code on analysis-PASS; test on code-PASS — and **increments on each driving REJECT**.
-  - A **nested re-gate** (a spec/code fix routed from inside the code/test loop) is a **sub-step**: `verdict_seq`++ only, `phase`+`iteration` stay on the driving loop — no reset.
-  - The command passes `iteration` + the governing `budget` + the zero-padded `nn` (= `verdict_seq`+1) to the gate, which stamps `iteration: n/budget`; **gatekeepers never Glob verdicts to count.**
-- **Why:** the budget is now independent of how many verdict files exist — re-evolving a long-finished scope starts fresh at `iteration: 1` (the demote resets its cursor), so accumulated `<nn>-…` history never erodes it. (Old behavior — deriving `iteration` from a file count — silently shrank the budget on every re-evolution.)
-- **Missing cursor** (first run under this scheme, or a manual prune): the command rebuilds it — `iteration: 1` (safe; never over-counts), `verdict_seq` = the highest `<nn>` already in `.sdd/verdicts/<scope>/` (or 0), and `phase` from the **least-advanced status of the scope's OWN members** (excluding read-only `depends_on`-closure deps): `draft`→analysis · `reviewed`→code · `implemented`→test (all own members `approved` → the slice is done, skip it); `PLAN`→analysis; `PROJECT`→test.
+**No iteration budget.** A gate loops `REJECT → fix → re-gate` until PASS. `/sdd-auto` is run **attended**: a gate↔author oscillation does NOT auto-stop — the human watching the run halts it by hand. The only automatic stop is `routing: escalate` (a block no author can fix). Resume needs no counter — `phase` is the least-advanced own-member `status` (§5).
 
 **test-gatekeeper triage routing** (MD is authority — a red test never patches code arbitrarily):
 - **spec bug** → `spec-writer` (fix spec, regenerate code).
@@ -319,7 +300,7 @@ One command. The main session runs it, driving every loop (invoke agent → read
 
 | Command | Drives |
 |---|---|
-| `/sdd-auto` | The whole flow end-to-end, **one vertical slice at a time** in `depends_on` order, human OUT of the loop. Plan → Specify → Implement → Test, automatic gates; escalate only on budget overflow (or an unstated stack / `escalate` routing). |
+| `/sdd-auto` | The whole flow end-to-end, **one vertical slice at a time** in `depends_on` order, human OUT of the loop. Plan → Specify → Implement → Test, automatic gates; escalate only on an unstated stack or an `escalate` routing. |
 
 ---
 

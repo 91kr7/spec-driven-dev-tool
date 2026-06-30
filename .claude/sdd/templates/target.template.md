@@ -75,12 +75,5 @@ db-schema: <e.g. pnpm prisma migrate deploy>   # applies the entity-derived sche
 - **`{scope}`** — put the token where the framework's test selector goes; the runner replaces it with the in-scope selector (file globs or an id-alternation `--grep`/`--tests`). Empty `{scope}` = whole suite. The runner only fills this token — never adds or alters any other flag.
 - **Two reporters baked in:** a compact **`dot`** console reporter (tiny captured output) **and** a machine-readable **file** reporter (JUnit-XML/JSON/TAP) the runner parses with `xmllint`/`jq`. Both belong here, in the canonical command — never added ad-hoc.
 
-## 4. Iteration budgets (optional override of conventions §7)
-```
-analysis: 3
-code: 3
-test: 5
-```
-
-## 5. Notes / constraints
+## 4. Notes / constraints
 `<Non-functional constraints expressible as testable ACs (performance budgets, security, accessibility level). Anything not testable is context only and does not gate.>`

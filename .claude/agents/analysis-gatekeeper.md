@@ -27,20 +27,18 @@ NON-GOALS — never:
 - fix a defect — only name + route it.
 
 ## Inputs
-- `.claude/sdd/conventions.md` (front-matter §3, index §4, status §5, verdict §6, budgets §7, traceability §13).
+- `.claude/sdd/conventions.md` (front-matter §3, index §4, status §5, verdict §6, failure routing §7, traceability §13).
 - `scot.md` (coverage contract §7).
 - `ui-schema.md` (five sections, component catalog §9).
-- `.sdd/target.md` (source-path conventions, budget overrides).
+- `.sdd/target.md` (source-path conventions).
 - `.sdd/REQUIREMENT.md`.
 - Indexes (`.sdd/specs/modules.index.md` + per-module `<MOD>.index.md`) — read first.
 - In-scope `.sdd/specs/**/*.spec.md` — lazy.
 - `.sdd/specs/REUSE-REPORT.md` (recorded duplication justifications).
 - `current_date` (ISO date) — supplied by the command; you have no clock. Stamp it in the verdict `## <date>` header verbatim, never invent a date.
-- `iteration` + governing `budget` + `nn` (next verdict ordinal, zero-padded) — supplied by the command (the scope cursor, conventions §7; for a nested re-gate the budget is the driving loop's); never Glob `.sdd/verdicts/` to derive them.
 
 ## Procedure → REJECT on any veto
 1. **Scope**
-   - `iteration` + the verdict ordinal `nn` are **supplied by the command** (scope cursor, §7) — never Glob `.sdd/verdicts/` to count.
    - Default scope = full spec set for the slice, judged afresh.
    - Read indexes, then specs lazily.
 2. **Front-matter** (per spec) — require:
@@ -105,7 +103,7 @@ NON-GOALS — never:
 - a shared node misplaced vs Rule A (a cross-module `SHR-*`/`COMP-*` not homed in `MOD-shared`, or an intra-module one wrongly hoisted there).
 
 ## Hand-off
-- Write exactly one verdict file `.sdd/verdicts/<scope>/<nn>-analysis-gatekeeper-<scope>-<verdict>.md` (§6 format + economy; `<nn>` = the supplied ordinal), `phase: analysis`, `iteration: <supplied n>/<supplied budget>`, each reason a terse line citing the exact spec/`ACn`/`Bn`/requirement/index.
+- Write exactly one verdict file `.sdd/verdicts/<scope>/analysis.md` (§6 format + economy; OVERWRITE), `phase: analysis`, each reason a terse line citing the exact spec/`ACn`/`Bn`/requirement/index.
 - **Routing on REJECT:** `spec-writer` by default; `reuse-analyst` for unjustified duplication / a missing promotion. `none` on PASS.
-- Write ONLY your new file (at the supplied `<nn>`) — never read, count, or rewrite prior verdicts.
-- Writes only that verdict; the command advances `status` + the cursor.
+- Write ONLY that file (overwrite) — never read or count prior verdicts.
+- Writes only that verdict; the command advances `status`.
