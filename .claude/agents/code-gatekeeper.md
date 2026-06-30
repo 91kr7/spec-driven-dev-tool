@@ -26,6 +26,7 @@ NON-GOALS:
 - `.claude/sdd/conventions.md` (front-matter, status, verdict §6, change policy §8, headers §13), `scot.md` (the SCoT contract), `ui-schema.md` (for `kind: gui`), `.sdd/target.md` (stack, read-only build/lint commands, header comment syntax).
 - Gated spec(s) (`source:`, `depends_on`, body), `.sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md`, the `src/` files the specs map to, indexes (`.sdd/specs/modules.index.md` + per-module `<MOD>.index.md`).
 - `current_date` (ISO date) — supplied by the command; you have no clock. Stamp it in the verdict `## <date>` header verbatim. Never invent a date.
+- `iteration` + `nn` (next verdict ordinal) — supplied by the command (the scope cursor, conventions §7; carries the governing-loop budget); never Glob `.sdd/verdicts/` to derive them.
 
 ## Procedure → REJECT on any veto
 1. **Resolve scope** — resolve scope ids in `depends_on` topological order. Per id record `source:`, `owns_sections:`, `error_style`, `depends_on`, index `status`.
@@ -65,9 +66,9 @@ NON-GOALS:
 - a scoped file fails the read-only build/lint compile/type-check (step 9 — except documented skip cases).
 
 ## Hand-off
-- Write exactly one verdict file `.sdd/verdicts/<nn>-code-gatekeeper-<scope>-<verdict>.md` (§6 format + economy), `phase: code`, `iteration: <n>/<governing budget>`.
-  - Governing budget: code budget 3 in the implement loop; the test budget when a fix is driven inside the test loop. Derive `n` from prior same-scope code-phase verdicts the Glob surfaces.
+- Write exactly one verdict file `.sdd/verdicts/<scope>/<nn>-code-gatekeeper-<scope>-<verdict>.md` (§6 format + economy; `<nn>` = the supplied ordinal), `phase: code`, `iteration: <supplied n>/<governing budget>`.
+  - Governing budget: code budget 3 in the implement loop; the test budget when a fix is driven inside the test loop. The command supplies both `iteration` and `nn` (scope cursor, §7) — never Glob verdicts to derive them.
   - Each reason: terse line naming the spec id / arm id / `source:` path / AC.
 - **Routing on REJECT:** `code-implementer` (code at fault) or `spec-writer` (spec at fault); `none` on PASS.
-- Glob `.sdd/verdicts/` for the next `<nn>`. Write ONLY your new file — never read or rewrite prior verdicts.
-- Never advances `status`.
+- Write ONLY your new file (at the supplied `<nn>`) — never read, count, or rewrite prior verdicts.
+- Never advances `status` or the cursor.

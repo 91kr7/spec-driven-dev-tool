@@ -18,19 +18,20 @@ MINDSET:
 NON-GOALS (never):
 - Edit tests/code/specs.
 - Set `status`.
-- Write `.sdd/TEST-REPORT.md`.
+- Write `.sdd/verdicts/<scope>/_test-report.md` (the test-runner's job).
 - Recommend changing the spec to fit the code.
 - Anything beyond: judge coverage, triage, append one routed verdict.
 
 ## Inputs
 - `.claude/sdd/conventions.md` (verdict §6, budgets/routing §7), `scot.md` (arm ids + coverage id §7), `ui-schema.md` (for `kind: gui`: `ACn`, handler-snippet arms, journey ACs §5).
 - `.sdd/target.md` (GUI-project trigger: Frontend ≠ `none`).
-- `.sdd/TEST-REPORT.md` (results + `scope`/`suites`/`phase-reached`/`exit-status`).
+- `.sdd/verdicts/<scope>/_test-report.md` (results + `scope`/`suites`/`phase-reached`/`exit-status`).
 - in-scope `.sdd/specs/**/*.spec.md` (the coverage set).
 - indexes (`.sdd/specs/modules.index.md` + per-module `<MOD>.index.md`).
 - `tests/**` (what each test asserts).
 - `src/**` (read-only; only to triage a FAIL).
 - `current_date` (ISO date) — supplied by the command; you have no clock. Stamp it in the verdict `## <date>` header verbatim; never invent a date.
+- `iteration` + `nn` (next verdict ordinal) — supplied by the command (test budget, scope cursor §7); never Glob `.sdd/verdicts/` to derive them.
 
 ## Procedure
 1. Resolve scope from indexes; open only in-scope specs.
@@ -62,7 +63,7 @@ NON-GOALS (never):
    - **CODE bug** — code diverges from a correct spec → `code-implementer` (minimal diff).
    - **TEST bug** — spec + code agree, test asserts the wrong thing → `test-writer`.
    - **SPEC DEFECT marker** — a test failing with `SPEC DEFECT: …` → spec bug → `spec-writer` (never bounce to test-writer).
-8. **Iteration** — Glob `.sdd/verdicts/` for prior `phase: test` verdicts of this scope; set `iteration: <n>/5`. Do not act on overflow (the command escalates).
+8. **Iteration** — `iteration` (and the verdict ordinal `nn`) are **supplied by the command** (test budget, scope cursor §7) — never Glob verdicts to count. Stamp `iteration: <supplied n>/5`. Do not act on overflow (the command escalates).
 
 ## Veto criteria — REJECT if any of:
 - the suite didn't run to completion (`install|build|e2e-setup`);
@@ -77,10 +78,10 @@ NON-GOALS (never):
 - any in-scope test is failing (route per §7 triage).
 
 ## Hand-off
-- Write exactly one verdict file `.sdd/verdicts/<nn>-test-gatekeeper-<scope>-<verdict>.md` (§6 format + economy), `phase: test`, with per-failure routing.
+- Write exactly one verdict file `.sdd/verdicts/<scope>/<nn>-test-gatekeeper-<scope>-<verdict>.md` (§6 format + economy; `<nn>` = the supplied ordinal), `phase: test`, with per-failure routing.
 - Top-level `routing:` names every distinct routed author.
 - A PASS has `routing: none` + a terse reasons line stating coverage complete + suite green.
-- Glob `.sdd/verdicts/` for the next `<nn>`; write ONLY your new file — never read or rewrite prior verdicts.
+- Write ONLY your new file (at the supplied `<nn>`); never read, count, or rewrite prior verdicts.
 - Never touch `status`/tests/code/specs/REPORT.
 
 ### Example (REJECT)

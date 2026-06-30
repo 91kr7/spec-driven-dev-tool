@@ -28,18 +28,20 @@ DATAFLOW
 
 ```
 ROLE   you (main session) = orchestrator; subagents do ALL authoring/judging via Task.
-        - read verdicts from .sdd/verdicts/ (one file per gate; latest = highest <nn> via Glob).
+        - own the per-scope CURSOR `.sdd/verdicts/<scope>/_cursor.md` (phase/iteration/verdict_seq); pass iteration+nn to each gate.
+        - read each gate's single new verdict by KNOWN path (nn = cursor verdict_seq+1) — never scan .sdd/verdicts/.
         - set index `status` yourself.
         - loop on REJECT.
 LAW    - Markdown spec = source of truth (authority).
         - Reuse over repetition (DRY).
         - A red test never makes code authoritative — fix the wrong spec first, then regenerate code.
 STATE  Durable state in FILES, never in this conversation: `slice_list` (PLAN.md) · `index_rows.status`
-        (the indexes) · `.sdd/verdicts/`.
+        (the indexes) · the per-scope CURSOR `.sdd/verdicts/<scope>/_cursor.md` (loop control: phase/iteration/verdict_seq).
+        The `<nn>-…` verdicts in `.sdd/verdicts/<scope>/` are append-only AUDIT cronaca — the loop NEVER scans them to decide (Loop cursor §); prunable once approved.
         A slice's in-loop output — verdict bodies, agent return payloads, TEST-/REUSE-REPORT text,
         reasons[] threaded between iterations — is per-slice SCRATCH:
-        - re-derive, don't recall: re-Glob/re-Read when a step needs a fact; never lean on conversation memory.
-        - garbage-collect once the slice is `approved` (step 8).
+        - re-derive, don't recall: re-Read the cursor / re-Glob specs when a step needs a fact; never lean on conversation memory.
+        - garbage-collect once the slice is `approved` (step 8) — the cursor stays (it is the resume anchor).
         Every slice boundary = cold start — same file-only reconstruction the Resume section performs.
 RULES  Obey .claude/sdd/conventions.md: ids §2 · front-matter §3 · index rows §4 · status/duties §5
         · verdict format §6 · budgets/routing §7 · change policy §8 · roster §9 · topo/slices §12.
@@ -75,8 +77,9 @@ HAVE     read-only contracts shipped with the tool: conventions.md, scot.md, ui-
 | impl_note | .sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md | mirrors the spec's .sdd/specs/<MOD-id>/<level> path + basename |
 | install_result | { ok: bool, log } | |
 | test_paths | [ tests/** ] | |
-| TEST-REPORT.md | file { failures[], per-test status } | .sdd/TEST-REPORT.md |
-| verdict_record | .sdd/verdicts/<nn>-<gate-agent>-<scope>-<verdict>.md { phase, scope, verdict: PASS\|REJECT, reasons[], routing, iteration: n/budget } | one file per gate; read latest by Glob — PASS/REJECT in the filename, open body only on REJECT |
+| TEST-REPORT | file { failures[], per-test status } | `.sdd/verdicts/<scope>/_test-report.md` — one per scope, overwritten each run |
+| cursor | `.sdd/verdicts/<scope>/_cursor.md` { phase, iteration, verdict_seq, last, updated } | orchestrator-owned loop control state; fixed-size, overwritten each gate (Loop cursor §, conventions §7) |
+| verdict_record | `.sdd/verdicts/<scope>/<nn>-<gate-agent>-<scope>-<verdict>.md` { phase, scope, verdict: PASS\|REJECT, reasons[], routing, iteration: n/budget } | one file per gate (audit); read the single new one by KNOWN path (nn = cursor verdict_seq+1) — PASS/REJECT in the filename, open body only on REJECT; never scan |
 
 ## How to read a step
 ```
@@ -88,6 +91,28 @@ EXECUTOR MARKERS — who runs the step (always first line of the step body)
 Step TITLE names the ACTION only. The agent (if any) is the ▶▶ line, always visible.
 Every step lists IN (tokens consumed) and OUT (tokens produced). After a GATE, act on its
 verdict_record via the PASS / REJECT / OVERFLOW branches.
+```
+
+## Loop cursor   `the only control state the loop reads — never scan .sdd/verdicts/`
+```
+PER SCOPE (each slice + PLAN + PROJECT): a tiny file `.sdd/verdicts/<scope>/_cursor.md` (conventions §7):
+   { phase: analysis|code|test · iteration: n · verdict_seq: n · last · updated }
+YOU own it (gatekeepers never touch it): fixed-size, OVERWRITTEN, never appended.
+
+AT EVERY GATE:
+  1 READ the scope cursor → iteration i, verdict_seq s.
+  2 INVOKE the gate with: current_date, iteration=i, nn=s+1.
+  3 the gate writes .sdd/verdicts/<scope>/<nn>-<agent>-<scope>-<verdict>.md (audit) — and nothing else.
+  4 READ the outcome from THAT one file's name (nn=s+1 is known); open its body ONLY on REJECT (for reasons[]). NEVER Glob/scan the folder.
+  5 WRITE the cursor: verdict_seq:=s+1 ; then
+       PASS                  → advance index status (§5); on entering the next driving loop set phase:=next, iteration:=1.
+       REJECT (i < budget)   → iteration:=i+1 (phase unchanged; a nested re-gate is a sub-step, not a new counter).
+       OVERFLOW (i = budget) → ESCALATE; leave the cursor frozen.
+
+RESET iteration:=1 on entry to a driving loop: the PLAN gate; a slice's analysis loop on (re)entry
+  INCLUDING an evolution demote (5a / §8); code on analysis-PASS; test on code-PASS.
+  → budget independent of `.sdd/verdicts/` size; re-evolving a finished scope starts at iteration 1, old verdicts never erode it.
+MISSING cursor (first run / manual prune) → rebuild: iteration:1, phase from index status, verdict_seq = highest <nn> in .sdd/verdicts/<scope>/ (or 0).
 ```
 
 ---
@@ -140,6 +165,7 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
      IN  index_rows of the slice's `MODIFY` members (per the PLAN delta) whose status ∈ {reviewed, implemented, approved}
      OUT those rows → status: draft (§5).
          `NEW` members start at draft; unchanged `depends_on`-closure members stay `approved` (read-only deps — never demoted, never re-worked).
+         CURSOR: entering this slice's analysis loop (a fresh change-cycle) → set `.sdd/verdicts/<slice>/_cursor.md` phase:analysis, iteration:1 (conventions §7 — why a re-evolved slice gets a FULL budget, never eroded by old verdicts).
 
 5b ▶▶ INVOKE spec-writer   (the narrative authority)
      IN  conventions ; scot ; ui-schema ; target.md ; PLAN.md ; REQUIREMENT.md ; the indexes + existing specs ; REUSE-REPORT.md (hand-off edits) ; templates ; slice ; [spec-bug re-INVOKE: + reasons[]]
@@ -191,10 +217,10 @@ OUT  verdict_record { phase: analysis, scope: PLAN, iteration: n/3 }
 
 7b ▶▶ INVOKE test-runner
      IN  conventions (§14 report) ; target.md (install/build/test commands + layout) ; test_paths + src_paths ; slice.member_ids as {scope}
-     OUT TEST-REPORT.md (unit + integration + component, + e2e for GUI)
+     OUT `.sdd/verdicts/<slice>/_test-report.md` (unit + integration + component, + e2e for GUI)
 
 7c ▶▶ GATE test-gatekeeper
-     IN  conventions ; scot ; ui-schema (gui) ; target.md ; TEST-REPORT.md ; the indexes + in-scope spec_paths (coverage) ; tests/** ; src/** (read-only, triage only) ; current_date
+     IN  conventions ; scot ; ui-schema (gui) ; target.md ; `.sdd/verdicts/<slice>/_test-report.md` ; the indexes + in-scope spec_paths (coverage) ; tests/** ; src/** (read-only, triage only) ; current_date
      OUT verdict_record { phase: test, scope: slice_id, coverage, routing, iteration: n/5 }
       PASS (green + full coverage) → YOU set slice index_rows.status: implemented → approved; step 8.
       REJECT → route per triage (§7); each loop returns to the sub-step that re-gates the fix:
@@ -222,7 +248,7 @@ OUT  next_target :
 ▶▶ INVOKE test-runner   (whole suite, NO scope)
 ▶▶ GATE   test-gatekeeper (whole project)
 IN   conventions ; target.md (test command, NO scope) ; whole approved project (indexes + all spec_paths + tests/** + src/**) ; current_date
-OUT  TEST-REPORT.md (whole suite) ; verdict_record { phase: test, scope: PROJECT }
+OUT  `.sdd/verdicts/PROJECT/_test-report.md` (whole suite) ; verdict_record { phase: test, scope: PROJECT }
       regression → route per §7 to the owning slice, re-run its step 7 (bounded by test budget).
       green      → project done.
 ```
@@ -244,12 +270,13 @@ Slices already approved stay approved.
 ## Resume   `from files only`
 ```
 Loop state is reconstructable:
-  - Glob `.sdd/verdicts/` → highest `<nn>` per scope = that scope's latest verdict_record, carrying `iteration: n/<budget>`.
+  - READ the scope CURSOR `.sdd/verdicts/<scope>/_cursor.md` → phase + iteration + verdict_seq (O(1); no scan).
   - index_rows.status shows which slices are done.
+  - cursor missing → rebuild (Loop cursor §): iteration:1, phase from index status, verdict_seq = highest <nn> in .sdd/verdicts/<scope>/ (or 0).
 TO RESUME re-run /sdd-auto:
   - skip every approved slice;
-  - re-enter the first non-approved slice at the step its latest verdict_record implies;
-  - continue that step's iteration count.
+  - re-enter the first non-approved slice at the phase its cursor implies;
+  - continue that loop's iteration from the cursor.
 The per-slice loop performs this SAME file-only reconstruction at every slice boundary (the STATE law),
 not only after an interruption — so a long run never depends on accumulated conversation history.
 ```
@@ -266,7 +293,8 @@ any REJECT                             → status unchanged (never regresses).
 ## Outputs
 ```
 REQUIREMENT.md · PLAN.md (incl. Slice plan) · target.md
-per slice: index_rows · spec_paths · src_paths · impl_note · test_paths · TEST-REPORT.md
-.sdd/verdicts/  append-only verdict log — one file per gate (no whole-file rewrite)
+per slice: index_rows · spec_paths · src_paths · impl_note · test_paths · `.sdd/verdicts/<slice>/_test-report.md`
+.sdd/verdicts/<scope>/_cursor.md  per-scope loop cursor (control state; overwritten)
+.sdd/verdicts/<scope>/<nn>-…      per-scope append-only verdict log — audit cronaca (prunable; never scanned by the loop)
 index_rows.status advanced to approved for every completed slice
 ```

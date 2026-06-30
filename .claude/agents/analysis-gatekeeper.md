@@ -36,10 +36,11 @@ NON-GOALS — never:
 - In-scope `.sdd/specs/**/*.spec.md` — lazy.
 - `.sdd/specs/REUSE-REPORT.md` (recorded duplication justifications).
 - `current_date` (ISO date) — supplied by the command; you have no clock. Stamp it in the verdict `## <date>` header verbatim, never invent a date.
+- `iteration` (current count) + `nn` (next verdict ordinal) — supplied by the command (the scope cursor, conventions §7); never Glob `.sdd/verdicts/` to derive them.
 
 ## Procedure → REJECT on any veto
 1. **Scope**
-   - Glob `.sdd/verdicts/` for this scope's prior verdicts (filenames only — §6 forbids reading their contents): count = `iteration`, highest `<nn>` = next ordinal.
+   - `iteration` + the verdict ordinal `nn` are **supplied by the command** (scope cursor, §7) — never Glob `.sdd/verdicts/` to count.
    - Default scope = full spec set for the slice, judged afresh.
    - Read indexes, then specs lazily.
 2. **Front-matter** (per spec) — require:
@@ -104,7 +105,7 @@ NON-GOALS — never:
 - a shared node misplaced vs Rule A (a cross-module `SHR-*`/`COMP-*` not homed in `MOD-shared`, or an intra-module one wrongly hoisted there).
 
 ## Hand-off
-- Write exactly one verdict file `.sdd/verdicts/<nn>-analysis-gatekeeper-<scope>-<verdict>.md` (§6 format + economy), `phase: analysis`, each reason a terse line citing the exact spec/`ACn`/`Bn`/requirement/index.
+- Write exactly one verdict file `.sdd/verdicts/<scope>/<nn>-analysis-gatekeeper-<scope>-<verdict>.md` (§6 format + economy; `<nn>` = the supplied ordinal), `phase: analysis`, `iteration: <supplied n>/3`, each reason a terse line citing the exact spec/`ACn`/`Bn`/requirement/index.
 - **Routing on REJECT:** `spec-writer` by default; `reuse-analyst` for unjustified duplication / a missing promotion. `none` on PASS.
-- Glob `.sdd/verdicts/` for the next `<nn>`; write ONLY your new file — never read or rewrite prior verdicts.
-- Writes only that verdict; the command advances `status`.
+- Write ONLY your new file (at the supplied `<nn>`) — never read, count, or rewrite prior verdicts.
+- Writes only that verdict; the command advances `status` + the cursor.

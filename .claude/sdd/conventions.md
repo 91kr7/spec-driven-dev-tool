@@ -32,8 +32,10 @@
 .sdd/specs/MOD-shared/{shared,ui-components}/<id>.spec.md  # cross-cutting home: SHR-*/COMP-* whose consumers span ≥2 modules (Rule A); MOD-shared is a dependency SINK (depends_on MOD-build only)
 .sdd/specs/REUSE-REPORT.md        # reuse-analyst output: promotions + Demote-for-re-gate list
 .sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md  # concretization notes — EXACT mirror of .sdd/specs/ (same relative path, .spec.md → .impl-notes.md; a module's OWN note sits at <MOD-id>/<MOD-id>.impl-notes.md); NO index files; NOT the gated spec; the test-writer never reads this tree
-.sdd/verdicts/<nn>-<gate-agent>-<scope>-<verdict>.md  # one file per gate — the append-only verdict log (no rewrite)
-.sdd/TEST-REPORT.md          # test-runner → test-gatekeeper run result (§14; overwritten each run)
+.sdd/verdicts/<scope>/                  # per-scope folder (scope = slice_id | PLAN | PROJECT) — the ONLY new structure; holds all of that scope's loop files:
+.sdd/verdicts/<scope>/_cursor.md        # orchestrator-owned loop CURSOR: {phase, iteration, verdict_seq}; fixed-size, overwritten each gate, NEVER appended — the loop's only control state (§7)
+.sdd/verdicts/<scope>/<nn>-<gate-agent>-<scope>-<verdict>.md  # verdict audit cronaca, one file per gate, append-only/immutable; the loop NEVER scans it to decide (§6) — prunable once approved
+.sdd/verdicts/<scope>/_test-report.md   # test-runner → test-gatekeeper run result (§14; overwritten each run)
 
 # THE PROJECT — product: stays at the root the toolchain expects, NEVER under .sdd/ (build tools, import paths, test discovery, package/docker manifests all assume these roots)
 src/                         # GENERATED source (or framework roots, e.g. backend/ frontend/)
@@ -138,7 +140,7 @@ A **stub/mock is never specced** — auto-derived from its `interface` spec.
 Every `ACn` is verified at exactly one of three altitudes, **marked** so coverage is mechanical:
 - **test-covered** (default, untagged) — an authored test asserts it (unit / integration / component). The `test-writer` writes ≥1 mapped test (scot.md §7.3 id); the `test-gatekeeper` REJECTs if any is uncovered.
 - **`(journey)`** — a screen outcome crossing the running stack; verified **end-to-end by a Playwright test** (ui-schema §5).
-- **`(pipeline)`** — the outcome **is** the success of a canonical `target.md §3` command (install / build / run-boot / migrate); verified by that command reaching green in `.sdd/TEST-REPORT.md`, **not** by an authored test (a test re-asserting "the build passes" is circular; one re-asserting a manifest value against the spec is tautological — neither is an independent oracle).
+- **`(pipeline)`** — the outcome **is** the success of a canonical `target.md §3` command (install / build / run-boot / migrate); verified by that command reaching green in `.sdd/verdicts/<scope>/_test-report.md`, **not** by an authored test (a test re-asserting "the build passes" is circular; one re-asserting a manifest value against the spec is tautological — neither is an independent oracle).
   - **Allowed ONLY on an infra-module AC** (`MOD-build`, `MOD-schema`) whose assertion is literally "the build / boot / migration command succeeds".
   - A behavioral spec (`CLS-*` / `FEAT-*` / `ENT-*`) may **never** tag `(pipeline)` to dodge a real test, and a genuine boot **smoke** check (e.g. application-context-loads, which exercises runtime wiring the spec left open) stays **test-covered**, not `(pipeline)`.
   - The `test-writer` authors **no** test for a `(pipeline)` AC; the `test-gatekeeper` counts it covered from the green run result and REJECTs a `(pipeline)` tag on a non-infra spec.
@@ -192,12 +194,13 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
 
 ## 6. `.sdd/verdicts/` verdict records
 
-**Append-only by *file*, never by rewrite.** Every gate writes **one new file** and never reads or rewrites prior verdicts. The directory *is* the audit log; its sorted filenames are the timeline.
+**Per-scope, append-only by *file*, never by rewrite.** Every gate writes **one new file**; never reads or rewrites prior verdicts. The `<nn>-…` files in `.sdd/verdicts/<scope>/` are immutable audit **cronaca**: **the loop NEVER scans them to decide** (`iteration` + the ordinal come from the scope's `_cursor.md`, §7), so they are freely **prunable/archivable** once the scope is `approved`.
 
-- **Path:** `.sdd/verdicts/<nn>-<gate-agent>-<scope>-<verdict>.md`
-  - `<nn>` = zero-padded 2-digit ordinal = (count of existing `.sdd/verdicts/*.md`) + 1, so files sort in execution order. Get it by **Glob** on filenames — never read their contents.
-  - `<scope>` = the short scope key the command matches on: the `slice_id` (e.g. `FEAT-login`, `MOD-build`), `PLAN`, or `PROJECT`. The full member-id list goes in the body's `scope:` field, not the filename.
-  - `<verdict>` = `PASS` | `REJECT` — so the command reads the outcome from the filename alone, opening the body only on REJECT/escalation.
+- **Path:** `.sdd/verdicts/<scope>/<nn>-<gate-agent>-<scope>-<verdict>.md`
+  - `<scope>` = the short scope key — folder AND filename: the `slice_id` (e.g. `FEAT-login`, `MOD-build`), `PLAN`, or `PROJECT`. The full member-id list goes in the body's `scope:` field.
+  - `<nn>` = zero-padded ordinal = the scope cursor's `verdict_seq` + 1 (§7), **supplied by the command** — the gate never counts files. Sorts that scope's records in execution order.
+  - `<verdict>` = `PASS` | `REJECT` — the command reads the outcome from the filename of the single just-written file (its `<nn>` is known), opening the body only on REJECT/escalation. No directory scan.
+  - The mutable `_cursor.md` / `_test-report.md` sit in the same folder (underscore-prefixed) — siblings of the immutable `<nn>-…` verdicts, never confused with them.
 - **One record per file:**
 
 ```
@@ -215,7 +218,7 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
   - **PASS** → one terse line per check group: the conclusion + the minimal rebuilt datum where the check is a forcing-function (a traceability **consumer set**, an **orphan-scan** result). NEVER a paragraph re-narrating what held, never the whole front-matter/SCoT/AC list echoed back.
   - **REJECT** → one line per *blocking* defect: the offending `id`/path + what is wrong + the **resolution** (what the routed author consumes) + `routing:`. Do not also transcribe the checks that passed.
 - `routing: escalate` = a REJECT no author can fix (missing dependency, unresolved `<…>` placeholder, e2e-setup app-won't-boot) — the command surfaces it to the human.
-- **Why per-file:** a single shared log forced every gate to Read-whole + Write-whole to append, so the k-th of N gates re-emitted the first k records — O(N²) output for an O(N) log. One file per gate makes each append O(1). This was the dominant token sink of the flow.
+- **Why per-file:** a single shared log forced every gate to Read-whole + Write-whole to append, so the k-th of N gates re-emitted the first k records — O(N²) output for an O(N) log. One file per gate makes each append O(1). This was the dominant token sink of the flow. The scope's `_cursor.md` (§7) removes the last remaining scan — deriving `iteration`/`nn` by counting files — so the loop's reads stay O(1) and the `<nn>-…` log can be pruned without touching control flow.
 
 **Example — compact PASS** (full rebuilt evidence collapses to conclusions):
 ```
@@ -255,7 +258,10 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
 | test | 5 | escalate |
 
 - Budgets are **per scope** (the `PLAN` scope and each slice scope count independently).
-- A **nested re-gate** (e.g. a spec or code fix triggered inside the test loop) counts against the **loop currently driving it** (the test loop), and the gatekeeper stamps **that** loop's budget in `iteration:`.
+- A **nested re-gate** (e.g. a spec or code fix triggered inside the test loop) counts against the **loop currently driving it** (the test loop) — a sub-step of that loop's current iteration, not a new counter.
+- **`iteration` is explicit cursor state, not a file count.** Each scope keeps `_cursor.md` **inside its own verdict folder** — `.sdd/verdicts/<scope>/_cursor.md` (`{phase, iteration, verdict_seq}`), owned/written by the command (gatekeepers never touch it; no separate `.sdd/progress/` tree). The command **resets `iteration:=1` on entry to each driving loop** — the PLAN gate; a slice's analysis loop on (re)entry **including an evolution demote** (§5/§8); code on analysis-PASS; test on code-PASS — and **increments on each REJECT**. It passes the current `iteration` + the next ordinal `nn` (= `verdict_seq`+1) to the gate; **gatekeepers never Glob verdicts to count.**
+- **Why:** the budget is now independent of how many verdict files exist — re-evolving a long-finished scope starts fresh at `iteration: 1` (the demote resets its cursor), so accumulated `<nn>-…` history never erodes it. (Old behavior — deriving `iteration` from a file count — silently shrank the budget on every re-evolution.)
+- **Missing cursor** (first run under this scheme, or a manual prune): the command rebuilds it — `iteration: 1` (safe; never over-counts), `phase` from the index `status`, `verdict_seq` = the highest `<nn>` already in `.sdd/verdicts/<scope>/` (or 0).
 
 **test-gatekeeper triage routing** (MD is authority — a red test never patches code arbitrarily):
 - **spec bug** → `spec-writer` (fix spec, regenerate code).
@@ -292,7 +298,7 @@ Twelve roles; **eleven are subagents** in `.claude/agents/`. The **orchestrator 
 | `code-implementer` | specs → source | `src/` (declared paths), `.sdd/impl-notes/` | `Read, Write, Edit, Glob, Grep` | yes (edit) | opus |
 | `code-gatekeeper` | judge code ≡ spec | `.sdd/verdicts/` (one file) | `Read, Write, Glob, Grep, Bash` (read-only) | yes (review) | opus |
 | `test-writer` | specs → tests (independent oracle) | `tests/` | `Read, Write, Edit, Glob` | **no — by role** | sonnet |
-| `test-runner` | run tests, write report | `.sdd/TEST-REPORT.md` | `Read, Write, Glob, Bash` | yes | sonnet |
+| `test-runner` | run tests, write report | `.sdd/verdicts/<scope>/_test-report.md` | `Read, Write, Glob, Bash` | yes | sonnet |
 | `test-gatekeeper` | verify coverage + triage | `.sdd/verdicts/` (one file) | `Read, Write, Glob, Grep` | yes | opus |
 
 - The `.claude/sdd/` contracts + templates ship with the tool — **read-only**, no agent edits them.
@@ -366,9 +372,9 @@ The reader wanting *why* follows the header to the spec; a genuinely non-obvious
 
 ---
 
-## 14. `.sdd/TEST-REPORT.md` format (test-runner → test-gatekeeper contract)
+## 14. `.sdd/verdicts/<scope>/_test-report.md` format (test-runner → test-gatekeeper contract)
 
-`test-runner` writes it (overwritten each run); `test-gatekeeper` parses it. Fixed structure (no heuristics). **Coverage** (every test-covered `ACn`/arm has a test) is verified by the gatekeeper from the tagged test files; this report supplies the **run result**. A **`(pipeline)`** AC (§3 altitudes) is the exception: it carries no tagged test, so the gatekeeper counts it covered from this report's **green run result** (the install/build/boot/migrate command it asserts necessarily ran in reaching `phase-reached: complete`).
+`test-runner` writes one per scope at `.sdd/verdicts/<scope>/_test-report.md` (`<scope>` = the slice_id, or `PROJECT` for the step-9 sweep; overwritten each run); `test-gatekeeper` parses it. Fixed structure (no heuristics). **Coverage** (every test-covered `ACn`/arm has a test) is verified by the gatekeeper from the tagged test files; this report supplies the **run result**. A **`(pipeline)`** AC (§3 altitudes) is the exception: it carries no tagged test, so the gatekeeper counts it covered from this report's **green run result** (the install/build/boot/migrate command it asserts necessarily ran in reaching `phase-reached: complete`).
 
 ```
 # Test Report
