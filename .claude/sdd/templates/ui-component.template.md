@@ -1,5 +1,5 @@
 <!--
-  TEMPLATE — shared UI component (COMP-*, kind: gui). Copy to .sdd/specs/<MOD>/ui-components/COMP-<lowerCamel>.spec.md (<MOD> = owning module; MOD-shared if composed across ≥2 modules — Rule A).
+  TEMPLATE — shared UI component (COMP-*, kind: gui). Copy to .sdd/specs/<MOD>/ui-components/COMP-<lowerCamel>.spec.md (<MOD> = MOD-shared for a domain-agnostic primitive / design-system kit; the owning module for a domain component — by nature, conventions §13).
   Authority: conventions §2/§3/§5 + ui-schema §6 (EXTRA sections a COMP-* adds) + §7 (layers) + scot.md (non-trivial handler only).
   Discover before create: read MOD-shared.index.md first; higher layer composes lower layers BY ID, never re-described.
   No framework code, no CSS/colors/pixels — design-token names only. Markdown = source of truth; reuse over repetition (DRY).
@@ -9,7 +9,7 @@
 id: COMP-<lowerCamel>         # required — matches filename + a <MOD>.index.md row
 name: <HumanName>            # required
 kind: gui                    # required — always gui for a UI component
-module: MOD-<kebab>          # required — e.g. MOD-ui
+module: MOD-<kebab>          # required — MOD-shared for a generic primitive; a feature module for a domain component (§13)
 layer: <atom|molecule|organism|layout>   # required (ui-schema §7)
 depends_on: [<COMP-id>]      # LOWER-layer components composed; [] if none
 requirements: [REQ-<nnn>]    # back-link
@@ -66,9 +66,9 @@ Slots: `<slotName>` — <what goes in it>.   <!-- or: none (leaf) -->
 ## Filled example — `COMP-button` (atom)
 
 ```yaml
-id: COMP-button · name: Button · kind: gui · module: MOD-ui · layer: atom
+id: COMP-button · name: Button · kind: gui · module: MOD-shared · layer: atom
 depends_on: [COMP-spinner] · requirements: [REQ-014]
-source: [src/ui/components/Button.tsx] · variants: [primary, secondary, ghost, danger]
+source: [src/ui/atoms/Button.tsx] · variants: [primary, secondary, ghost, danger]
 ```
 
 **Purpose** — Library's canonical clickable control; every actionable button is this atom with a different `variant`, so styling + a11y stay in one place.

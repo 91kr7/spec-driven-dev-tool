@@ -67,7 +67,7 @@ NON-GOALS — never:
      - An infra module carries **one untagged boot-smoke AC** (test-covered), not a tautological "manifest = target.md" AC.
 6. **Consistency**
    - Every `depends_on`/`CALL <id>`/component reference resolves.
-   - **index↔spec mapping is exact** — every index row's `spec` path resolves to an existing file (Glob/Read it) AND every in-scope `.spec.md` has exactly one index row. A `spec` path pointing at no file (e.g. a stale path left by a Rule-A re-home), or an orphan spec / dangling row ⇒ REJECT (route `reuse-analyst` if a re-home, else `spec-writer`).
+   - **index↔spec mapping is exact** — every index row's `spec` path resolves to an existing file (Glob/Read it) AND every in-scope `.spec.md` has exactly one index row. A `spec` path pointing at no file (e.g. a stale path left by a re-home), or an orphan spec / dangling row ⇒ REJECT (route `reuse-analyst` if a re-home, else `spec-writer`).
    - Index `source` column matches the spec's `source:`.
    - ids stable.
 7. **Source mapping**
@@ -82,7 +82,7 @@ NON-GOALS — never:
    - For **each** `SHR-*`/`COMP-*`, **build its consumer set**: scan every spec, list those naming it in `depends_on`; confirm its `requirements` is a **non-empty subset** of those consumers' union AND **every listed id is carried by ≥1 consumer** in the set you built (not the spec's prose) — a fine-grained atom legitimately lists fewer than the full union.
    - An **empty consumer set — or empty `requirements:` — ⇒ orphan ⇒ REJECT** (a baseline `COMP-*` materialized but composed by no screen is still an orphan); a listed `REQ-*` **no consumer carries ⇒ excess ⇒ REJECT**.
    - **Emit the consumer set** in your reasons — compactly (`consumers(X)={…}, requirements={…}`), not as prose (§6).
-   - **Placement (Rule A, §13):** a node whose consumer set spans ≥2 modules must be homed in `MOD-shared` (`module: MOD-shared`); one whose consumers are all in a single module must live in *that* module — a misplacement ⇒ REJECT route `reuse-analyst`.
+   - **Placement — by nature (§13):** every `MOD-shared` member is a **domain-agnostic primitive** — it depends only on `MOD-build`/other primitives (a sink) and encodes no domain concept; a `MOD-shared` member that depends on a feature module or names a domain concept ⇒ REJECT route `reuse-analyst`/`spec-writer`. A **domain** `SHR-*`/`COMP-*` lives in its own module and is reused cross-module by a `depends_on` edge — a domain capability relocated into the library ⇒ REJECT.
 10. **Unjustified duplication** — duplication above threshold with no justification in `REUSE-REPORT.md` is blocking → routes `reuse-analyst`.
 11. Decide; append one verdict.
 
@@ -100,7 +100,7 @@ NON-GOALS — never:
 - a feature-calling screen with no `(journey)` AC;
 - `MOD-build` missing or (GUI) missing e2e config;
 - `MOD-schema` missing / schema not entity-derived / no forward script for a DB with persisted entities;
-- a shared node misplaced vs Rule A (a cross-module `SHR-*`/`COMP-*` not homed in `MOD-shared`, or an intra-module one wrongly hoisted there).
+- a shared node misplaced vs nature (§13): a domain node relocated into `MOD-shared`, or a `MOD-shared` member that depends on a feature module / encodes domain.
 
 ## Hand-off
 - Write exactly one verdict file `.sdd/verdicts/<scope>/analysis.md` (§6 format + economy; OVERWRITE), `phase: analysis`, each reason a terse line citing the exact spec/`ACn`/`Bn`/requirement/index.

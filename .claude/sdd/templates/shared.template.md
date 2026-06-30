@@ -1,5 +1,5 @@
 <!--
-  TEMPLATE — shared NON-UI abstraction (SHR-*). Copy to .sdd/specs/<MOD>/shared/SHR-<lowerCamel>.spec.md (<MOD> = owning module; MOD-shared when used across ≥2 modules — Rule A).
+  TEMPLATE — shared NON-UI abstraction (SHR-*). Copy to .sdd/specs/<MOD>/shared/SHR-<lowerCamel>.spec.md (<MOD> = MOD-shared for a domain-agnostic primitive util/type; the owning module for domain logic — by nature, conventions §13).
   Authority: conventions §2/§3/§5 + scot.md (ONLY when kind: service). Discover before create; reuse SHR-*/ENT- by id.
   Markdown is source of truth; reuse over repetition (DRY). Delete the "## Filled example".
 
@@ -14,7 +14,7 @@
 id: SHR-<lowerCamel>          # required — matches filename
 name: <AbstractionName>      # required
 kind: <interface|service|dto|enum|type|config>   # drives the FORM
-module: MOD-<kebab>          # required
+module: MOD-<kebab>          # required — MOD-shared for a generic primitive util/type; the owning module for domain logic (§13)
 depends_on: [<SHR-*|ENT-* ids, deps first>]
 requirements: [REQ-<nnn>]    # back-link
 source: [<src/shared/… from target.md>]
@@ -62,8 +62,8 @@ END
 ## Filled example — `SHR-passwordHasher` (kind: interface)
 
 ```yaml
-id: SHR-passwordHasher · name: PasswordHasher · kind: interface · module: MOD-auth
-depends_on: [] · requirements: [REQ-002] · source: [src/auth/PasswordHasher.ts]
+id: SHR-passwordHasher · name: PasswordHasher · kind: interface · module: MOD-shared
+depends_on: [] · requirements: [REQ-002] · source: [src/shared/PasswordHasher.ts]
 ```
 
 **Purpose** — Shared contract for one-way password hashing/verification across auth flows, so no caller re-implements hashing. As an `interface` it carries signatures only; the SCoT lives in the implementing class (`CLS-argon2Hasher`); a no-op stub is auto-derived for tests.

@@ -29,7 +29,7 @@
 .sdd/specs/<MOD-id>/<MOD-id>.spec.md    # each module's own spec, at the root of its folder (incl. MOD-build, and MOD-schema for a DB project)
 .sdd/specs/<MOD-id>/<MOD-id>.index.md   # per-module roster: every entity in this module, ALL levels (lazy — once it has ≥1 member)
 .sdd/specs/<MOD-id>/<level>/<id>.spec.md  # members; <level> ∈ {features,classes,model,ui-components,shared}; each subfolder created lazily
-.sdd/specs/MOD-shared/{shared,ui-components}/<id>.spec.md  # cross-cutting home: SHR-*/COMP-* whose consumers span ≥2 modules (Rule A); MOD-shared is a dependency SINK (depends_on MOD-build only)
+.sdd/specs/MOD-shared/{shared,ui-components}/<id>.spec.md  # the LIBRARY: domain-agnostic primitives ONLY — generic COMP-* (design-system kit) + SHR-* (utils/types); a dependency SINK (depends_on MOD-build only). Admission by NATURE, not consumer count (§13)
 .sdd/specs/REUSE-REPORT.md        # reuse-analyst output: promotions + Demote-for-re-gate list
 .sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md  # concretization notes — EXACT mirror of .sdd/specs/ (same relative path, .spec.md → .impl-notes.md; a module's OWN note sits at <MOD-id>/<MOD-id>.impl-notes.md); NO index files; NOT the gated spec; the test-writer never reads this tree
 .sdd/verdicts/<scope>/                  # per-scope folder (scope = slice_id | PLAN | PROJECT) — the ONLY new structure; holds that scope's verdicts + run report:
@@ -47,7 +47,7 @@ tests/                       # GENERATED test files (unit←classes, integration
 - Level subfolders and the per-module `<MOD>.index.md` are created **lazily** (only when populated).
 - The single global `modules.index.md` is the architectural skeleton.
 - A single-module project still uses `specs/<MOD>/…` (no flattening).
-- **Cross-cutting placement (Rule A / LCA):** an `SHR-*`/`COMP-*` whose consumers all live in **one** module stays in that module's `shared/`/`ui-components/`; one whose consumers span **≥2** modules goes to **`MOD-shared`** (§13).
+- **Library placement — by nature, not count (§13):** a domain-agnostic **primitive** (generic `COMP-*`/`SHR-*`) is homed in **`MOD-shared`** from its **first** use, whatever its consumer count. A **domain** node (names/encodes a domain concept, or depends on a feature module) is **never** homed there: it stays in its module, reused across modules by a `depends_on` **edge** (§13).
 
 ---
 
@@ -79,9 +79,10 @@ tests/                       # GENERATED test files (unit←classes, integration
   - Its `depends_on` reaches the persistence module + the `ENT-*` it evolves, so it is ordered **after** the entities.
   - Unlike `MOD-build`, it is **not requirement-exempt**: its `requirements` = the union of the `REQ-*` of the `ENT-*` whose schema it materializes (the DB exists for those persistence requirements).
   - A non-DB project has no `MOD-schema`.
-- **`MOD-shared` is the cross-cutting home** — the single module owning every `SHR-*`/`COMP-*` whose consumers span **≥2** modules (Rule A / LCA; an abstraction whose consumers all live in one module stays in *that* module — §13).
-  - It is a dependency **SINK**: declares `depends_on: [MOD-build]` and **never** depends on a feature module (a gate REJECTs an upward edge).
-  - Created only when ≥1 cross-module shared abstraction exists — the plan-architect provisions it when foreseen, else the reuse-analyst creates it on the first cross-module promotion (so it is never empty); its `requirements` = the union of its members' `REQ-*`.
+- **`MOD-shared` is the LIBRARY** — the single module owning every **domain-agnostic primitive**: the generic `COMP-*` design-system kit (Button, Panel, Form, Header, Footer, …) + generic `SHR-*` utils/types (Money, formatDate, Result, validators, …). **Admission is by nature, not count** (§13): a primitive is homed here from its **first** use — one consumer, even within one module, is enough. This builds the design-system **deliberately** instead of letting it emerge by accident from duplication.
+  - A dependency **SINK**: `depends_on: [MOD-build]`, **never** a feature module (a gate REJECTs an upward edge) — the mechanical half of the test: a node needing a domain dependency is not a primitive.
+  - It admits **only** primitives. A node that **names or encodes a domain concept** (even with agnostic deps) belongs in its domain module, not here (§13).
+  - Declared as the library home as soon as any primitive is foreseen; its members are **materialized at first use** (by nature, not count) — each primitive rides in the `depends_on` closure of the first slice that composes it, so the module is never empty/orphaned. `requirements` = the union of its members' `REQ-*`.
   - Like `MOD-build`/`MOD-schema`, the id `MOD-shared` is reserved.
 
 ---
@@ -168,7 +169,7 @@ Common to both:
 - `spec` / `source` = `—` when no file (`source: []`); `spec` is the full path `.sdd/specs/<MOD>/…`.
 - `source` is **derived** from the spec's `source:` by the authoring agent.
 - `status` is the **canonical** lifecycle home (§5).
-- A `SHR-*`/`COMP-*` is rostered in the `<MOD>.index.md` of the module owning it — its home module, or `MOD-shared` when cross-cutting (§1, §13).
+- A **primitive** `SHR-*`/`COMP-*` is rostered in `MOD-shared.index.md` (the library); a **domain** `SHR-*`/`COMP-*` (reused within a single module) in that module's `<MOD>.index.md` (§1, §13).
 - **Locate a spec by id** with `Glob .sdd/specs/**/<id>.spec.md` (you need not know its module up front; the id prefix gives the level). The matching index row gives its `status`/`depends_on`/`source`.
 - The authoring agent fills **every** column for each row it writes.
 
@@ -332,13 +333,17 @@ MINDSET MUST carry both: **"Markdown is the source of truth (authority); reuse o
 
 Chain **REQUIREMENT → FEATURE → CLASS → SOURCE → TEST** is rebuilt on demand from: indexes + each spec's `requirements:`/`source:` + source-file traceability headers + test coverage ids.
 
-**Shared/library nodes carry a subset of their consumers' requirements.** A `SHR-*`/`COMP-*` invents no `REQ-*`; it lists a **non-empty subset** of the `REQ-*` carried by the specs that `depends_on` it — each id both *consumer-backed* (some consumer carries it) **and** *genuinely realized by this node* (a leaf atom serves only some of its screen's requirements, not all) — so the chain `REQ → FEATURE/CLASS/screen → SHR/COMP` is explicit at every node, never inferred. A promoted abstraction therefore always carries ≥1 `REQ-*`: those of the duplicators it replaced that it actually realizes. Two failure modes a gate REJECTs:
+**Shared/library nodes carry a subset of their consumers' requirements.** A `SHR-*`/`COMP-*` invents no `REQ-*`; it lists a **non-empty subset** of the `REQ-*` carried by the specs that `depends_on` it — each id both *consumer-backed* (some consumer carries it) **and** *genuinely realized by this node* (a leaf atom serves only some of its screen's requirements, not all) — so the chain `REQ → FEATURE/CLASS/screen → SHR/COMP` is explicit at every node, never inferred. A library primitive therefore always carries ≥1 `REQ-*`: those of its consumer(s) it actually realizes — one consumer is enough (admission is by nature, not a duplication count). Two failure modes a gate REJECTs:
 - **empty** `requirements:` (no consumer, or nothing realized) → **orphan**.
 - a listed `REQ-*` that **no consumer carries** → **excess** (gold-plating).
 
 The invariant "every spec carries ≥1 real `REQ-*`" stays universal — only `MOD-build` (whole-app scaffolding) is outside the requirement graph; `MOD-schema` carries the **union** of the `REQ-*` of the `ENT-*` whose schema it materializes (it realizes them all).
 
-**Placement of shared nodes (Rule A / LCA).** A shared node lives in the module owning it: the **single** module if every consumer (the specs that `depends_on` it) lives there, else **`MOD-shared`**, the cross-cutting dependency sink (§1–§2). So the home module = the lowest common ancestor of the consumers. When a *second* module starts consuming an intra-module `SHR-*`/`COMP-*`, the reuse-analyst **re-homes** it to `MOD-shared` (file moves folder, id unchanged — id stability §2). `MOD-shared` itself depends only on `MOD-build`; a gate REJECTs any `MOD-shared → feature-module` edge.
+**Placement of shared nodes — by NATURE, not count.** The signal for "library" is *what a node is*, never how many consume it:
+- A **domain-agnostic primitive** — names/encodes no domain concept (a `Button` knows nothing of "order"; `formatMoney` nothing of "invoice") **and** depends on nothing domain (a pure sink) — lives in **`MOD-shared`** from its **first** use. One consumer is enough; count is irrelevant. This is how the design-system kit (panels, forms, header, footer, generic types/utils) gets built deliberately.
+- A **domain node** — names a domain concept, or depends on a feature/domain module — **never** enters `MOD-shared`. Cross-module reuse of a domain capability is a **dependency edge**: the consumer `depends_on` it **in its home module** (the edge `B → A` is preserved, not dissolved). A domain *concept* several modules genuinely need (e.g. a `User`/`Account` entity) is **extracted into its own named domain module** — a first-class `depends_on` target, never dumped in the library.
+- **`MOD-shared` admits only primitives.** It depends only on `MOD-build`; a gate REJECTs any `MOD-shared → feature-module` edge (mechanical half) **and** any member that encodes domain knowledge (nature half).
+- A generic primitive discovered mis-homed in a feature module is **re-homed** to `MOD-shared` (file moves folder, id unchanged — id stability §2); the trigger is the **nature discovery**, not a second consumer.
 
 Every generated source file carries a header pointing back to its spec:
 ```

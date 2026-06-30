@@ -59,9 +59,10 @@ NON-GOALS:
 
 7. **Reuse flagging** — shared/cross-cutting duplication is flagged for the reuse-analyst, not silently duplicated.
 
-8. **`MOD-shared` sink + Rule A placement**
-   - If `MOD-shared` present, its `depends_on` is **only** `MOD-build` (never a feature module) — any upward `MOD-shared → feature-module` edge ⇒ REJECT.
-   - From the consumer sets you built (step 6): a `SHR-*`/`COMP-*` whose consumers span ≥2 modules must declare `module: MOD-shared`; one whose consumers are all in a single module must be homed in *that* module — a misplacement ⇒ REJECT (route `reuse-analyst`/`plan-architect`).
+8. **`MOD-shared` is the LIBRARY — primitives only (§13)**
+   - If `MOD-shared` present, its `depends_on` is **only** `MOD-build` (never a feature module) — any upward `MOD-shared → feature-module` edge ⇒ REJECT (the mechanical half: a node needing a domain dependency is not a primitive).
+   - Every `MOD-shared` member must be a **domain-agnostic primitive** (a generic widget or util/type). A member that **names or encodes a domain concept** ⇒ REJECT, route `plan-architect`/`reuse-analyst` to home it in its domain module (the nature half).
+   - Conversely a **domain** `SHR-*`/`COMP-*` belongs in its module; cross-module domain reuse is a `depends_on` **edge**, not a `MOD-shared` entry — a domain capability relocated into the library ⇒ REJECT.
 
 9. **Infra modules present & ordered**
    - `MOD-build` always, with **every domain module declaring `depends_on: MOD-build`** so it is the first slice (a GUI project: it also owns the e2e harness).

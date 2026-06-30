@@ -53,8 +53,8 @@ NON-GOALS:
    - domain nouns / persisted state → `ENT-`
    - each use-case / user journey → `FEAT-`
    - a feature's collaborators (repository / service / controller) → behavioral `CLS-`
-   - non-UI logic reused across ≥2 features → `SHR-`
-   - (GUI) each screen → a `gui` `CLS-`; each reusable widget → `COMP-`
+   - domain-agnostic util/type (generic, no domain knowledge) → `SHR-` in the `MOD-shared` library; domain logic reused across features stays in its module, reached by a `depends_on` edge (§13)
+   - (GUI) each screen → a `gui` `CLS-`; each generic widget → a `COMP-` primitive in the `MOD-shared` kit (a domain-named component stays in its module — §13)
    - group entities into `MOD-`
 
    **Two invariants:**
@@ -73,9 +73,10 @@ NON-GOALS:
 4. **Include the infra modules** (§2):
    - always `MOD-build` (scaffolding, `depends_on: []`); make **every domain module declare `depends_on: MOD-build`**, so topological order puts it **first** (all code needs the scaffolding to build).
    - for a DB project, also `MOD-schema`, `depends_on` set to the `ENT-*` (and their persistence module) whose schema it evolves, so the planned graph matches the specs. Its `requirements` = union of those `ENT-*`' `REQ-*` (NOT exempt — the DB exists for those persistence requirements).
-5. **Provision `MOD-shared` when foreseen:**
-   - if the plan already shows a `SHR-*`/`COMP-*` consumed across ≥2 modules, add the `MOD-shared` module — a dependency **SINK** (`depends_on: [MOD-build]`, never a feature module; `requirements` = union of its members') — and home those cross-cutting entities under it (Rule A, §13).
-   - if no cross-module sharing is foreseen, omit it (reuse-analyst creates it later on the first cross-module promotion).
+5. **Declare `MOD-shared` as the LIBRARY home (§13):**
+   - The moment the plan has **any** domain-agnostic primitive — a generic UI widget the screens compose, or a generic util/type — add the `MOD-shared` module: a dependency **SINK** (`depends_on: [MOD-build]`, never a feature module; `requirements` = union of its members'). For a GUI project this is essentially always (the design-system kit). Its primitives are **materialized at first use** (by nature) — each rides in the `depends_on` closure of the first slice that composes it; don't force an empty early slice.
+   - Home **every** primitive there from its **first** use (by nature, not count). A **domain** node — names a domain concept or depends on a feature module — stays in its module, reused across modules by a `depends_on` edge; a domain *concept* several modules need → its own named domain module, never the library (§13).
+   - Omit `MOD-shared` only when the plan has no primitive at all (a small primitive-less CLI); the reuse-analyst adds it later if one emerges.
    - Indexes are per-module by default (a global `modules.index.md` + one `<MOD>.index.md` each) — no per-level global indexes (§4).
 6. **Order into vertical slices** in `depends_on` topological order; the graph MUST be a **DAG**.
    - Break any cycle interface-first (add an `interface` spec, re-point members onto it) and note the break.
@@ -89,7 +90,7 @@ NON-GOALS:
 - Every entity has all fields + NEW/MODIFY.
 - **Every `REQ-*` covered** (existing-SDD: indexes ∪ delta) **and every entity carries ≥1 real `REQ-*`** — requirements rules per step 3/4 (`MOD-build` `—`-exempt; `MOD-schema`=union; shared=consumer-subset; none empty — §13).
 - The ordered `Slice plan` recorded in `.sdd/PLAN.md`; slices topological; cycles broken interface-first.
-- `MOD-shared` provisioned when cross-module sharing is foreseen (a sink — §13).
+- `MOD-shared` declared (a sink) whenever the plan has any domain-agnostic primitive, its members materialized at first use; domain reuse expressed as `depends_on` edges, not library entries (§13).
 - Shared candidates flagged.
 - `MOD-build` present (and `MOD-schema` for a DB project).
 - `.sdd/target.md` complete (or `<…>` placeholders left for the gate).

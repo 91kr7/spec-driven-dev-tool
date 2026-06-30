@@ -43,7 +43,7 @@ NON-GOALS — never:
 ## Procedure
 1. **Order** entities in `depends_on` topological order. On a cycle, author the `interface` spec first.
 2. **Discover before create** — reuse an existing id, don't re-describe.
-   - **GUI project:** materialize a `COMP-*` from ui-schema §9 catalog (via `templates/ui-component.template.md`) into its owning module's `ui-components/` (or `MOD-shared/ui-components/` when its screens span ≥2 modules — §1, Rule A) + index **only when a screen composes it**. Create what's used, not the whole catalog (an unused `COMP-*` is an orphan). Then specify the composing screens by id.
+   - **GUI project:** materialize a generic `COMP-*` primitive from ui-schema §9 catalog (via `templates/ui-component.template.md`) into **`MOD-shared/ui-components/`** (the design-system kit — these are domain-agnostic, §1, §13) + index **the first time a screen composes it** (count-irrelevant). A **domain component** (names a domain concept) goes in its own module's `ui-components/`. Create what's used, not the whole catalog (an unused `COMP-*` is an orphan). Then specify the composing screens by id.
 3. **Copy the template** for the kind into the correct folder: `.sdd/specs/<module>/<level>/<id>.spec.md` (`module:` = folder, id prefix = level; a `MOD-` spec sits at its folder root). Create the level subfolder lazily.
 4. **Front-matter** (§3): `id` · `name` · `kind` · `module` · `depends_on` · `requirements` · `source:` · `error_style:` for behavioral · `layer:`/`variants:` for `COMP-*` · `owns_sections:` for co-owned files. `source:` → propose from `target.md` for NEW; real files for EXISTING; `[]` for a purely-compositional feature.
 5. **Body by kind:**
@@ -61,7 +61,7 @@ NON-GOALS — never:
    - **GUI screen that calls a feature:** tag each user-journey AC `(journey)` (ui-schema §5), declare ≥1; these drive Playwright e2e. Untagged view ACs drive component tests.
    - **Infra modules (`MOD-build`/`MOD-schema`) — AC altitudes (conventions §3):** tag `(pipeline)` every AC whose outcome **is** a canonical `target.md §3` command succeeding (build exit 0, frontend build exit 0, migration applies) — verified by the run, get **no** authored test, so do **not** write a tautological "manifest matches target.md" AC. Keep **one genuine boot smoke AC untagged** (test-covered) — e.g. app context loads / API boots — the independent check catching runtime-wiring gaps. `(pipeline)` is illegal on any non-infra spec.
 8. **Self-sufficiency** — each spec regenerates its code with no `src/` access: Purpose, the kind's interface, invariants/rules, body form, ACs.
-9. **Indexes** (§4) — refresh global `modules.index.md` (one row per module) and, in each module's `<MOD>.index.md`, one fully-populated row per owned member (incl. its `SHR-*`/`COMP-*`; cross-cutting ones rostered in `MOD-shared.index.md`). Create a `<MOD>.index.md` the first time its module gains a member.
+9. **Indexes** (§4) — refresh global `modules.index.md` (one row per module) and, in each module's `<MOD>.index.md`, one fully-populated row per owned member (incl. its domain `SHR-*`/`COMP-*`; primitives rostered in `MOD-shared.index.md`). Create a `<MOD>.index.md` the first time its module gains a member.
 
 ## Definition of done
 - Every planned entity has a spec (right folder, valid §3 front-matter, required sections per kind) AND a complete index row, `status: draft`.

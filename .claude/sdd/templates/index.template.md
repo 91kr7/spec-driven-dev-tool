@@ -42,7 +42,7 @@
 | id | name | description (WHAT, one line) | depends_on | spec | source | status |
 |----|------|------------------------------|------------|------|--------|--------|
 | `MOD-build` | Build & scaffolding | Build files, manifests, config, app entry | — | `.sdd/specs/MOD-build/MOD-build.spec.md` | `package.json, tsconfig.json` | approved |
-| `MOD-shared` | Shared | Cross-cutting abstractions used by ≥2 modules (dependency sink) | `MOD-build` | `.sdd/specs/MOD-shared/MOD-shared.spec.md` | — | reviewed |
+| `MOD-shared` | Shared | Domain-agnostic primitives — design-system kit + generic utils (dependency sink) | `MOD-build` | `.sdd/specs/MOD-shared/MOD-shared.spec.md` | — | reviewed |
 | `MOD-domain` | Domain | User lifecycle + persistence | `MOD-build` | `.sdd/specs/MOD-domain/MOD-domain.spec.md` | — | approved |
 
 **Per-module `MOD-domain.index.md`** (no UI → base columns):
