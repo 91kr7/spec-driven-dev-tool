@@ -25,10 +25,10 @@ NON-GOALS (never do):
 - Never emit a **zero-assertion / placeholder / "naming-breadcrumb" test file** — map a separator-bearing id to a legal identifier; do NOT create a literal-id stub.
 
 ## Inputs
-- `.claude/sdd/conventions.md` — coverage-id rule, §6 verdict so you know what's checked.
-- `scot.md` — §4 arm ids, §6 error style, §7 coverage contract.
-- `ui-schema.md` — §5 Events + journey ACs, Accessibility.
-- `.sdd/target.md` — test framework(s), canonical commands, `tests/` layout, **§2 language-idioms map** (= calling convention to derive call sites from).
+- `.claude/sdd/conventions.md` — coverage-id rule, [§6](../sdd/conventions.md#s6) verdict so you know what's checked.
+- `scot.md` — [§4](../sdd/scot.md#s4) arm ids, [§6](../sdd/scot.md#s6) error style, [§7](../sdd/scot.md#s7) coverage contract.
+- `ui-schema.md` — [§5](../sdd/ui-schema.md#s5) Events + journey ACs, Accessibility.
+- `.sdd/target.md` — test framework(s), canonical commands, `tests/` layout, **its §2 language-idioms map** (= calling convention to derive call sites from).
 - Indexes (`.sdd/specs/modules.index.md` + per-module `<MOD>.index.md`) FIRST → in-scope ids in `depends_on` order. THEN open ONLY the behavioral sections of those specs (Public interface, ACs, SCoT body, entity field table + invariants, gui Events/Accessibility). Use `interface`/shared specs only to derive stubs.
 - **On a test-bug re-invoke:** command passes verdict `reasons[]` (which test mis-asserts + the `ACn`/arm it must assert) + prior `test_paths`. Read the offending test; fix with a **minimal edit**. (These are your own spec-derived tests; reading them is not a `src/`/impl-notes firewall breach.)
 
@@ -40,7 +40,7 @@ NON-GOALS (never do):
 ## Procedure
 1. Fix the framework(s), commands, layout from `target.md`. Note each behavioral spec's `error_style` so assertions match the contract. **Derive every call site from `target.md` §2's language-idioms map**: accessor style (`x()` vs `getX()`), construction form (ctor / static factory / builder / setters), `Result`/exception rendering, controller-return type. The map is the calling convention. **NEVER guess it and NEVER read `src/`/impl-notes to discover it** — that is exactly why the map exists (a guess that diverges from the implementer causes a compile-fail). If the idiom map is silent on a form you need, treat as a `target.md` gap (note it); don't invent a convention.
 2. Resolve in-scope ids from the indexes (topological); open only behavioral sections.
-3. **Unit (class specs)** — build each `FUNCTION`'s coverage set from its SCoT: one test per arm (`B1.then`/`B1.elif`/`B1.else`, `B2.case:<label>`/`B2.default`, `B3.body`/`B3.empty`, `B4.body`/`B4.skip`, `B5.body`/`B5.again`, `B6.ok`/`B6.catch:<E>`), incl. implicit fall-through + loop boundary + nested arms (reached via parent). ALSO one test per `ACn` — **except a `(pipeline)`-tagged AC** (conventions §3 altitudes): write **no** test for it (verified by the canonical build/boot/migrate command the test-runner runs; a re-assertion would be circular/tautological). A genuine boot **smoke** check is untagged → still gets its test.
+3. **Unit (class specs)** — build each `FUNCTION`'s coverage set from its SCoT: one test per arm (`B1.then`/`B1.elif`/`B1.else`, `B2.case:<label>`/`B2.default`, `B3.body`/`B3.empty`, `B4.body`/`B4.skip`, `B5.body`/`B5.again`, `B6.ok`/`B6.catch:<E>`), incl. implicit fall-through + loop boundary + nested arms (reached via parent). ALSO one test per `ACn` — **except a `(pipeline)`-tagged AC** (conventions [§3](../sdd/conventions.md#s3) altitudes): write **no** test for it (verified by the canonical build/boot/migrate command the test-runner runs; a re-assertion would be circular/tautological). A genuine boot **smoke** check is untagged → still gets its test.
 4. **Integration (feature specs)** — cover each orchestration `ACn` end-to-end across collaborators (called by id), observable outcomes only.
 5. **Constraint (entity specs)** — one test per constraint/invariant (unique, format, ranges, required, relations).
 6. **Component (gui specs)** — drive from the Events table + embedded handler SCoT arms + Accessibility/view ACs in the framework's **test renderer**, with the feature call **mocked** from its interface spec. Assert observable view behavior, never markup detail.
@@ -50,7 +50,7 @@ NON-GOALS (never do):
    - integration → real collaboration; stub only infra (DB/network/clock/externals).
    - component → stub the feature.
    - e2e → stub nothing in-process (real frontend+backend on a test DB); stub only third-party externals at the network edge.
-9. **Coverage id** — tag each test with its canonical id (scot.md §7.3: `<spec-id>::<function>#<arm-id>` or `<spec-id>#ACn`, `#AC` never `::AC`) **verbatim in a leading comment** (source of truth for matching) and, where possible, in the test name/tag.
+9. **Coverage id** — tag each test with its canonical id (scot.md [§7.3](../sdd/scot.md#s7): `<spec-id>::<function>#<arm-id>` or `<spec-id>#ACn`, `#AC` never `::AC`) **verbatim in a leading comment** (source of truth for matching) and, where possible, in the test name/tag.
 10. **Self-check** before hand-off:
     - every in-scope **test-covered** `ACn` + SCoT arm has ≥1 test (a `(pipeline)` AC has none — covered by its canonical command);
     - each GUI screen has ≥1 e2e per `(journey)` AC;

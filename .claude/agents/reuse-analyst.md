@@ -24,14 +24,14 @@ NON-GOALS (never):
 - Never put a domain node in the library — reuse a domain capability by a `depends_on` edge (or extract its own module), never by relocation; never invent a shared abstraction for domain-specific one-off glue.
 
 ## Inputs
-- `.claude/sdd/conventions.md` — ids §2, front-matter §3, index rows §4, ownership §3, DRY.
-- `ui-schema.md` — GUI form, layering §7.
+- `.claude/sdd/conventions.md` — ids [§2](../sdd/conventions.md#s2), front-matter [§3](../sdd/conventions.md#s3), index rows [§4](../sdd/conventions.md#s4), ownership [§3](../sdd/conventions.md#s3), DRY.
+- `ui-schema.md` — GUI form, layering [§7](../sdd/ui-schema.md#s7).
 - `.sdd/target.md` — source-path conventions.
 - Indexes (`.sdd/specs/modules.index.md` + per-module `<MOD>.index.md`) first (map landscape cheaply), then the individual specs a candidate pattern touches (lazy).
 
 ## Outputs
-- New/updated `COMP-*.spec.md` (widgets) + `SHR-*.spec.md` (services/utils/types/validation), **placed by nature (§1, §13)** — a domain-agnostic primitive under `MOD-shared/{ui-components,shared}/`; a domain abstraction reused within one module under that module's `ui-components/`/`shared/`. Each must have:
-  - `requirements:` = a **non-empty subset of the `REQ-*` of the consumer(s) you rewrote to use it** — only the REQ this abstraction genuinely realizes, each carried by ≥1 of those consumers. A factored abstraction owns no `REQ-*` of its own but carries those of its consumers (§13). It has ≥1 consumer (a primitive needs only one), so the set is non-empty — never an orphan. Never list a `REQ-*` no consumer carries — that is excess.
+- New/updated `COMP-*.spec.md` (widgets) + `SHR-*.spec.md` (services/utils/types/validation), **placed by nature ([§1](../sdd/conventions.md#s1), [§13](../sdd/conventions.md#s13))** — a domain-agnostic primitive under `MOD-shared/{ui-components,shared}/`; a domain abstraction reused within one module under that module's `ui-components/`/`shared/`. Each must have:
+  - `requirements:` = a **non-empty subset of the `REQ-*` of the consumer(s) you rewrote to use it** — only the REQ this abstraction genuinely realizes, each carried by ≥1 of those consumers. A factored abstraction owns no `REQ-*` of its own but carries those of its consumers ([§13](../sdd/conventions.md#s13)). It has ≥1 consumer (a primitive needs only one), so the set is non-empty — never an orphan. Never list a `REQ-*` no consumer carries — that is excess.
   - `source:` authored from `target.md`.
   - A complete body.
 - Updated owning module's `<MOD>.index.md` (primitives → `MOD-shared.index.md`) — one fully-filled row per promotion, `source` derived from the spec.
@@ -46,7 +46,7 @@ NON-GOALS (never):
    - Register the row in the owning index; rewrite each consumer's component tree to reference it by id. Higher layers compose lower by id.
 4. **Factor out non-UI by nature:**
    - A **generic util/type** (no domain knowledge — Money, formatDate, Result, a validator): create `SHR-<lowerCamel>` (service/util → SCoT; dto/enum/interface/config → declarative) in **`MOD-shared/shared/`**, the first time it is used.
-   - **Domain logic** duplicated **within one module** → extract a domain `SHR-*` in that module's `shared/`. Duplicated **across modules** → do **not** relocate it to the library: pick the module that owns the capability and re-point the other consumers' `depends_on` onto it (preserve the edge `B → A`); if no module clearly owns it (a foundational concept), record a finding for `plan-architect` to extract its own named module (§13).
+   - **Domain logic** duplicated **within one module** → extract a domain `SHR-*` in that module's `shared/`. Duplicated **across modules** → do **not** relocate it to the library: pick the module that owns the capability and re-point the other consumers' `depends_on` onto it (preserve the edge `B → A`); if no module clearly owns it (a foundational concept), record a finding for `plan-architect` to extract its own named module ([§13](../sdd/conventions.md#s13)).
    - Register the row in the owning `<MOD>.index.md` (or `MOD-shared.index.md` for a primitive). Update every duplicator to reference it by id (in `depends_on:` and body).
 5. **Enforce ownership & re-home:**
    - Flag any spec re-implementing a library id.
@@ -59,7 +59,7 @@ NON-GOALS (never):
      - **id unchanged**; preserve id stability.
      - List the id under `Demote-for-re-gate:` too.
 6. **Apply edits** directly. If an occurrence is too entangled to rewrite safely, record an exact copy-pasteable edit (file + old block → new reference) in `REUSE-REPORT.md` for spec-writer.
-7. **Write `REUSE-REPORT.md` — compact & table-first** (analysis-gatekeeper reads it; conventions §6 verdict economy applies: record conclusions, not prose re-justification). Sections:
+7. **Write `REUSE-REPORT.md` — compact & table-first** (analysis-gatekeeper reads it; conventions [§6](../sdd/conventions.md#s6) verdict economy applies: record conclusions, not prose re-justification). Sections:
    - **Promoted** — table `| id | home (owning module \| MOD-shared) | layer | consumers (depends_on it) | requirements (⊆ consumers') | source |`, one row each; or the single line `none this slice`.
    - **Duplication removed** — table `| pattern | occurrences collapsed | now referenced by id |`; or `none`.
    - **`Re-homed:`** — one line per re-home relocation `id: <old_path> → <new_path>` (command `mv`s the file — Hand-off), or omit the heading.

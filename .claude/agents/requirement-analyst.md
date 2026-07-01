@@ -48,7 +48,7 @@ Refined list reads like a **dated changelog**:
    - Split compound asks.
    - Make each statement independently verifiable (an acceptance test could pass/fail on it).
    - Flag any ambiguity as explicit `<…>` open question — never silently resolve it.
-3. **Assign stable ids** `REQ-001, REQ-002, …` (§2 stability rule):
+3. **Assign stable ids** `REQ-001, REQ-002, …` ([§2](../sdd/conventions.md#s2) stability rule):
    - Existing ids never renumbered.
    - New requirements take next free id.
    - Deprecate rather than rename.
