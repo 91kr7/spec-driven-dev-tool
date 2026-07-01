@@ -32,7 +32,7 @@
 - Indentation = 2 spaces (readability only).
 - `END` is authoritative for block scope.
 
-**Neutral types.** Implementer **and** test-writer both map via `target.md` [§2](#2-lexical-conventions)'s language-idioms map. Same map ⇒ converging call sites, so a spec-derived test compiles against real code without reading `src/`.
+**Neutral types.** Implementer **and** test-writer both map via `target.md` §2's language-idioms map. Same map ⇒ converging call sites, so a spec-derived test compiles against real code without reading `src/`.
 - Primitives: `Int Long Float Decimal Bool String Char Bytes Date DateTime UUID`
 - Generics: `List<T> Set<T> Map<K,V> Option<T> Result<T,E> Void Any`
 - Domain/structural types referenced by id/name (`User` = ENT-user).
