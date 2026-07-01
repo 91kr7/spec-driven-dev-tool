@@ -1,5 +1,5 @@
 <!--
-  TEMPLATE — ENTITY spec (kind: entity, DECLARATIVE — no SCoT, no UI). Authority: conventions §3/§4.
+  TEMPLATE — ENTITY spec (kind: entity, DECLARATIVE — no SCoT, no UI). Authority: conventions [§3](../conventions.md#s3)/[§4](../conventions.md#s4).
   Copy to .sdd/specs/<MOD>/model/<ENT-id>.spec.md. Entity = WHAT data it holds + the rules binding it;
   never HOW it is stored. Both the code entity AND the DB schema change DERIVE from this spec.
   Markdown = source of truth; reuse over repetition (DRY). Delete "## Filled example" before saving.
@@ -25,7 +25,7 @@ owns_sections: []
 - **Errors (validation):** <named failures, each tied to an invariant below>.
 
 # Fields
-<Neutral types (scot.md §2). State each constraint as a declarative fact (required/unique/format/range/default/derived), not a storage directive.>
+<Neutral types (scot.md [§2](../scot.md#s2)). State each constraint as a declarative fact (required/unique/format/range/default/derived), not a storage directive.>
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
@@ -44,7 +44,7 @@ owns_sections: []
 - **INV-<tag>:** <e.g. `total` = sum of line subtotals, never negative.>
 
 # Derivation note
-Single source for two derived artifacts, never hand-authored independently (§1/§2):
+Single source for two derived artifacts, never hand-authored independently (items 1–2 below):
 1. **Code entity** at `<source>` — by `code-implementer`; types map via `target.md`; invariants become construction/mutation validation.
 2. **DB schema change** — owned by **MOD-schema**, derived here (NOT NULL/UNIQUE/CHECK/FK from the tables above). If the entity changes, correct the spec first, then the schema follows.
 

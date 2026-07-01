@@ -1,6 +1,6 @@
 <!--
-  TEMPLATE — shared NON-UI abstraction (SHR-*). Copy to .sdd/specs/<MOD>/shared/SHR-<lowerCamel>.spec.md (<MOD> = MOD-shared for a domain-agnostic primitive util/type; the owning module for domain logic — by nature, conventions §13).
-  Authority: conventions §2/§3/§5 + scot.md (ONLY when kind: service). Discover before create; reuse SHR-*/ENT- by id.
+  TEMPLATE — shared NON-UI abstraction (SHR-*). Copy to .sdd/specs/<MOD>/shared/SHR-<lowerCamel>.spec.md (<MOD> = MOD-shared for a domain-agnostic primitive util/type; the owning module for domain logic — by nature, conventions [§13](../conventions.md#s13)).
+  Authority: conventions [§2](../conventions.md#s2)/[§3](../conventions.md#s3)/[§5](../conventions.md#s5) + scot.md (ONLY when kind: service). Discover before create; reuse SHR-*/ENT- by id.
   Markdown is source of truth; reuse over repetition (DRY). Delete the "## Filled example".
 
   Sections by kind (keep yours, delete the rest):

@@ -1,6 +1,6 @@
 <!--
   TEMPLATE — class/service/controller spec (behavioral, SCoT). Copy to .sdd/specs/<MOD>/classes/CLS-<lowerCamel>.spec.md (<MOD> = module: below).
-  Authority: conventions §3 + scot.md (the ONLY behavioral grammar — branch ids [Bn], arm enumeration, §6 error style).
+  Authority: conventions [§3](../conventions.md#s3) + scot.md (the ONLY behavioral grammar — branch ids [Bn], arm enumeration, [§6](../scot.md#s6) error style).
   First read the module's <MOD>.index.md; reuse existing SHR-*/CLS-* by id.
   Markdown is source of truth; reuse over repetition (DRY). Delete "## Filled example" before saving.
 -->
@@ -20,7 +20,7 @@ error_style: <result|raise>  # behavioral only (scot.md §6) — canonical home 
 <One paragraph: WHAT this class is responsible for and WHY. Responsibility/behavior, never implementation/library/framework.>
 
 # Public interface
-<List every public method; neutral types (scot.md §2); list errors regardless of error_style.>
+<List every public method; neutral types (scot.md [§2](../scot.md#s2)); list errors regardless of error_style.>
 
 | Method | Inputs | Output | Errors |
 |--------|--------|--------|--------|
@@ -47,7 +47,7 @@ END
 ```
 
 # Acceptance criteria
-<Each `ACn` as Given/When/Then; cover the happy path AND every branch arm (≥1 test per ACn and per arm — scot.md §7).>
+<Each `ACn` as Given/When/Then; cover the happy path AND every branch arm (≥1 test per ACn and per arm — scot.md [§7](../scot.md#s7)).>
 - **AC1** — Given <state>, When <call>, Then <observable outcome>.
 - **AC2** — Given <state>, When <branch-triggering call>, Then <expected error/result>.
 

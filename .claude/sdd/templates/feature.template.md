@@ -1,6 +1,6 @@
 <!--
   TEMPLATE — FEATURE / USE-CASE spec (kind: use-case, behavioral orchestration).
-  Copy to .sdd/specs/<MOD>/features/<FEAT-nnn>.spec.md. Authority: conventions §2/§3/§5; body = SCoT (scot.md,
+  Copy to .sdd/specs/<MOD>/features/<FEAT-nnn>.spec.md. Authority: conventions [§2](../conventions.md#s2)/[§3](../conventions.md#s3)/[§5](../conventions.md#s5); body = SCoT (scot.md,
   cross-class CALLs only). Markdown = source of truth. Reuse over repetition: name collaborators
   by id; never re-describe them. Delete "## Filled example" from a real spec.
 -->
