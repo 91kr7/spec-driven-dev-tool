@@ -10,6 +10,7 @@
 
 ---
 
+<a id="s1"></a>
 ## 1. File & folder layout
 
 ```
@@ -51,6 +52,7 @@ tests/                       # GENERATED test files (unit←classes, integration
 
 ---
 
+<a id="s2"></a>
 ## 2. Identifier scheme
 
 | Prefix | Level / kind | Form | Example |
@@ -87,6 +89,7 @@ tests/                       # GENERATED test files (unit←classes, integration
 
 ---
 
+<a id="s3"></a>
 ## 3. Spec front-matter (YAML)
 
 ```yaml
@@ -147,6 +150,7 @@ Every `ACn` is verified at exactly one of three altitudes, **marked** so coverag
 
 ---
 
+<a id="s4"></a>
 ## 4. Index rows — two index types
 
 Indexes are **logical rosters**; agents **read them first**, then open only the specs they need (lazy loading). Exactly two kinds:
@@ -175,6 +179,7 @@ Common to both:
 
 ---
 
+<a id="s5"></a>
 ## 5. Status lifecycle & separation of duties
 
 Per-entity status lives in the **index row**: `draft → reviewed → implemented → approved` — one state per gate.
@@ -199,6 +204,7 @@ A step-9 regression on an `approved` slice follows the same rule — demote the 
 
 ---
 
+<a id="s6"></a>
 ## 6. `.sdd/verdicts/` verdict records
 
 **One file per (scope, phase), OVERWRITTEN each gate.** Each gate writes a single file `.sdd/verdicts/<scope>/<phase>.md` holding only its latest outcome; in the loop the command reads it by **known path** (no scan, no ordinal). A re-gate of the same phase overwrites it (the prior reasons[] were already consumed by the routed author). **On resume** the command reads the slice's ≤3 known-named phase files and takes the one with the latest header timestamp (§7) — still known paths: no directory scan, no counter, no accumulation.
@@ -252,6 +258,7 @@ A step-9 regression on an `approved` slice follows the same rule — demote the 
 
 ---
 
+<a id="s7"></a>
 ## 7. Failure routing
 
 **No iteration budget.** A gate loops `REJECT → fix → re-gate` until PASS. `/sdd-auto` is run **attended**: a gate↔author oscillation does NOT auto-stop — the human watching the run halts it by hand. The only automatic stop is `routing: escalate` (a block no author can fix). Resume needs no counter — the first non-approved slice's **LATEST verdict wins** (max header timestamp among its ≤3 phase files): a **REJECT** → re-invoke the author its `routing:` names, feeding its `reasons[]` (the live fix, wherever that file sits); a **PASS**/none → enter the phase the own-member `status` implies (§5) FRESH, no reasons. The demote (§5) keeps `status` truthful, so "skip approved" and the fresh-phase choice stay right; the latest verdict drives the pending fix.
@@ -266,6 +273,7 @@ A step-9 regression on an `approved` slice follows the same rule — demote the 
 
 ---
 
+<a id="s8"></a>
 ## 8. Change policy — edit by default, regenerate by exception
 
 - **Edit (default)** for bug-fix AND feature evolution: read spec + `impl-notes` + source, apply a **minimal diff** to the mapped file(s). Never rewrite a whole file for a small change.
@@ -276,6 +284,7 @@ A step-9 regression on an `approved` slice follows the same rule — demote the 
 
 ---
 
+<a id="s9"></a>
 ## 9. Agent roster & isolation matrix
 
 Twelve roles; **eleven are subagents** in `.claude/agents/`. The **orchestrator is NOT a subagent** — it is the main session running `sdd-auto`. Subagents are single-purpose: read files in, write files/verdicts out. They never spawn subagents.
@@ -302,6 +311,7 @@ Twelve roles; **eleven are subagents** in `.claude/agents/`. The **orchestrator 
 
 ---
 
+<a id="s10"></a>
 ## 10. Command roster
 
 One command. The main session runs it, driving every loop (invoke agent → read verdict → decide → advance `status`).
@@ -312,6 +322,7 @@ One command. The main session runs it, driving every loop (invoke agent → read
 
 ---
 
+<a id="s11"></a>
 ## 11. ROLE header (mandatory in every agent file)
 
 Every `.claude/agents/*.md` body begins with:
@@ -327,6 +338,7 @@ MINDSET MUST carry both: **"Markdown is the source of truth (authority); reuse o
 
 ---
 
+<a id="s12"></a>
 ## 12. Topological processing & vertical slices
 
 - Process entities in **`depends_on` topological order** (dependencies first); the graph MUST be acyclic.
@@ -336,6 +348,7 @@ MINDSET MUST carry both: **"Markdown is the source of truth (authority); reuse o
 
 ---
 
+<a id="s13"></a>
 ## 13. Traceability (reconstructable, not a file)
 
 Chain **REQUIREMENT → FEATURE → CLASS → SOURCE → TEST** is rebuilt on demand from: indexes + each spec's `requirements:`/`source:` + source-file traceability headers + test coverage ids.
@@ -369,6 +382,7 @@ The reader wanting *why* follows the header to the spec; a genuinely non-obvious
 
 ---
 
+<a id="s14"></a>
 ## 14. `.sdd/verdicts/<scope>/_test-report.md` format (test-runner → test-gatekeeper contract)
 
 `test-runner` writes one per scope at `.sdd/verdicts/<scope>/_test-report.md` (`<scope>` = the slice_id, or `PROJECT` for the step-9 sweep; overwritten each run); `test-gatekeeper` parses it. Fixed structure (no heuristics). **Coverage** (every test-covered `ACn`/arm has a test) is verified by the gatekeeper from the tagged test files; this report supplies the **run result**. A **`(pipeline)`** AC (§3 altitudes) is the exception: it carries no tagged test, so the gatekeeper counts it covered from this report's **green run result** (the install/build/boot/migrate command it asserts necessarily ran in reaching `phase-reached: complete`).

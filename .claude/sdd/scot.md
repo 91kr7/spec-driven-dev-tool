@@ -5,6 +5,7 @@
 > loop, explicit I/O, invariants) — never library choices, API signatures, or syntax
 > (those live in code + `.sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md`).
 
+<a id="s1"></a>
 ## 1. Scope & purpose
 
 - Used by `kind:` **behavioral** specs: `service`, `controller`, `use-case`.
@@ -18,6 +19,7 @@
 
 ---
 
+<a id="s2"></a>
 ## 2. Lexical conventions
 
 | Element | Notation |
@@ -39,6 +41,7 @@
 
 ---
 
+<a id="s3"></a>
 ## 3. Function header
 
 ```
@@ -57,6 +60,7 @@ END
 
 ---
 
+<a id="s4"></a>
 ## 4. Control constructs
 
 **Every branching construct carries a branch id `[Bn]`.** Plain sequence does not.
@@ -97,6 +101,7 @@ END
 
 ---
 
+<a id="s5"></a>
 ## 5. Statements
 
 | Statement | Meaning |
@@ -113,6 +118,7 @@ END
 
 ---
 
+<a id="s6"></a>
 ## 6. Error style — one per spec
 
 Declared in front-matter `error_style:` (conventions §3, the canonical home):
@@ -124,6 +130,7 @@ Declared in front-matter `error_style:` (conventions §3, the canonical home):
 
 ---
 
+<a id="s7"></a>
 ## 7. Branch-id rules (coverage contract)
 
 1. Branch ids are **unique within a `FUNCTION`**, assigned top-to-bottom, **stable** across re-writes (new branches take the next free number).
@@ -137,6 +144,7 @@ Declared in front-matter `error_style:` (conventions §3, the canonical home):
 
 ---
 
+<a id="s8"></a>
 ## 8. Worked example — `CLS-regCtrl.register`, `error_style: result`
 
 ```
@@ -164,6 +172,7 @@ Coverage set: `B1.then`, `B1.else`, `B2.then`, `B2.else` + the spec's `ACn`.
 
 ---
 
+<a id="s9"></a>
 ## 9. SCoT must NOT contain
 - Concrete library/framework names (`Spring`, `Express`, `axios`…).
 - Language syntax (`@Annotations`, `public static`, decorators).

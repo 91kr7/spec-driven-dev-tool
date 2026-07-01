@@ -15,6 +15,7 @@
 
 ---
 
+<a id="s1"></a>
 ## 1. The five sections of a GUI spec (in order)
 1. **Wireframe** — ASCII sketch of layout.
 2. **Component tree** — composition referencing library components by id.
@@ -26,6 +27,7 @@
 
 ---
 
+<a id="s2"></a>
 ## 2. Wireframe notation
 - Box-drawing for structure (not pixels).
 - Bind dynamic text with `{stateVar}`.
@@ -34,6 +36,7 @@
 
 ---
 
+<a id="s3"></a>
 ## 3. Component tree (composition by id)
 - Indented tree.
 - Each node = a **library component referenced by id** (with its props) or a layout slot.
@@ -54,6 +57,7 @@ COMP-appShell
 
 ---
 
+<a id="s4"></a>
 ## 4. State table
 - Local view state only.
 - Cross-screen/shared state: name it here, but **owned** by a service/shared spec and referenced by id.
@@ -66,6 +70,7 @@ COMP-appShell
 
 ---
 
+<a id="s5"></a>
 ## 5. Events table + journey ACs
 
 | Event | Trigger | Handler | Effect |
@@ -117,6 +122,7 @@ A purely-compositional feature (`source: []`) has no callable code → screen ca
 
 ---
 
+<a id="s6"></a>
 ## 6. Extra sections for `COMP-*`
 
 - **Props** — table (prop, type, required, default, description).
@@ -128,6 +134,7 @@ A purely-compositional feature (`source: []`) has no callable code → screen ca
 
 ---
 
+<a id="s7"></a>
 ## 7. Atomic-design layering
 Every component declares `layer:`; higher layers compose lower layers **by id** (a molecule never re-describes its atoms).
 - **atom** — Button, TextInput, Icon, Badge, Spinner, Checkbox…
@@ -137,6 +144,7 @@ Every component declares `layer:`; higher layers compose lower layers **by id** 
 
 ---
 
+<a id="s8"></a>
 ## 8. A GUI spec must NOT contain
 - Framework code (JSX, templates, `useState`, signals…).
 - CSS/colors/pixels — only design-token **names** (`gap: "md"`), resolved from `target.md`.
@@ -145,6 +153,7 @@ Every component declares `layer:`; higher layers compose lower layers **by id** 
 
 ---
 
+<a id="s9"></a>
 ## 9. Reusable component catalog (compose, don't hand-roll)
 - A GUI project composes screens from reusable components instead of hand-rolling duplicated markup — but creates **only the components a screen actually composes**.
 - The table below = a **catalog of common candidates** (canonical ids/layers to reuse when needed), **NOT a mandatory set**. Reach for a frame component (`appShell`/`header`/`footer`/…) only when the app's views share that structure — a single-screen app may need none.
