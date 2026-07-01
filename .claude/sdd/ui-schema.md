@@ -5,7 +5,7 @@
 > Svelte/…); concrete framework chosen at implementation time from `target.md`.
 
 **Two kinds of `gui` spec:**
-- **Shared component** (`.sdd/specs/<MOD>/ui-components/COMP-*.spec.md`) — a reusable atom/molecule/organism/layout. Placement is by **nature, not consumer count** (conventions §13): a **generic primitive** (Button, Panel, Form, Header, Footer — agnostic to the domain) lives in **`MOD-shared`** (the design-system kit); a **domain component** (one that names a domain concept, e.g. a `UserCard`) lives in its own module's `ui-components/` and composes the generic kit by id. Specify **once**; reference everywhere by id.
+- **Shared component** (`.sdd/specs/<MOD>/ui-components/COMP-*.spec.md`) — a reusable atom/molecule/organism/layout. Placement is by **nature, not consumer count** (conventions [§13](conventions.md#s13)): a **generic primitive** (Button, Panel, Form, Header, Footer — agnostic to the domain) lives in **`MOD-shared`** (the design-system kit); a **domain component** (one that names a domain concept, e.g. a `UserCard`) lives in its own module's `ui-components/` and composes the generic kit by id. Specify **once**; reference everywhere by id.
 - **Screen** (`.sdd/specs/<MOD>/classes/CLS-*.spec.md`, `kind: gui`) — composes library components **by id**; specifies layout + screen-specific behavior only. Never re-describes an already-indexed widget.
 
 **Discover before create:**
@@ -23,7 +23,7 @@
 4. **Events** — table: events → handlers → effects.
 5. **Acceptance criteria** — Given/When/Then, each with a stable `ACn` id.
 
-`COMP-*` specs add **Props · Variants · Visual states · Events · Slots/children · Accessibility** (§6).
+`COMP-*` specs add **Props · Variants · Visual states · Events · Slots/children · Accessibility** ([§6](#s6)).
 
 ---
 
@@ -32,7 +32,7 @@
 - Box-drawing for structure (not pixels).
 - Bind dynamic text with `{stateVar}`.
 - Mark interactive elements: `[ ]` button, `(•)`/`( )` radio, `[x]`/`[ ]` checkbox, `▼` dropdown, `___` text field.
-- Wireframe is **indicative**; authoritative composition = component tree (§3).
+- Wireframe is **indicative**; authoritative composition = component tree ([§3](#s3)).
 
 ---
 
@@ -53,7 +53,7 @@ COMP-appShell
 │        └─ COMP-button props: { variant: "primary", label: "Register", onClick: submit, loading: {submitting} }
 └─ COMP-footer   props: { version: {appVersion} }
 ```
-`{name}` = binding to a state var (§4); `onClick: submit` = a handler in Events table (§5).
+`{name}` = binding to a state var ([§4](#s4)); `onClick: submit` = a handler in Events table ([§5](#s5)).
 
 ---
 
@@ -157,10 +157,10 @@ Every component declares `layer:`; higher layers compose lower layers **by id** 
 ## 9. Reusable component catalog (compose, don't hand-roll)
 - A GUI project composes screens from reusable components instead of hand-rolling duplicated markup — but creates **only the components a screen actually composes**.
 - The table below = a **catalog of common candidates** (canonical ids/layers to reuse when needed), **NOT a mandatory set**. Reach for a frame component (`appShell`/`header`/`footer`/…) only when the app's views share that structure — a single-screen app may need none.
-- `spec-writer` materializes a catalog component (from `templates/ui-component.template.md`) into **`MOD-shared/ui-components/`** (these frame/kit components are domain-agnostic primitives — §1, conventions §13) + index the **first time a screen composes it**, never up front.
+- `spec-writer` materializes a catalog component (from `templates/ui-component.template.md`) into **`MOD-shared/ui-components/`** (these frame/kit components are domain-agnostic primitives — [§1](#s1), conventions [§13](conventions.md#s13)) + index the **first time a screen composes it**, never up front.
 - `analysis-gatekeeper` blocks:
   - a screen that **inlines/hand-rolls** a component instead of composing one by id, and
-  - any **unused (orphan)** component (each must carry its consumers' `requirements:` — conventions §13).
+  - any **unused (orphan)** component (each must carry its consumers' `requirements:` — conventions [§13](conventions.md#s13)).
 
 | id | layer | Purpose |
 |---|---|---|
@@ -173,4 +173,4 @@ Every component declares `layer:`; higher layers compose lower layers **by id** 
 | `COMP-grid` | layout | 2-D grid helper (columns, gap, areas) |
 | `COMP-section` | layout | titled content section |
 
-**Build the kit by nature, not by count:** beyond this frame catalog, the generic widgets (Button, TextInput, Select, Modal, Table, Toast, …) are materialized in `MOD-shared` the **first** time any screen composes one — because they are domain-agnostic primitives, not because a second screen repeated them. Specified once (layer per §7), referenced by id. A component that **names a domain concept** is not a kit primitive: author it in its own module, composing the generic kit by id.
+**Build the kit by nature, not by count:** beyond this frame catalog, the generic widgets (Button, TextInput, Select, Modal, Table, Toast, …) are materialized in `MOD-shared` the **first** time any screen composes one — because they are domain-agnostic primitives, not because a second screen repeated them. Specified once (layer per [§7](#s7)), referenced by id. A component that **names a domain concept** is not a kit primitive: author it in its own module, composing the generic kit by id.

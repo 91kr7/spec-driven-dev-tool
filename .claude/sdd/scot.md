@@ -34,7 +34,7 @@
 - Indentation = 2 spaces (readability only).
 - `END` is authoritative for block scope.
 
-**Neutral types.** Implementer **and** test-writer both map via `target.md` §2's language-idioms map. Same map ⇒ converging call sites, so a spec-derived test compiles against real code without reading `src/`.
+**Neutral types.** Implementer **and** test-writer both map via `target.md` [§2](#s2)'s language-idioms map. Same map ⇒ converging call sites, so a spec-derived test compiles against real code without reading `src/`.
 - Primitives: `Int Long Float Decimal Bool String Char Bytes Date DateTime UUID`
 - Generics: `List<T> Set<T> Map<K,V> Option<T> Result<T,E> Void Any`
 - Domain/structural types referenced by id/name (`User` = ENT-user).
@@ -56,7 +56,7 @@ END
 ```
 - `ASYNC FUNCTION` + `AWAIT` at call sites.
 - `PURE FUNCTION` marks side-effect-free.
-- Error style **declared in front-matter** `error_style: result|raise` (§6); body MAY restate it for readability.
+- Error style **declared in front-matter** `error_style: result|raise` ([§6](#s6)); body MAY restate it for readability.
 
 ---
 
@@ -121,7 +121,7 @@ END
 <a id="s6"></a>
 ## 6. Error style — one per spec
 
-Declared in front-matter `error_style:` (conventions §3, the canonical home):
+Declared in front-matter `error_style:` (conventions [§3](conventions.md#s3), the canonical home):
 - **`result`** — functions return `Result<T,E>` (`Ok`/`Err`).
 - **`raise`** — functions `RAISE`; callers `TRY/CATCH`.
 
@@ -134,8 +134,8 @@ Declared in front-matter `error_style:` (conventions §3, the canonical home):
 ## 7. Branch-id rules (coverage contract)
 
 1. Branch ids are **unique within a `FUNCTION`**, assigned top-to-bottom, **stable** across re-writes (new branches take the next free number).
-2. A branch's **arms** (§4) are its **coverage set**.
-3. **§7.3 — canonical coverage id** (used everywhere, no other spelling):
+2. A branch's **arms** ([§4](#s4)) are its **coverage set**.
+3. **[§7.3](#s7) — canonical coverage id** (used everywhere, no other spelling):
    - branch arm → `<spec-id>::<function>#<arm-id>` (e.g. `CLS-regCtrl::register#B1.else`)
    - acceptance criterion → `<spec-id>#ACn` (e.g. `CLS-regCtrl#AC2`)
    - test-writer tags each test with it; test-runner echoes it **verbatim**; test-gatekeeper joins on it.

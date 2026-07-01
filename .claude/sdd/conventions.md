@@ -48,7 +48,7 @@ tests/                       # GENERATED test files (unit←classes, integration
 - Level subfolders and the per-module `<MOD>.index.md` are created **lazily** (only when populated).
 - The single global `modules.index.md` is the architectural skeleton.
 - A single-module project still uses `specs/<MOD>/…` (no flattening).
-- **Library placement — by nature, not count (§13):** a domain-agnostic **primitive** (generic `COMP-*`/`SHR-*`) is homed in **`MOD-shared`** from its **first** use, whatever its consumer count. A **domain** node (names/encodes a domain concept, or depends on a feature module) is **never** homed there: it stays in its module, reused across modules by a `depends_on` **edge** (§13).
+- **Library placement — by nature, not count ([§13](#s13)):** a domain-agnostic **primitive** (generic `COMP-*`/`SHR-*`) is homed in **`MOD-shared`** from its **first** use, whatever its consumer count. A **domain** node (names/encodes a domain concept, or depends on a feature module) is **never** homed there: it stays in its module, reused across modules by a `depends_on` **edge** ([§13](#s13)).
 
 ---
 
@@ -81,9 +81,9 @@ tests/                       # GENERATED test files (unit←classes, integration
   - Its `depends_on` reaches the persistence module + the `ENT-*` it evolves, so it is ordered **after** the entities.
   - Unlike `MOD-build`, it is **not requirement-exempt**: its `requirements` = the union of the `REQ-*` of the `ENT-*` whose schema it materializes (the DB exists for those persistence requirements).
   - A non-DB project has no `MOD-schema`.
-- **`MOD-shared` is the LIBRARY** — the single module owning every **domain-agnostic primitive**: the generic `COMP-*` design-system kit (Button, Panel, Form, Header, Footer, …) + generic `SHR-*` utils/types (Money, formatDate, Result, validators, …). **Admission is by nature, not count** (§13): a primitive is homed here from its **first** use — one consumer, even within one module, is enough. This builds the design-system **deliberately** instead of letting it emerge by accident from duplication.
+- **`MOD-shared` is the LIBRARY** — the single module owning every **domain-agnostic primitive**: the generic `COMP-*` design-system kit (Button, Panel, Form, Header, Footer, …) + generic `SHR-*` utils/types (Money, formatDate, Result, validators, …). **Admission is by nature, not count** ([§13](#s13)): a primitive is homed here from its **first** use — one consumer, even within one module, is enough. This builds the design-system **deliberately** instead of letting it emerge by accident from duplication.
   - A dependency **SINK**: `depends_on: [MOD-build]`, **never** a feature module (a gate REJECTs an upward edge) — the mechanical half of the test: a node needing a domain dependency is not a primitive.
-  - It admits **only** primitives. A node that **names or encodes a domain concept** (even with agnostic deps) belongs in its domain module, not here (§13).
+  - It admits **only** primitives. A node that **names or encodes a domain concept** (even with agnostic deps) belongs in its domain module, not here ([§13](#s13)).
   - Declared as the library home as soon as any primitive is foreseen; its members are **materialized at first use** (by nature, not count) — each primitive rides in the `depends_on` closure of the first slice that composes it, so the module is never empty/orphaned. `requirements` = the union of its members' `REQ-*`.
   - Like `MOD-build`/`MOD-schema`, the id `MOD-shared` is reserved.
 
@@ -108,7 +108,7 @@ error_style: result             # behavioral specs only: result|raise (canonical
 ---
 ```
 
-- **`status` is NOT a front-matter field — it lives ONLY in the index row** (§5, the canonical home): `draft → reviewed → implemented → approved`, advanced by the orchestrator. Read an entity's state from its index row, never from the spec.
+- **`status` is NOT a front-matter field — it lives ONLY in the index row** ([§5](#s5), the canonical home): `draft → reviewed → implemented → approved`, advanced by the orchestrator. Read an entity's state from its index row, never from the spec.
 - `source:` is the **single authoritative** spec→source map. The index `source` column is **derived** from it by the authoring agent — never hand-edited later. Paths: NEW entity → propose from `target.md`; EXISTING → real files; `[]` for a purely-compositional feature.
 - `requirements:` = back-link to the `REQ-*` id(s) the spec realizes — **real ids or, ONLY for `MOD-build`, `—`; never a prose annotation**. Every other spec needs ≥1 real `REQ-*`.
   - `MOD-build` is the **sole** exemption: scaffolding for the *whole* app, tied to no single requirement (test: removing any one `REQ-*` never removes it).
@@ -130,20 +130,20 @@ error_style: result             # behavioral specs only: result|raise (canonical
 | `module` | structural | overview — Purpose · Contained entries · Boundaries |
 | `gui` | ui | **UI schematic** (`ui-schema.md`) |
 
-**GUI-project trigger:** `target.md` Frontend ≠ `none` (equivalently: any `gui`-kind entry exists). Only a GUI project creates `COMP-*` — from the ui-schema §9 catalog, and only those its screens actually compose (the catalog is candidates, not a required set).
+**GUI-project trigger:** `target.md` Frontend ≠ `none` (equivalently: any `gui`-kind entry exists). Only a GUI project creates `COMP-*` — from the ui-schema [§9](ui-schema.md#s9) catalog, and only those its screens actually compose (the catalog is candidates, not a required set).
 
 A **stub/mock is never specced** — auto-derived from its `interface` spec.
 
 ### Required sections (per kind)
 - Default: `# Purpose` · `# Public interface` (inputs/outputs/errors) · `# Invariants & rules` · the **body form** · `# Acceptance criteria` (each `ACn` Given/When/Then).
 - `module`: `# Purpose` · `# Contained entries` · `# Boundaries & dependencies` (no Public-interface/Invariants).
-- `COMP-*` (`kind: gui`): replaces Public-interface + Invariants with the ui-schema §6 sections (Props · Variants · Visual states · Events · Slots/children · Accessibility).
+- `COMP-*` (`kind: gui`): replaces Public-interface + Invariants with the ui-schema [§6](ui-schema.md#s6) sections (Props · Variants · Visual states · Events · Slots/children · Accessibility).
 
 ### Acceptance-criterion altitudes (what verifies each AC)
 Every `ACn` is verified at exactly one of three altitudes, **marked** so coverage is mechanical:
-- **test-covered** (default, untagged) — an authored test asserts it (unit / integration / component). The `test-writer` writes ≥1 mapped test (scot.md §7.3 id); the `test-gatekeeper` REJECTs if any is uncovered.
-- **`(journey)`** — a screen outcome crossing the running stack; verified **end-to-end by a Playwright test** (ui-schema §5).
-- **`(pipeline)`** — the outcome **is** the success of a canonical `target.md §3` command (install / build / run-boot / migrate); verified by that command reaching green in `.sdd/verdicts/<scope>/_test-report.md`, **not** by an authored test (a test re-asserting "the build passes" is circular; one re-asserting a manifest value against the spec is tautological — neither is an independent oracle).
+- **test-covered** (default, untagged) — an authored test asserts it (unit / integration / component). The `test-writer` writes ≥1 mapped test (scot.md [§7.3](scot.md#s7) id); the `test-gatekeeper` REJECTs if any is uncovered.
+- **`(journey)`** — a screen outcome crossing the running stack; verified **end-to-end by a Playwright test** (ui-schema [§5](ui-schema.md#s5)).
+- **`(pipeline)`** — the outcome **is** the success of a canonical `target.md [§3](#s3)` command (install / build / run-boot / migrate); verified by that command reaching green in `.sdd/verdicts/<scope>/_test-report.md`, **not** by an authored test (a test re-asserting "the build passes" is circular; one re-asserting a manifest value against the spec is tautological — neither is an independent oracle).
   - **Allowed ONLY on an infra-module AC** (`MOD-build`, `MOD-schema`) whose assertion is literally "the build / boot / migration command succeeds".
   - A behavioral spec (`CLS-*` / `FEAT-*` / `ENT-*`) may **never** tag `(pipeline)` to dodge a real test, and a genuine boot **smoke** check (e.g. application-context-loads, which exercises runtime wiring the spec left open) stays **test-covered**, not `(pipeline)`.
   - The `test-writer` authors **no** test for a `(pipeline)` AC; the `test-gatekeeper` counts it covered from the green run result and REJECTs a `(pipeline)` tag on a non-infra spec.
@@ -172,8 +172,8 @@ Common to both:
 - `depends_on` = comma-separated ids **without brackets** (`—` when none).
 - `spec` / `source` = `—` when no file (`source: []`); `spec` is the full path `.sdd/specs/<MOD>/…`.
 - `source` is **derived** from the spec's `source:` by the authoring agent.
-- `status` is the **canonical** lifecycle home (§5).
-- A **primitive** `SHR-*`/`COMP-*` is rostered in `MOD-shared.index.md` (the library); a **domain** `SHR-*`/`COMP-*` (reused within a single module) in that module's `<MOD>.index.md` (§1, §13).
+- `status` is the **canonical** lifecycle home ([§5](#s5)).
+- A **primitive** `SHR-*`/`COMP-*` is rostered in `MOD-shared.index.md` (the library); a **domain** `SHR-*`/`COMP-*` (reused within a single module) in that module's `<MOD>.index.md` ([§1](#s1), [§13](#s13)).
 - **Locate a spec by id** with `Glob .sdd/specs/**/<id>.spec.md` (you need not know its module up front; the id prefix gives the level). The matching index row gives its `status`/`depends_on`/`source`.
 - The authoring agent fills **every** column for each row it writes.
 
@@ -190,7 +190,7 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
 
 **Backward transition (spec change after `reviewed`).** Code is only generated from a `reviewed` spec. So whenever a spec changes after `reviewed`/`implemented`/`approved` — a gate routing a **spec bug**, a **feature evolution**, or a **reuse-analyst promotion** that rewrites a gated spec — the sequence is: the **command demotes** it `→ draft`, `spec-writer` fixes it, then it re-flows the forward path. A **code** or **test** bug never demotes the spec **to draft** (the spec stays `reviewed`; the code-status demotion below is a separate transition).
 
-**Status regresses to match where the fix re-enters (never below it).** A REJECT demotes the affected member(s) to the status whose forward phase the routed fix re-enters, so the resume invariant (§7 — `phase` = least-advanced own-member `status`) stays **exact** and an interrupted run never re-enters *past* the outstanding work:
+**Status regresses to match where the fix re-enters (never below it).** A REJECT demotes the affected member(s) to the status whose forward phase the routed fix re-enters, so the resume invariant ([§7](#s7) — `phase` = least-advanced own-member `status`) stays **exact** and an interrupted run never re-enters *past* the outstanding work:
 - routed to **spec** (spec bug / feature-evo / promotion, from any gate) → **draft** (re-flows analysis → code → test);
 - `test`-gate **code bug** → the flagged member(s) `implemented → reviewed` — the **spec is untouched**; only the code re-passes its gate before re-testing. This is the **sole** non-spec demotion, and the one case where `status` would otherwise outrun the real work: the test gate has cleared the code phase (`implemented`), then sends work *back* to it, so `status` must step back to `reviewed` or a resume would wrongly re-enter at the test phase;
 - routed to **code** at the code gate (`status` already `reviewed`) or to **test** at the test gate (`status` `implemented`) → **no demotion**: the status already names the re-entry phase.
@@ -198,7 +198,7 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
 A step-9 regression on an `approved` slice follows the same rule — demote the flagged member(s) to the routed fix's phase (`draft`/`reviewed`/`implemented`) so step 8's remaining set re-includes the slice.
 
 **Separation of duties (strict):**
-- **Gatekeepers JUDGE only** — write one verdict **file** to `.sdd/verdicts/` (§6); never edit specs/code/tests/`status`.
+- **Gatekeepers JUDGE only** — write one verdict **file** to `.sdd/verdicts/` ([§6](#s6)); never edit specs/code/tests/`status`.
 - **The command (main session) ADVANCES `status`** from the gate's verdict.
 - **Authors WRITE artifacts** (requirements/specs/code/tests/impl-notes); never verdicts.
 
@@ -207,12 +207,12 @@ A step-9 regression on an `approved` slice follows the same rule — demote the 
 <a id="s6"></a>
 ## 6. `.sdd/verdicts/` verdict records
 
-**One file per (scope, phase), OVERWRITTEN each gate.** Each gate writes a single file `.sdd/verdicts/<scope>/<phase>.md` holding only its latest outcome; in the loop the command reads it by **known path** (no scan, no ordinal). A re-gate of the same phase overwrites it (the prior reasons[] were already consumed by the routed author). **On resume** the command reads the slice's ≤3 known-named phase files and takes the one with the latest header timestamp (§7) — still known paths: no directory scan, no counter, no accumulation.
+**One file per (scope, phase), OVERWRITTEN each gate.** Each gate writes a single file `.sdd/verdicts/<scope>/<phase>.md` holding only its latest outcome; in the loop the command reads it by **known path** (no scan, no ordinal). A re-gate of the same phase overwrites it (the prior reasons[] were already consumed by the routed author). **On resume** the command reads the slice's ≤3 known-named phase files and takes the one with the latest header timestamp ([§7](#s7)) — still known paths: no directory scan, no counter, no accumulation.
 
 - **Path:** `.sdd/verdicts/<scope>/<phase>.md`
   - `<scope>` = the short scope key (folder): the `slice_id` (e.g. `FEAT-login`, `MOD-build`), `PLAN`, or `PROJECT`. The full member-id list goes in the body's `scope:` field.
   - `<phase>` = `analysis` | `code` | `test` (the gate's phase; `PLAN`→`analysis`, the `PROJECT` sweep→`test`).
-  - The sibling `_test-report.md` (underscore-prefixed) is the test-runner's run result (§14), not a verdict.
+  - The sibling `_test-report.md` (underscore-prefixed) is the test-runner's run result ([§14](#s14)), not a verdict.
 - **One record per file:**
 
 ```
@@ -261,7 +261,7 @@ A step-9 regression on an `approved` slice follows the same rule — demote the 
 <a id="s7"></a>
 ## 7. Failure routing
 
-**No iteration budget.** A gate loops `REJECT → fix → re-gate` until PASS. `/sdd-auto` is run **attended**: a gate↔author oscillation does NOT auto-stop — the human watching the run halts it by hand. The only automatic stop is `routing: escalate` (a block no author can fix). Resume needs no counter — the first non-approved slice's **LATEST verdict wins** (max header timestamp among its ≤3 phase files): a **REJECT** → re-invoke the author its `routing:` names, feeding its `reasons[]` (the live fix, wherever that file sits); a **PASS**/none → enter the phase the own-member `status` implies (§5) FRESH, no reasons. The demote (§5) keeps `status` truthful, so "skip approved" and the fresh-phase choice stay right; the latest verdict drives the pending fix.
+**No iteration budget.** A gate loops `REJECT → fix → re-gate` until PASS. `/sdd-auto` is run **attended**: a gate↔author oscillation does NOT auto-stop — the human watching the run halts it by hand. The only automatic stop is `routing: escalate` (a block no author can fix). Resume needs no counter — the first non-approved slice's **LATEST verdict wins** (max header timestamp among its ≤3 phase files): a **REJECT** → re-invoke the author its `routing:` names, feeding its `reasons[]` (the live fix, wherever that file sits); a **PASS**/none → enter the phase the own-member `status` implies ([§5](#s5)) FRESH, no reasons. The demote ([§5](#s5)) keeps `status` truthful, so "skip approved" and the fresh-phase choice stay right; the latest verdict drives the pending fix.
 
 **test-gatekeeper triage routing** (MD is authority — a red test never patches code arbitrarily):
 - **spec bug** → `spec-writer` (fix spec, regenerate code).
@@ -304,7 +304,7 @@ Twelve roles; **eleven are subagents** in `.claude/agents/`. The **orchestrator 
 | `test-gatekeeper` | verify coverage + triage | `.sdd/verdicts/<scope>/<phase>.md` | `Read, Write, Glob, Grep` | yes | opus |
 
 - The `.claude/sdd/` contracts + templates ship with the tool — **read-only**, no agent edits them.
-- A gatekeeper's `Write` is scoped to its single phase verdict `.sdd/verdicts/<scope>/<phase>.md` (overwritten each gate) only (§6).
+- A gatekeeper's `Write` is scoped to its single phase verdict `.sdd/verdicts/<scope>/<phase>.md` (overwritten each gate) only ([§6](#s6)).
 - **test-writer independence is SOFT**: no `Bash`, explicit NON-GOAL (never read `src/` or `.sdd/impl-notes/`), and the test-gatekeeper rejects tests asserting implementation detail.
 - The **test-runner** is the only agent that **executes** the suite (canonical `target.md` commands, filling only `{scope}`); for GUI e2e those commands launch/tear down the running app.
 - **Models:** Opus for under-specified authoring + high-consequence judgment; Sonnet for mechanical/checklist work a concrete contract constrains. A project MAY override any `model:`.
@@ -363,7 +363,7 @@ The invariant "every spec carries ≥1 real `REQ-*`" stays universal — only `M
 - A **domain-agnostic primitive** — names/encodes no domain concept (a `Button` knows nothing of "order"; `formatMoney` nothing of "invoice") **and** depends on nothing domain (a pure sink) — lives in **`MOD-shared`** from its **first** use. One consumer is enough; count is irrelevant. This is how the design-system kit (panels, forms, header, footer, generic types/utils) gets built deliberately.
 - A **domain node** — names a domain concept, or depends on a feature/domain module — **never** enters `MOD-shared`. Cross-module reuse of a domain capability is a **dependency edge**: the consumer `depends_on` it **in its home module** (the edge `B → A` is preserved, not dissolved). A domain *concept* several modules genuinely need (e.g. a `User`/`Account` entity) is **extracted into its own named domain module** — a first-class `depends_on` target, never dumped in the library.
 - **`MOD-shared` admits only primitives.** It depends only on `MOD-build`; a gate REJECTs any `MOD-shared → feature-module` edge (mechanical half) **and** any member that encodes domain knowledge (nature half).
-- A generic primitive discovered mis-homed in a feature module is **re-homed** to `MOD-shared` (file moves folder, id unchanged — id stability §2); the trigger is the **nature discovery**, not a second consumer.
+- A generic primitive discovered mis-homed in a feature module is **re-homed** to `MOD-shared` (file moves folder, id unchanged — id stability [§2](#s2)); the trigger is the **nature discovery**, not a second consumer.
 
 Every generated source file carries a header pointing back to its spec:
 ```
@@ -385,7 +385,7 @@ The reader wanting *why* follows the header to the spec; a genuinely non-obvious
 <a id="s14"></a>
 ## 14. `.sdd/verdicts/<scope>/_test-report.md` format (test-runner → test-gatekeeper contract)
 
-`test-runner` writes one per scope at `.sdd/verdicts/<scope>/_test-report.md` (`<scope>` = the slice_id, or `PROJECT` for the step-9 sweep; overwritten each run); `test-gatekeeper` parses it. Fixed structure (no heuristics). **Coverage** (every test-covered `ACn`/arm has a test) is verified by the gatekeeper from the tagged test files; this report supplies the **run result**. A **`(pipeline)`** AC (§3 altitudes) is the exception: it carries no tagged test, so the gatekeeper counts it covered from this report's **green run result** (the install/build/boot/migrate command it asserts necessarily ran in reaching `phase-reached: complete`).
+`test-runner` writes one per scope at `.sdd/verdicts/<scope>/_test-report.md` (`<scope>` = the slice_id, or `PROJECT` for the step-9 sweep; overwritten each run); `test-gatekeeper` parses it. Fixed structure (no heuristics). **Coverage** (every test-covered `ACn`/arm has a test) is verified by the gatekeeper from the tagged test files; this report supplies the **run result**. A **`(pipeline)`** AC ([§3](#s3) altitudes) is the exception: it carries no tagged test, so the gatekeeper counts it covered from this report's **green run result** (the install/build/boot/migrate command it asserts necessarily ran in reaching `phase-reached: complete`).
 
 ```
 # Test Report
