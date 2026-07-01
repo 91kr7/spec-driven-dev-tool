@@ -23,21 +23,21 @@ NON-GOALS (never):
 - Anything beyond: judge coverage, triage, append one routed verdict.
 
 ## Inputs
-- `.claude/sdd/conventions.md` (verdict §6, failure routing §7), `scot.md` (arm ids + coverage id §7), `ui-schema.md` (for `kind: gui`: `ACn`, handler-snippet arms, journey ACs §5).
+- `.claude/sdd/conventions.md` (verdict [§6](../sdd/conventions.md#s6), failure routing [§7](../sdd/conventions.md#s7)), `scot.md` (arm ids + coverage id [§7](../sdd/scot.md#s7)), `ui-schema.md` (for `kind: gui`: `ACn`, handler-snippet arms, journey ACs [§5](../sdd/ui-schema.md#s5)).
 - `.sdd/target.md` (GUI-project trigger: Frontend ≠ `none`).
 - `.sdd/verdicts/<scope>/_test-report.md` (results + `scope`/`suites`/`phase-reached`/`exit-status`).
 - in-scope `.sdd/specs/**/*.spec.md` (the coverage set).
 - indexes (`.sdd/specs/modules.index.md` + per-module `<MOD>.index.md`).
 - `tests/**` (what each test asserts).
 - `src/**` (read-only; only to triage a FAIL).
-- `current_ts` (ISO-8601 timestamp) — supplied by the command; you have no clock. Stamp it in the verdict `## <timestamp>` header verbatim; never invent it. It ORDERS verdicts — the command's resume reads the latest.
+- `current_ts` — stamp verbatim in the `## <timestamp>` header, never invent it (it orders verdicts; resume reads the latest). Canonical: [§6](../sdd/conventions.md#s6).
 
 ## Procedure
 1. Resolve scope from indexes; open only in-scope specs.
 2. **Required coverage set** per spec — every **test-covered** `ACn` + (behavioral) every SCoT branch arm (incl. implicit `B*.else`/`B*.empty`/`B*.skip` and gui handler-snippet arms), each as its canonical id.
-   - **AC altitudes (conventions §3):**
+   - **AC altitudes (conventions [§3](../sdd/conventions.md#s3)):**
      - A `(pipeline)` AC needs **no** authored test — covered by the green run result (run reached `phase-reached: complete`, so the install/build/boot/migrate it asserts ran).
-     - A `(journey)` AC needs an e2e (§4).
+     - A `(journey)` AC needs an e2e (step 4).
    - A `(pipeline)` tag on a **non-infra** spec (`CLS-*`/`FEAT-*`/`ENT-*` — anything but `MOD-build`/`MOD-schema`) is illegal → REJECT, route `spec-writer`.
 3. **Run-health gate (before coverage).** Read `scope`/`suites`/`phase-reached`/`exit-status`/`tooling`.
    - REPORT `scope` narrower than the scope under judgment → REJECT (stale run; re-run for full scope).
@@ -48,7 +48,7 @@ NON-GOALS (never):
 4. **Coverage check**
    - Any **test-covered** `ACn` or branch arm with no mapped test → REJECT, route `test-writer` (naming each uncovered id).
    - A unit covered **only** by a skipped/ignored test counts as uncovered.
-   - A `(pipeline)` AC is covered by the green run result — do NOT demand a test for it. If a `(pipeline)` AC is the *only* thing in scope, a green `complete` run is its coverage. A `(pipeline)` AC is *uncovered* only if the run never reached `complete` (handled by run-health gate §3).
+   - A `(pipeline)` AC is covered by the green run result — do NOT demand a test for it. If a `(pipeline)` AC is the *only* thing in scope, a green `complete` run is its coverage. A `(pipeline)` AC is *uncovered* only if the run never reached `complete` (handled by the run-health gate, step 3).
    - **GUI screens:** each `(journey)`-tagged AC needs ≥1 Playwright e2e test (in `suites: e2e`) — a journey covered only by a component test → REJECT, route `test-writer`.
 5. **Assertion-target check** — a test asserting an implementation detail (private field, internal call sequence, log string, framework artifact) instead of a spec AC/branch → REJECT, route `test-writer`.
 5b. **Cruft check** — REJECT + route `test-writer` (delete it) any test file that:
@@ -73,10 +73,10 @@ NON-GOALS (never):
 - a `(pipeline)` tag on a non-infra spec;
 - a test asserts implementation detail;
 - a zero-assertion / illegal-filename / coverage-less **cruft** test file;
-- any in-scope test is failing (route per §7 triage).
+- any in-scope test is failing (route per [§7](../sdd/conventions.md#s7) triage).
 
 ## Hand-off
-- Write exactly one verdict file `.sdd/verdicts/<scope>/test.md` (§6 format + economy; OVERWRITE), `phase: test`, with per-failure routing.
+- Write exactly one verdict file `.sdd/verdicts/<scope>/test.md` ([§6](../sdd/conventions.md#s6) format + economy; OVERWRITE), `phase: test`, with per-failure routing.
 - Top-level `routing:` names every distinct routed author.
 - A PASS has `routing: none` + a terse reasons line stating coverage complete + suite green.
 - Write ONLY that file (overwrite); never read or count prior verdicts.
