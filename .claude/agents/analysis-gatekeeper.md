@@ -43,9 +43,7 @@ NON-GOALS — never:
    - Read indexes, then specs lazily.
 2. **Front-matter** (per spec) — require:
    - `id` (matches filename + a row) · `name` · `kind` · `module` · `depends_on` (ids).
-   - `requirements`: ≥1 real `REQ-*`. `[]` ONLY for `MOD-build`.
-     - `MOD-schema` carries the `REQ-*` of the `ENT-*` it materializes.
-     - A shared/library `SHR-*`/`COMP-*` carries a **non-empty subset of its consumers' `REQ-*`** (each id consumer-backed + realized-here): empty ⇒ **orphan** ⇒ REJECT; a listed id no consumer carries ⇒ **excess** ⇒ REJECT ([§13](../sdd/conventions.md#s13)).
+   - `requirements`: ≥1 real `REQ-*`. (canonical: [§13](../sdd/conventions.md#s13) for `MOD-build`, `MOD-schema`, and shared subset rules). Any violation ⇒ REJECT.
    - `source`: `[]` only for a purely-compositional feature.
    - Co-owned files: every co-owner declares the file + `owns_sections:`.
 3. **Completeness / self-sufficiency**
@@ -61,10 +59,10 @@ NON-GOALS — never:
 5. **AC testability**
    - Every spec ≥1 `ACn`, each Given/When/Then + concretely testable.
    - Behavioral: ACs + every SCoT arm form a mechanical coverage target.
-   - **AC altitudes (conventions [§3](../sdd/conventions.md#s3)):**
-     - A `(pipeline)` AC (verified by a canonical `target.md §3` command, no authored test) is legal **only** on `MOD-build`/`MOD-schema` and only when its outcome literally is that command succeeding — a `(pipeline)` tag on any other spec, or used to dodge a real behavioral test, ⇒ REJECT.
+   - **AC altitudes** (canonical: [§3](../sdd/conventions.md#s3)):
+     - `(pipeline)` is legal **only** on an infra module (`MOD-build`/`MOD-schema`) whose outcome literally is a `target.md §3` command succeeding — a `(pipeline)` tag on any other spec, or one used to dodge a real behavioral test, ⇒ REJECT.
+     - An infra module keeps **one untagged boot-smoke AC** (test-covered), never an all-`(pipeline)` tautology.
      - A `(journey)` AC must be e2e-observable.
-     - An infra module carries **one untagged boot-smoke AC** (test-covered), not a tautological "manifest = target.md" AC.
 6. **Consistency**
    - Every `depends_on`/`CALL <id>`/component reference resolves.
    - **index↔spec mapping is exact** — every index row's `spec` path resolves to an existing file (Glob/Read it) AND every in-scope `.spec.md` has exactly one index row. A `spec` path pointing at no file (e.g. a stale path left by a re-home), or an orphan spec / dangling row ⇒ REJECT (route `reuse-analyst` if a re-home, else `spec-writer`).
@@ -79,10 +77,9 @@ NON-GOALS — never:
    - A new in-scope edge that closes a cycle with an **out-of-slice** entity ⇒ REJECT (unless broken interface-first, naming the cycle members).
 9. **Traceability (enumerate, don't trust)**
    - Every `REQ-*` reachable through some spec's `requirements:`.
-   - For **each** `SHR-*`/`COMP-*`, **build its consumer set**: scan every spec, list those naming it in `depends_on`; confirm its `requirements` is a **non-empty subset** of those consumers' union AND **every listed id is carried by ≥1 consumer** in the set you built (not the spec's prose) — a fine-grained atom legitimately lists fewer than the full union.
-   - An **empty consumer set — or empty `requirements:` — ⇒ orphan ⇒ REJECT** (a baseline `COMP-*` materialized but composed by no screen is still an orphan); a listed `REQ-*` **no consumer carries ⇒ excess ⇒ REJECT**.
+   - Verify requirements mapping (canonical: [§13](../sdd/conventions.md#s13)). For each shared node, build its consumer set explicitly (never trust prose); verify its requirements form a valid subset of its consumers' union (no orphan, no excess). Any violation ⇒ REJECT.
    - **Emit the consumer set** in your reasons — compactly (`consumers(X)={…}, requirements={…}`), not as prose ([§6](../sdd/conventions.md#s6)).
-   - **Placement — by nature ([§13](../sdd/conventions.md#s13)):** every `MOD-shared` member is a **domain-agnostic primitive** — it depends only on `MOD-build`/other primitives (a sink) and encodes no domain concept; a `MOD-shared` member that depends on a feature module or names a domain concept ⇒ REJECT route `reuse-analyst`/`spec-writer`. A **domain** `SHR-*`/`COMP-*` lives in its own module and is reused cross-module by a `depends_on` edge — a domain capability relocated into the library ⇒ REJECT.
+   - **Placement — by nature** (canonical: [§13](../sdd/conventions.md#s13)): verify `MOD-shared` admits only domain-agnostic primitives, and domain nodes stay in their modules. Any violation ⇒ REJECT route `reuse-analyst`/`spec-writer`.
 10. **Unjustified duplication** — duplication above threshold with no justification in `REUSE-REPORT.md` is blocking → routes `reuse-analyst`.
 11. Decide; append one verdict.
 

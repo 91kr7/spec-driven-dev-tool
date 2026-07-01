@@ -41,9 +41,9 @@ owns_sections: []
 
 ---
 
-## Filled examples — the infra modules `MOD-build` & `MOD-schema` (conventions [§2](../conventions.md#s2))
+## Filled examples — the infra modules `MOD-build` & `MOD-schema` (canonical: [§2](../conventions.md#s2))
 
-> Both are the documented exception to `source: []`: they own their infra **files directly**. `MOD-build` is pure scaffolding — **no domain `depends_on`** → first slice; a GUI project also lists `playwright.config.ts` and sets `target.md` `test-e2e` to a real command. `MOD-schema` (DB projects only) owns the forward schema scripts — each append-only, traced to an `ENT-*`; the code-implementer materializes the SQL from the entity tables.
+> Both are the documented exception to `source: []`: they own their infra **files directly** (see [§2](../conventions.md#s2) for the exact rules on scaffolding, `test-e2e`, and forward schema scripts).
 
 ```markdown
 ---

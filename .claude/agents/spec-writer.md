@@ -52,14 +52,12 @@ NON-GOALS — never:
    - structural → declarative tables (`interface` = signatures only).
    - module → Purpose · Contained entries · Boundaries.
    - gui → ui-schema five sections, composing `COMP-*` by id.
-6. **Infra module specs** (module overview):
-   - **`MOD-build`** owns build files, manifests, config, CI, app entry — **no domain `depends_on`** (pure scaffolding).
-   - **GUI project:** `MOD-build` also owns the e2e harness (`playwright.config.*` + `webServer`); `target.md`'s `test-e2e` must be real.
-   - **DB project:** add **`MOD-schema`**, owning **schema changes derived from `ENT-*` specs**. Declare each forward script as its own file under `source:`, e.g. `db/schema/V1__….sql`. On evolution add a NEW `Vn`, never edit a shipped one. Do NOT write SQL — implementer materializes it from the entity tables. Set its `depends_on` to the persistence module(s) + the `ENT-*` it evolves.
+6. **Infra module specs** (canonical: [§2](../sdd/conventions.md#s2)):
+   - **`MOD-build`** and (for DB projects) **`MOD-schema`**. Create module overviews respecting exactly the `depends_on` and role rules from conventions §2. For `MOD-schema`, declare each forward script as its own file under `source:` (do not write SQL).
 7. **Acceptance criteria** — `# Acceptance criteria` as Given/When/Then, each a stable `ACn`, testable.
    - Behavioral: each `ACn` and each SCoT arm coverable.
-   - **GUI screen that calls a feature:** tag each user-journey AC `(journey)` (ui-schema [§5](../sdd/ui-schema.md#s5)), declare ≥1; these drive Playwright e2e. Untagged view ACs drive component tests.
-   - **Infra modules (`MOD-build`/`MOD-schema`) — AC altitudes (conventions [§3](../sdd/conventions.md#s3)):** tag `(pipeline)` every AC whose outcome **is** a canonical `target.md §3` command succeeding (build exit 0, frontend build exit 0, migration applies) — verified by the run, get **no** authored test, so do **not** write a tautological "manifest matches target.md" AC. Keep **one genuine boot smoke AC untagged** (test-covered) — e.g. app context loads / API boots — the independent check catching runtime-wiring gaps. `(pipeline)` is illegal on any non-infra spec.
+   - **GUI screen that calls a feature:** tag each user-journey AC `(journey)` (ui-schema [§5](../sdd/ui-schema.md#s5)).
+   - **AC altitudes** (canonical: [§3](../sdd/conventions.md#s3)): on an infra module tag `(pipeline)` only where the AC's outcome **is** a `target.md §3` command succeeding — no tautological "manifest matches target.md" AC — and keep **one genuine boot-smoke AC untagged** (test-covered). `(pipeline)` is illegal on any non-infra spec.
 8. **Self-sufficiency** — each spec regenerates its code with no `src/` access: Purpose, the kind's interface, invariants/rules, body form, ACs.
 9. **Indexes** ([§4](../sdd/conventions.md#s4)) — refresh global `modules.index.md` (one row per module) and, in each module's `<MOD>.index.md`, one fully-populated row per owned member (incl. its domain `SHR-*`/`COMP-*`; primitives rostered in `MOD-shared.index.md`). Create a `<MOD>.index.md` the first time its module gains a member.
 

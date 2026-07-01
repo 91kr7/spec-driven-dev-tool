@@ -61,6 +61,22 @@ auto-anchors — they break silently on any title edit (a fresh desync). Relativ
 
 Anything else that states the same thing twice is a defect to collapse into a pointer.
 
+### Who reads these files — an AI agent executing the prompt
+
+Every file here is loaded **as an agent's operating prompt**, usually run by a **single subagent**
+acting on its own file. Write for that reader — it also draws the line for the echo above:
+
+- A **pointer carries the authority + the full rule**: the agent has `conventions.md` in context and
+  follows `[§N](path#sN)` for the complete statement. That is why re-narrating a rule is pure waste.
+- Where an agent must **act on** a rule (a gatekeeper's accept/reject test, an author's
+  what-to-produce), keep the **one-line discriminating criterion inline** (marked `(canonical: §N)`).
+  `orphan = empty requirements:` beats *"verify requirements match §13"* — a gate told only to
+  "conform to §N" judges less reliably than one handed the exact trigger.
+- So the cut is **restatement vs. actionable criterion**: collapse the paragraph that re-explains a
+  rule; keep the terse trigger the agent branches on. Never flatten a decisive check to a bare "see §N".
+- A **template's filled example is content to imitate, not a rule** — never gut it to a pointer (a
+  `Purpose` that reads "see §2" teaches an author nothing).
+
 ---
 
 ## When you add or change a shared rule
