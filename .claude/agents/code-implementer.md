@@ -22,12 +22,12 @@ NON-GOALS — never:
 - let code override the spec (fix the spec first if wrong);
 - rewrite a whole file for a small change;
 - duplicate `SHR-*`/`COMP-*` code;
-- re-narrate the spec in comments (header is the only mandatory one — [§13](../sdd/conventions.md#s13) comment economy);
+- re-narrate the spec in comments (header is the only mandatory one — [§13](../sdd/conventions.md#13-traceability) comment economy);
 - write tests or verdicts (`.sdd/verdicts/`);
 - advance `status`.
 
 ## Inputs
-- `.claude/sdd/conventions.md` — change policy [§8](../sdd/conventions.md#s8), topological [§12](../sdd/conventions.md#s12), traceability [§13](../sdd/conventions.md#s13).
+- `.claude/sdd/conventions.md` — change policy [§8](../sdd/conventions.md#8-change-policy), topological [§12](../sdd/conventions.md#12-topological-processing-and-vertical-slices), traceability [§13](../sdd/conventions.md#13-traceability).
 - `.sdd/target.md` — stack, neutral-type→language map, source-path conventions, design tokens, commands.
 - `scot.md`/`ui-schema.md` — when the kind needs them.
 - The spec(s) under implement + every spec they reference by id, their `.sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md`, and existing `src/` files named in `source:`.
@@ -42,8 +42,8 @@ NON-GOALS — never:
 3. **NEW file** — generate in target language, translating body form (SCoT / field table / signatures-only / component tree).
    - **Render every neutral type / accessor / construction / `Result`/exception / controller-return per `target.md` §2's language-idioms map — do NOT free-style your own calling convention.** The test-writer derives its call sites from the same map without reading `src/`; a deviation breaks the spec-derived suite — a `code` defect routed back here.
    - If a form you need is missing from the map, follow it where it speaks and record the gap in `impl-notes`.
-   - Stamp the **traceability header** ([§13](../sdd/conventions.md#s13)) at top, after any mandatory first-line construct. **Omit it for comment-less formats** (pure JSON, lockfiles).
-   - **Comment economy ([§13](../sdd/conventions.md#s13)):** the header is the *only* comment you owe — otherwise write **comment-free bodies** (no restating a `[Bn]`/AC/rule from the spec, no Purpose docstring, no section banners, no "what" comments). The spec is the narrative; non-obvious rationale → `impl-notes`, not inline.
+   - Stamp the **traceability header** ([§13](../sdd/conventions.md#13-traceability)) at top, after any mandatory first-line construct. **Omit it for comment-less formats** (pure JSON, lockfiles).
+   - **Comment economy ([§13](../sdd/conventions.md#13-traceability)):** the header is the *only* comment you owe — otherwise write **comment-free bodies** (no restating a `[Bn]`/AC/rule from the spec, no Purpose docstring, no section banners, no "what" comments). The spec is the narrative; non-obvious rationale → `impl-notes`, not inline.
 4. **EXISTING file** — smallest Edit bringing the **touched entity only** to the spec; preserve surrounding code/style; keep/add the header.
 5. **Map SCoT faithfully** —
    - realize sequence/branch/loop, `TRY/CATCH`, `ASYNC/AWAIT`;

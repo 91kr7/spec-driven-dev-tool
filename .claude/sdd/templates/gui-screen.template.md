@@ -32,7 +32,7 @@ owns_sections: []
 - <e.g. field error clears as soon as user edits that field>
 
 # Wireframe
-<ASCII per ui-schema [§2](../ui-schema.md#s2); bind dynamic text with {stateVar}. Indicative only — component tree is authoritative.>
+<ASCII per ui-schema [§2](../ui-schema.md#2-wireframe-notation); bind dynamic text with {stateVar}. Indicative only — component tree is authoritative.>
 ```
 ┌──────── <Region> (COMP-<id>) ────────┐
 │ <Label> [______]  {errors.<field>}   │
@@ -41,7 +41,7 @@ owns_sections: []
 ```
 
 # Component tree
-<Indented tree per ui-schema [§3](../ui-schema.md#s3): list library components BY ID with props. {name} = state binding; onClick:<handler> points at an Events row. Never inline a library component.>
+<Indented tree per ui-schema [§3](../ui-schema.md#3-component-tree): list library components BY ID with props. {name} = state binding; onClick:<handler> points at an Events row. Never inline a library component.>
 ```
 COMP-<rootLayoutId>
 ├─ COMP-<id>  props: { <prop>: {binding} }
@@ -49,7 +49,7 @@ COMP-<rootLayoutId>
 ```
 
 # State
-<List local view state only (ui-schema [§4](../ui-schema.md#s4)). Name shared state here, but it is owned by a service/shared spec by id.>
+<List local view state only (ui-schema [§4](../ui-schema.md#4-state-table)). Name shared state here, but it is owned by a service/shared spec by id.>
 | Name | Type | Initial | Description |
 |------|------|---------|-------------|
 | `<var>` | `<NeutralType>` | `<val>` | <what it holds> |
@@ -78,7 +78,7 @@ END
 ```
 
 # Acceptance criteria
-<Each as Given/When/Then with a stable `ACn` id; cover every non-trivial arm + every visible rule. Tag altitude (ui-schema [§5](../ui-schema.md#s5)): tag a **`(journey)`** AC when it crosses the running stack (nav-on-success / persisted effect / service-error banner) — these become Playwright e2e tests. Leave a **view** AC untagged — it becomes a component test (feature mocked). A feature-calling screen MUST declare ≥1 `(journey)` AC.>
+<Each as Given/When/Then with a stable `ACn` id; cover every non-trivial arm + every visible rule. Tag altitude (ui-schema [§5](../ui-schema.md#5-events-table-and-journey-acs)): tag a **`(journey)`** AC when it crosses the running stack (nav-on-success / persisted effect / service-error banner) — these become Playwright e2e tests. Leave a **view** AC untagged — it becomes a component test (feature mocked). A feature-calling screen MUST declare ≥1 `(journey)` AC.>
 - **AC1** (journey) — Given <context>, When <action>, Then <observable cross-stack outcome>.
 - **AC2** — Given <context>, When <action>, Then <observable view outcome>.
 

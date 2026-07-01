@@ -53,38 +53,38 @@ NON-GOALS:
    - domain nouns / persisted state → `ENT-`
    - each use-case / user journey → `FEAT-`
    - a feature's collaborators (repository / service / controller) → behavioral `CLS-`
-   - domain-agnostic util/type (generic, no domain knowledge) → `SHR-` in the `MOD-shared` library; domain logic reused across features stays in its module, reached by a `depends_on` edge ([§13](../sdd/conventions.md#s13))
-   - (GUI) each screen → a `gui` `CLS-`; each generic widget → a `COMP-` primitive in the `MOD-shared` kit (a domain-named component stays in its module — [§13](../sdd/conventions.md#s13))
+   - domain-agnostic util/type (generic, no domain knowledge) → `SHR-` in the `MOD-shared` library; domain logic reused across features stays in its module, reached by a `depends_on` edge ([§13](../sdd/conventions.md#13-traceability))
+   - (GUI) each screen → a `gui` `CLS-`; each generic widget → a `COMP-` primitive in the `MOD-shared` kit (a domain-named component stays in its module — [§13](../sdd/conventions.md#13-traceability))
    - group entities into `MOD-`
 
-   **Two invariants:** (canonical: [§13](../sdd/conventions.md#s13))
+   **Two invariants:** (canonical: [§13](../sdd/conventions.md#13-traceability))
    - **every `REQ-*` lands on ≥1 entity**, and
    - **every entity carries ≥1 real `REQ-*`** (with exceptions for `MOD-build`, `MOD-schema`, and shared entities exactly as defined in `conventions.md §13`).
    - none empty; never invent scope no `REQ-*` implies.
 
-   THEN write `.sdd/PLAN.md`: one row per entity, each carrying `id` ([§2](../sdd/conventions.md#s2) form) · `level` · `module` · `depends_on` (ids) · `source` (from `target.md` conventions) · `requirements` (real `REQ-*` ids, or `—` only for `MOD-build` — **never a prose annotation**) · **NEW or MODIFY**.
+   THEN write `.sdd/PLAN.md`: one row per entity, each carrying `id` ([§2](../sdd/conventions.md#2-identifier-scheme) form) · `level` · `module` · `depends_on` (ids) · `source` (from `target.md` conventions) · `requirements` (real `REQ-*` ids, or `—` only for `MOD-build` — **never a prose annotation**) · **NEW or MODIFY**.
 
    **PLAN.md is a DELTA, rewritten afresh each run — never a cumulative ledger.**
    - On existing-SDD write a row **only** for an entity that is `NEW` (genuinely added) or `MODIFY` (an existing spec this change rewrites). **Never re-list an unchanged, already-`approved` entity** (it stays in its index untouched) — reference unchanged ones only inside other rows' `depends_on`.
    - On a NEW project the delta is the whole set: everything is `NEW`.
-4. **Include the infra modules** (canonical: [§2](../sdd/conventions.md#s2)):
+4. **Include the infra modules** (canonical: [§2](../sdd/conventions.md#2-identifier-scheme)):
    - `MOD-build` and (for DB projects) `MOD-schema`, with exact `depends_on` and `requirements` rules as defined in conventions §2.
-5. **Declare `MOD-shared` as the LIBRARY home** (canonical: [§13](../sdd/conventions.md#s13)):
+5. **Declare `MOD-shared` as the LIBRARY home** (canonical: [§13](../sdd/conventions.md#13-traceability)):
    - Admit only primitives, home them there from first use (by nature, not count). Omit only if no primitives exist.
-   - Indexes are per-module by default (a global `modules.index.md` + one `<MOD>.index.md` each) — no per-level global indexes ([§4](../sdd/conventions.md#s4)).
+   - Indexes are per-module by default (a global `modules.index.md` + one `<MOD>.index.md` each) — no per-level global indexes ([§4](../sdd/conventions.md#4-index-rows)).
 6. **Order into vertical slices** in `depends_on` topological order; the graph MUST be a **DAG**.
    - Break any cycle interface-first (add an `interface` spec, re-point members onto it) and note the break.
    - **Record the resulting ordered slice list as a `Slice plan` section in `.sdd/PLAN.md`** — one row per slice with its member ids and `depends_on` closure, in execution order — so the command consumes it directly.
    - **On existing-SDD the `Slice plan` is likewise a delta:** list ONLY slices containing ≥1 `NEW`/`MODIFY` member; an unchanged `approved` entity appears only as a read-only `depends_on` reference inside a member's closure, never as a slice member to re-work.
 7. **Flag shared candidates** for the reuse-analyst; reuse existing UI components by id.
-   - For a **GUI project**: include as `COMP-*` entries only the ui-schema [§9](../sdd/ui-schema.md#s9) catalog components the screens actually compose, and ensure `MOD-build` owns the e2e harness in `target.md`.
-   - Shared/library components carry the consumer-subset of their `REQ-*` ([§13](../sdd/conventions.md#s13)).
+   - For a **GUI project**: include as `COMP-*` entries only the ui-schema [§9](../sdd/ui-schema.md#9-reusable-component-catalog) catalog components the screens actually compose, and ensure `MOD-build` owns the e2e harness in `target.md`.
+   - Shared/library components carry the consumer-subset of their `REQ-*` ([§13](../sdd/conventions.md#13-traceability)).
 
 ## Definition of done
 - Every entity has all fields + NEW/MODIFY.
-- **Every `REQ-*` covered** (existing-SDD: indexes ∪ delta) **and every entity carries ≥1 real `REQ-*`** — requirements rules per step 3/4 (`MOD-build` `—`-exempt; `MOD-schema`=union; shared=consumer-subset; none empty — [§13](../sdd/conventions.md#s13)).
+- **Every `REQ-*` covered** (existing-SDD: indexes ∪ delta) **and every entity carries ≥1 real `REQ-*`** — requirements rules per step 3/4 (`MOD-build` `—`-exempt; `MOD-schema`=union; shared=consumer-subset; none empty — [§13](../sdd/conventions.md#13-traceability)).
 - The ordered `Slice plan` recorded in `.sdd/PLAN.md`; slices topological; cycles broken interface-first.
-- `MOD-shared` declared (a sink) whenever the plan has any domain-agnostic primitive, its members materialized at first use; domain reuse expressed as `depends_on` edges, not library entries ([§13](../sdd/conventions.md#s13)).
+- `MOD-shared` declared (a sink) whenever the plan has any domain-agnostic primitive, its members materialized at first use; domain reuse expressed as `depends_on` edges, not library entries ([§13](../sdd/conventions.md#13-traceability)).
 - Shared candidates flagged.
 - `MOD-build` present (and `MOD-schema` for a DB project).
 - `.sdd/target.md` complete (or `<…>` placeholders left for the gate).

@@ -41,7 +41,7 @@ Each spec `kind` → path (used to propose `source:` for new specs):
 
 ### Language idioms — neutral-type → concrete calling convention
 
-Specs/SCoT stay concretization-free (scot.md [§2](../scot.md#s2)); the implementer **and** the test-writer BOTH derive the concrete callable form from this single map — so a spec-derived test compiles and calls the real code **without reading `src/`**. Fill this map up front: the contract that makes both sides converge instead of guessing.
+Specs/SCoT stay concretization-free (scot.md [§2](../scot.md#2-lexical-conventions)); the implementer **and** the test-writer BOTH derive the concrete callable form from this single map — so a spec-derived test compiles and calls the real code **without reading `src/`**. Fill this map up front: the contract that makes both sides converge instead of guessing.
 
 | Neutral form (specs/SCoT) | Concrete idiom for this stack | Example call |
 |---|---|---|

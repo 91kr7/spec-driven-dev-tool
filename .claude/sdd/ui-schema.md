@@ -5,7 +5,7 @@
 > Svelte/…); concrete framework chosen at implementation time from `target.md`.
 
 **Two kinds of `gui` spec:**
-- **Shared component** (`.sdd/specs/<MOD>/ui-components/COMP-*.spec.md`) — a reusable atom/molecule/organism/layout. Placement is strictly by **nature** (canonical: conventions [§13](conventions.md#s13)). Specify **once**; reference everywhere by id.
+- **Shared component** (`.sdd/specs/<MOD>/ui-components/COMP-*.spec.md`) — a reusable atom/molecule/organism/layout. Placement is strictly by **nature** (canonical: conventions [§13](conventions.md#13-traceability)). Specify **once**; reference everywhere by id.
 - **Screen** (`.sdd/specs/<MOD>/classes/CLS-*.spec.md`, `kind: gui`) — composes library components **by id**; specifies layout + screen-specific behavior only. Never re-describes an already-indexed widget.
 
 **Discover before create:**
@@ -15,29 +15,26 @@
 
 ---
 
-<a id="s1"></a>
-## 1. The five sections of a GUI spec (in order)
+## 1. The five sections of a GUI spec
 1. **Wireframe** — ASCII sketch of layout.
 2. **Component tree** — composition referencing library components by id.
 3. **State** — table (name, type, initial, description).
 4. **Events** — table: events → handlers → effects.
 5. **Acceptance criteria** — Given/When/Then, each with a stable `ACn` id.
 
-`COMP-*` specs add **Props · Variants · Visual states · Events · Slots/children · Accessibility** ([§6](#s6)).
+`COMP-*` specs add **Props · Variants · Visual states · Events · Slots/children · Accessibility** ([§6](#6-extra-sections-for-components)).
 
 ---
 
-<a id="s2"></a>
 ## 2. Wireframe notation
 - Box-drawing for structure (not pixels).
 - Bind dynamic text with `{stateVar}`.
 - Mark interactive elements: `[ ]` button, `(•)`/`( )` radio, `[x]`/`[ ]` checkbox, `▼` dropdown, `___` text field.
-- Wireframe is **indicative**; authoritative composition = component tree ([§3](#s3)).
+- Wireframe is **indicative**; authoritative composition = component tree ([§3](#3-component-tree)).
 
 ---
 
-<a id="s3"></a>
-## 3. Component tree (composition by id)
+## 3. Component tree
 - Indented tree.
 - Each node = a **library component referenced by id** (with its props) or a layout slot.
 - Never inline a library component.
@@ -53,11 +50,10 @@ COMP-appShell
 │        └─ COMP-button props: { variant: "primary", label: "Register", onClick: submit, loading: {submitting} }
 └─ COMP-footer   props: { version: {appVersion} }
 ```
-`{name}` = binding to a state var ([§4](#s4)); `onClick: submit` = a handler in Events table ([§5](#s5)).
+`{name}` = binding to a state var ([§4](#4-state-table)); `onClick: submit` = a handler in Events table ([§5](#5-events-table-and-journey-acs)).
 
 ---
 
-<a id="s4"></a>
 ## 4. State table
 - Local view state only.
 - Cross-screen/shared state: name it here, but **owned** by a service/shared spec and referenced by id.
@@ -70,8 +66,7 @@ COMP-appShell
 
 ---
 
-<a id="s5"></a>
-## 5. Events table + journey ACs
+## 5. Events table and journey ACs
 
 | Event | Trigger | Handler | Effect |
 |---|---|---|---|
@@ -122,8 +117,7 @@ A purely-compositional feature (`source: []`) has no callable code → screen ca
 
 ---
 
-<a id="s6"></a>
-## 6. Extra sections for `COMP-*`
+## 6. Extra sections for components
 
 - **Props** — table (prop, type, required, default, description).
 - **Variants** — named variants + when to use each.
@@ -134,7 +128,6 @@ A purely-compositional feature (`source: []`) has no callable code → screen ca
 
 ---
 
-<a id="s7"></a>
 ## 7. Atomic-design layering
 Every component declares `layer:`; higher layers compose lower layers **by id** (a molecule never re-describes its atoms).
 - **atom** — Button, TextInput, Icon, Badge, Spinner, Checkbox…
@@ -144,7 +137,6 @@ Every component declares `layer:`; higher layers compose lower layers **by id** 
 
 ---
 
-<a id="s8"></a>
 ## 8. A GUI spec must NOT contain
 - Framework code (JSX, templates, `useState`, signals…).
 - CSS/colors/pixels — only design-token **names** (`gap: "md"`), resolved from `target.md`.
@@ -153,14 +145,13 @@ Every component declares `layer:`; higher layers compose lower layers **by id** 
 
 ---
 
-<a id="s9"></a>
-## 9. Reusable component catalog (compose, don't hand-roll)
+## 9. Reusable component catalog
 - A GUI project composes screens from reusable components instead of hand-rolling duplicated markup — but creates **only the components a screen actually composes**.
 - The table below = a **catalog of common candidates** (canonical ids/layers to reuse when needed), **NOT a mandatory set**. Reach for a frame component (`appShell`/`header`/`footer`/…) only when the app's views share that structure — a single-screen app may need none.
-- `spec-writer` materializes a catalog component (from `templates/ui-component.template.md`) into **`MOD-shared/ui-components/`** on first use (canonical: conventions [§13](conventions.md#s13)), never up front.
+- `spec-writer` materializes a catalog component (from `templates/ui-component.template.md`) into **`MOD-shared/ui-components/`** on first use (canonical: conventions [§13](conventions.md#13-traceability)), never up front.
 - `analysis-gatekeeper` blocks:
   - a screen that **inlines/hand-rolls** a component instead of composing one by id, and
-  - any **unused (orphan)** component (each must carry its consumers' `requirements:` — conventions [§13](conventions.md#s13)).
+  - any **unused (orphan)** component (each must carry its consumers' `requirements:` — conventions [§13](conventions.md#13-traceability)).
 
 | id | layer | Purpose |
 |---|---|---|
@@ -173,4 +164,4 @@ Every component declares `layer:`; higher layers compose lower layers **by id** 
 | `COMP-grid` | layout | 2-D grid helper (columns, gap, areas) |
 | `COMP-section` | layout | titled content section |
 
-**Build the kit by nature** (canonical: conventions [§13](conventions.md#s13)): beyond this frame catalog, generic widgets are materialized in `MOD-shared` the **first** time any screen composes one. Specified once (layer per [§7](#s7)), referenced by id.
+**Build the kit by nature** (canonical: conventions [§13](conventions.md#13-traceability)): beyond this frame catalog, generic widgets are materialized in `MOD-shared` the **first** time any screen composes one. Specified once (layer per [§7](#7-atomic-design-layering)), referenced by id.

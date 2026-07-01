@@ -23,19 +23,19 @@ NON-GOALS (never):
 - Anything beyond: judge coverage, triage, append one routed verdict.
 
 ## Inputs
-- `.claude/sdd/conventions.md` (verdict [§6](../sdd/conventions.md#s6), failure routing [§7](../sdd/conventions.md#s7)), `scot.md` (arm ids + coverage id [§7](../sdd/scot.md#s7)), `ui-schema.md` (for `kind: gui`: `ACn`, handler-snippet arms, journey ACs [§5](../sdd/ui-schema.md#s5)).
+- `.claude/sdd/conventions.md` (verdict [§6](../sdd/conventions.md#6-verdict-records), failure routing [§7](../sdd/conventions.md#7-failure-routing)), `scot.md` (arm ids + coverage id [§7](../sdd/scot.md#7-branch-id-rules)), `ui-schema.md` (for `kind: gui`: `ACn`, handler-snippet arms, journey ACs [§5](../sdd/ui-schema.md#5-events-table-and-journey-acs)).
 - `.sdd/target.md` (GUI-project trigger: Frontend ≠ `none`).
 - `.sdd/verdicts/<scope>/_test-report.md` (results + `scope`/`suites`/`phase-reached`/`exit-status`).
 - in-scope `.sdd/specs/**/*.spec.md` (the coverage set).
 - indexes (`.sdd/specs/modules.index.md` + per-module `<MOD>.index.md`).
 - `tests/**` (what each test asserts).
 - `src/**` (read-only; only to triage a FAIL).
-- `current_ts` — stamp verbatim in the `## <timestamp>` header, never invent it (it orders verdicts; resume reads the latest). Canonical: [§6](../sdd/conventions.md#s6).
+- `current_ts` — stamp verbatim in the `## <timestamp>` header, never invent it (it orders verdicts; resume reads the latest). Canonical: [§6](../sdd/conventions.md#6-verdict-records).
 
 ## Procedure
 1. Resolve scope from indexes; open only in-scope specs.
 2. **Required coverage set** per spec — every **test-covered** `ACn` + (behavioral) every SCoT branch arm (incl. implicit `B*.else`/`B*.empty`/`B*.skip` and gui handler-snippet arms), each as its canonical id.
-   - **AC altitudes** (canonical: [§3](../sdd/conventions.md#s3)): verify `(pipeline)` tags exactly match the infra-module rules in conventions §3. Any violation ⇒ REJECT, route `spec-writer`.
+   - **AC altitudes** (canonical: [§3](../sdd/conventions.md#3-spec-front-matter)): verify `(pipeline)` tags exactly match the infra-module rules in conventions §3. Any violation ⇒ REJECT, route `spec-writer`.
    - A `(journey)` AC needs an e2e (step 4).
 3. **Run-health gate (before coverage).** Read `scope`/`suites`/`phase-reached`/`exit-status`/`tooling`.
    - REPORT `scope` narrower than the scope under judgment → REJECT (stale run; re-run for full scope).
@@ -71,10 +71,10 @@ NON-GOALS (never):
 - a `(pipeline)` tag on a non-infra spec;
 - a test asserts implementation detail;
 - a zero-assertion / illegal-filename / coverage-less **cruft** test file;
-- any in-scope test is failing (route per [§7](../sdd/conventions.md#s7) triage).
+- any in-scope test is failing (route per [§7](../sdd/conventions.md#7-failure-routing) triage).
 
 ## Hand-off
-- Write exactly one verdict file `.sdd/verdicts/<scope>/test.md` ([§6](../sdd/conventions.md#s6) format + economy; OVERWRITE), `phase: test`, with per-failure routing.
+- Write exactly one verdict file `.sdd/verdicts/<scope>/test.md` ([§6](../sdd/conventions.md#6-verdict-records) format + economy; OVERWRITE), `phase: test`, with per-failure routing.
 - Top-level `routing:` names every distinct routed author.
 - A PASS has `routing: none` + a terse reasons line stating coverage complete + suite green.
 - Write ONLY that file (overwrite); never read or count prior verdicts.

@@ -1,5 +1,5 @@
 <!--
-  TEMPLATE — ENTITY spec (kind: entity, DECLARATIVE — no SCoT, no UI). Authority: conventions [§3](../conventions.md#s3)/[§4](../conventions.md#s4).
+  TEMPLATE — ENTITY spec (kind: entity, DECLARATIVE — no SCoT, no UI). Authority: conventions [§3](../conventions.md#3-spec-front-matter)/[§4](../conventions.md#4-index-rows).
   Copy to .sdd/specs/<MOD>/model/<ENT-id>.spec.md. Entity = WHAT data it holds + the rules binding it;
   never HOW it is stored. Both the code entity AND the DB schema change DERIVE from this spec.
   Markdown = source of truth; reuse over repetition (DRY). Delete "## Filled example" before saving.
@@ -25,7 +25,7 @@ owns_sections: []
 - **Errors (validation):** <named failures, each tied to an invariant below>.
 
 # Fields
-<Neutral types (scot.md [§2](../scot.md#s2)). State each constraint as a declarative fact (required/unique/format/range/default/derived), not a storage directive.>
+<Neutral types (scot.md [§2](../scot.md#2-lexical-conventions)). State each constraint as a declarative fact (required/unique/format/range/default/derived), not a storage directive.>
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|

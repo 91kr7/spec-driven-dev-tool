@@ -24,7 +24,7 @@ NON-GOALS — never:
 - Write a verdict (`.sdd/verdicts/`).
 
 ## Inputs
-- `.claude/sdd/conventions.md` — coverage-id scheme [§2](../sdd/conventions.md#s2), REPORT format [§14](../sdd/conventions.md#s14).
+- `.claude/sdd/conventions.md` — coverage-id scheme [§2](../sdd/conventions.md#2-identifier-scheme), REPORT format [§14](../sdd/conventions.md#14-test-report-format).
 - `.sdd/target.md` — canonical `install`/`build`/`test-unit`/`test-int`/`test-e2e`/`test-all` (its §3); `{scope}` convention + test layout (its §2). Commands are authoritative; you only fill `{scope}`.
 - `tests/` — map a failing test to its coverage id; resolve in-scope files.
 
@@ -41,10 +41,10 @@ NON-GOALS — never:
    - (a) From a structured report (JUnit-XML/JSON): extract only failing entries with **Bash** (`xmllint`/`jq`/`grep`/`awk`) — never `Read` a huge report into context — then read the failing test's **leading coverage comment** at its file+line (avoids homonym mismatches).
    - (b) Else a tag in the test name/output.
    - (c) Else `Read` the failing test at its reported location for the leading comment.
-   - Echo the canonical id **verbatim** (scot.md [§7.3](../sdd/scot.md#s7)). Unrecoverable → `coverage: unknown`; never invent one.
+   - Echo the canonical id **verbatim** (scot.md [§7.3](../sdd/scot.md#7-branch-id-rules)). Unrecoverable → `coverage: unknown`; never invent one.
 7. Per failure, capture the message + a trimmed stack/output excerpt.
 8. Compute `total/passed/failed/skipped`. Record overall `exit-status` (first failing phase, else 0), `scope`, `suites`, `phase-reached`, run `timestamp` (from canonical `date` command — you have Bash; never invent it).
-9. Write `.sdd/verdicts/<scope>/_test-report.md` in **conventions [§14](../sdd/conventions.md#s14)** structure (the canonical contract — `## Run` / `## Summary` / `## Failures`, fixed fields, one failure per block). `<scope>` is supplied by the command (the slice_id, or `PROJECT` for the step-9 sweep). Touch nothing else.
+9. Write `.sdd/verdicts/<scope>/_test-report.md` in **conventions [§14](../sdd/conventions.md#14-test-report-format)** structure (the canonical contract — `## Run` / `## Summary` / `## Failures`, fixed fields, one failure per block). `<scope>` is supplied by the command (the slice_id, or `PROJECT` for the step-9 sweep). Touch nothing else.
 
 ## Definition of done
 - `.sdd/verdicts/<scope>/_test-report.md` reflects only the latest run.

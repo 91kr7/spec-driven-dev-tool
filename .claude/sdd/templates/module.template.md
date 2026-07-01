@@ -1,5 +1,5 @@
 <!--
-  TEMPLATE — MODULE spec (kind: module, structural overview). Schema per conventions [§3](../conventions.md#s3).
+  TEMPLATE — MODULE spec (kind: module, structural overview). Schema per conventions [§3](../conventions.md#3-spec-front-matter).
   A module partitions the system; names the entries it contains — no SCoT, no UI schematic.
   Copy to .sdd/specs/<MOD-id>/<MOD-id>.spec.md (module spec sits at root of its own folder; register in global modules.index.md). Markdown is source of truth; reuse over repetition (DRY).
   Delete the "## Filled example" from a real spec.
@@ -30,7 +30,7 @@ owns_sections: []
 | Shared | `SHR-<lowerCamel>` | <shared non-UI abstraction> |
 
 # Boundaries & dependencies
-<Must equal `depends_on:` + the union of contained entries' cross-module deps (no hidden coupling). Acyclic at module level ([§12](../conventions.md#s12)).>
+<Must equal `depends_on:` + the union of contained entries' cross-module deps (no hidden coupling). Acyclic at module level ([§12](../conventions.md#12-topological-processing-and-vertical-slices)).>
 
 **Depends on** — | `MOD-<other>` | <what it uses from it> |
 **Exposes to** — | `MOD-<other>` | <entry ids other modules may reference> | (anything unlisted is internal)
@@ -41,9 +41,9 @@ owns_sections: []
 
 ---
 
-## Filled examples — the infra modules `MOD-build` & `MOD-schema` (canonical: [§2](../conventions.md#s2))
+## Filled examples — the infra modules `MOD-build` & `MOD-schema` (canonical: [§2](../conventions.md#2-identifier-scheme))
 
-> Both are the documented exception to `source: []`: they own their infra **files directly** (see [§2](../conventions.md#s2) for the exact rules on scaffolding, `test-e2e`, and forward schema scripts).
+> Both are the documented exception to `source: []`: they own their infra **files directly** (see [§2](../conventions.md#2-identifier-scheme) for the exact rules on scaffolding, `test-e2e`, and forward schema scripts).
 
 ```markdown
 ---
@@ -63,7 +63,7 @@ The mandatory scaffolding module: build files, manifests, runtime config, CI, th
 # Contained entries
 | Level | Entry id | What it represents (one line) |
 |-------|----------|-------------------------------|
-| — | — | none — MOD-build owns its infra files directly via `source:` ([§2](../conventions.md#s2) exception) |
+| — | — | none — MOD-build owns its infra files directly via `source:` ([§2](../conventions.md#2-identifier-scheme) exception) |
 
 # Boundaries & dependencies
 **Depends on** — | — | nothing (pure scaffolding) |
@@ -92,7 +92,7 @@ The DB schema module (DB projects only): forward-only schema-change scripts **de
 # Contained entries
 | Level | Entry id | What it represents (one line) |
 |-------|----------|-------------------------------|
-| — | — | none — MOD-schema owns its forward scripts directly via `source:` ([§2](../conventions.md#s2) exception) |
+| — | — | none — MOD-schema owns its forward scripts directly via `source:` ([§2](../conventions.md#2-identifier-scheme) exception) |
 
 # Boundaries & dependencies
 **Depends on** — | `MOD-model` | the `ENT-*` specs the forward schema scripts derive from |

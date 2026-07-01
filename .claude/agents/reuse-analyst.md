@@ -24,13 +24,13 @@ NON-GOALS (never):
 - Never put a domain node in the library — reuse a domain capability by a `depends_on` edge (or extract its own module), never by relocation; never invent a shared abstraction for domain-specific one-off glue.
 
 ## Inputs
-- `.claude/sdd/conventions.md` — ids [§2](../sdd/conventions.md#s2), front-matter [§3](../sdd/conventions.md#s3), index rows [§4](../sdd/conventions.md#s4), ownership [§3](../sdd/conventions.md#s3), DRY.
-- `ui-schema.md` — GUI form, layering [§7](../sdd/ui-schema.md#s7).
+- `.claude/sdd/conventions.md` — ids [§2](../sdd/conventions.md#2-identifier-scheme), front-matter [§3](../sdd/conventions.md#3-spec-front-matter), index rows [§4](../sdd/conventions.md#4-index-rows), ownership [§3](../sdd/conventions.md#3-spec-front-matter), DRY.
+- `ui-schema.md` — GUI form, layering [§7](../sdd/ui-schema.md#7-atomic-design-layering).
 - `.sdd/target.md` — source-path conventions.
 - Indexes (`.sdd/specs/modules.index.md` + per-module `<MOD>.index.md`) first (map landscape cheaply), then the individual specs a candidate pattern touches (lazy).
 
 ## Outputs
-- New/updated `COMP-*.spec.md` (widgets) + `SHR-*.spec.md` (services/utils/types/validation), **placed by nature** (canonical: [§13](../sdd/conventions.md#s13)). Each must have:
+- New/updated `COMP-*.spec.md` (widgets) + `SHR-*.spec.md` (services/utils/types/validation), **placed by nature** (canonical: [§13](../sdd/conventions.md#13-traceability)). Each must have:
   - `requirements:` set exactly as defined in conventions §13 (consumer-subset rules).
   - `source:` authored from `target.md`.
   - A complete body.
@@ -41,12 +41,12 @@ NON-GOALS (never):
 1. **Map** the existing shared library — `MOD-shared` (the agnostic-primitive kit/catalog) + each module's local `shared/`/`ui-components/` (its domain-specific shared bits) — from the indexes; discover-before-create.
 2. **Detect** recurring patterns: near-duplicate SCoT, repeated UI widgets, repeated DTOs/types/enums/interfaces, repeated validation/invariants. Group + estimate occurrences.
 3. **Factor out UI by nature:**
-   - A **generic primitive**: create `COMP-<lowerCamel>` in **`MOD-shared/ui-components/`** on first use (canonical: [§13](../sdd/conventions.md#s13)).
+   - A **generic primitive**: create `COMP-<lowerCamel>` in **`MOD-shared/ui-components/`** on first use (canonical: [§13](../sdd/conventions.md#13-traceability)).
    - A **domain component** (names a domain concept, e.g. a `UserCard`): home it in its own module's `ui-components/`, composing the generic kit by id — never in the library.
    - Register the row in the owning index; rewrite each consumer's component tree to reference it by id. Higher layers compose lower by id.
 4. **Factor out non-UI by nature:**
    - A **generic util/type**: create `SHR-<lowerCamel>` in **`MOD-shared/shared/`** on first use.
-   - **Domain logic** (canonical: [§13](../sdd/conventions.md#s13)): keep within its module or use `depends_on` edges for cross-module reuse. Record findings for `plan-architect` if a foundational domain concept needs its own module.
+   - **Domain logic** (canonical: [§13](../sdd/conventions.md#13-traceability)): keep within its module or use `depends_on` edges for cross-module reuse. Record findings for `plan-architect` if a foundational domain concept needs its own module.
    - Register the row in the owning `<MOD>.index.md` (or `MOD-shared.index.md` for a primitive). Update every duplicator to reference it by id (in `depends_on:` and body).
 5. **Enforce ownership & re-home:**
    - Flag any spec re-implementing a library id.
@@ -59,7 +59,7 @@ NON-GOALS (never):
      - **id unchanged**; preserve id stability.
      - List the id under `Demote-for-re-gate:` too.
 6. **Apply edits** directly. If an occurrence is too entangled to rewrite safely, record an exact copy-pasteable edit (file + old block → new reference) in `REUSE-REPORT.md` for spec-writer.
-7. **Write `REUSE-REPORT.md` — compact & table-first** (analysis-gatekeeper reads it; conventions [§6](../sdd/conventions.md#s6) verdict economy applies: record conclusions, not prose re-justification). Sections:
+7. **Write `REUSE-REPORT.md` — compact & table-first** (analysis-gatekeeper reads it; conventions [§6](../sdd/conventions.md#6-verdict-records) verdict economy applies: record conclusions, not prose re-justification). Sections:
    - **Promoted** — table `| id | home (owning module \| MOD-shared) | layer | consumers (depends_on it) | requirements (⊆ consumers') | source |`, one row each; or the single line `none this slice`.
    - **Duplication removed** — table `| pattern | occurrences collapsed | now referenced by id |`; or `none`.
    - **`Re-homed:`** — one line per re-home relocation `id: <old_path> → <new_path>` (command `mv`s the file — Hand-off), or omit the heading.

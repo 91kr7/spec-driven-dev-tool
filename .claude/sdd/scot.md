@@ -5,8 +5,7 @@
 > loop, explicit I/O, invariants) — never library choices, API signatures, or syntax
 > (those live in code + `.sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md`).
 
-<a id="s1"></a>
-## 1. Scope & purpose
+## 1. Scope and purpose
 
 - Used by `kind:` **behavioral** specs: `service`, `controller`, `use-case`.
 - NOT for structural specs (declarative) or `gui` specs (→ `ui-schema.md`).
@@ -19,7 +18,6 @@
 
 ---
 
-<a id="s2"></a>
 ## 2. Lexical conventions
 
 | Element | Notation |
@@ -34,14 +32,13 @@
 - Indentation = 2 spaces (readability only).
 - `END` is authoritative for block scope.
 
-**Neutral types.** Implementer **and** test-writer both map via `target.md` [§2](#s2)'s language-idioms map. Same map ⇒ converging call sites, so a spec-derived test compiles against real code without reading `src/`.
+**Neutral types.** Implementer **and** test-writer both map via `target.md` [§2](#2-lexical-conventions)'s language-idioms map. Same map ⇒ converging call sites, so a spec-derived test compiles against real code without reading `src/`.
 - Primitives: `Int Long Float Decimal Bool String Char Bytes Date DateTime UUID`
 - Generics: `List<T> Set<T> Map<K,V> Option<T> Result<T,E> Void Any`
 - Domain/structural types referenced by id/name (`User` = ENT-user).
 
 ---
 
-<a id="s3"></a>
 ## 3. Function header
 
 ```
@@ -56,11 +53,10 @@ END
 ```
 - `ASYNC FUNCTION` + `AWAIT` at call sites.
 - `PURE FUNCTION` marks side-effect-free.
-- Error style **declared in front-matter** `error_style: result|raise` ([§6](#s6)); body MAY restate it for readability.
+- Error style **declared in front-matter** `error_style: result|raise` ([§6](#6-error-style)); body MAY restate it for readability.
 
 ---
 
-<a id="s4"></a>
 ## 4. Control constructs
 
 **Every branching construct carries a branch id `[Bn]`.** Plain sequence does not.
@@ -101,7 +97,6 @@ END
 
 ---
 
-<a id="s5"></a>
 ## 5. Statements
 
 | Statement | Meaning |
@@ -118,10 +113,9 @@ END
 
 ---
 
-<a id="s6"></a>
-## 6. Error style — one per spec
+## 6. Error style
 
-Declared in front-matter `error_style:` (conventions [§3](conventions.md#s3), the canonical home):
+Declared in front-matter `error_style:` (conventions [§3](conventions.md#3-spec-front-matter), the canonical home):
 - **`result`** — functions return `Result<T,E>` (`Ok`/`Err`).
 - **`raise`** — functions `RAISE`; callers `TRY/CATCH`.
 
@@ -130,12 +124,11 @@ Declared in front-matter `error_style:` (conventions [§3](conventions.md#s3), t
 
 ---
 
-<a id="s7"></a>
-## 7. Branch-id rules (coverage contract)
+## 7. Branch-id rules
 
 1. Branch ids are **unique within a `FUNCTION`**, assigned top-to-bottom, **stable** across re-writes (new branches take the next free number).
-2. A branch's **arms** ([§4](#s4)) are its **coverage set**.
-3. **[§7.3](#s7) — canonical coverage id** (used everywhere, no other spelling):
+2. A branch's **arms** ([§4](#4-control-constructs)) are its **coverage set**.
+3. **[§7.3](#7-branch-id-rules) — canonical coverage id** (used everywhere, no other spelling):
    - branch arm → `<spec-id>::<function>#<arm-id>` (e.g. `CLS-regCtrl::register#B1.else`)
    - acceptance criterion → `<spec-id>#ACn` (e.g. `CLS-regCtrl#AC2`)
    - test-writer tags each test with it; test-runner echoes it **verbatim**; test-gatekeeper joins on it.
@@ -144,8 +137,7 @@ Declared in front-matter `error_style:` (conventions [§3](conventions.md#s3), t
 
 ---
 
-<a id="s8"></a>
-## 8. Worked example — `CLS-regCtrl.register`, `error_style: result`
+## 8. Worked example
 
 ```
 FUNCTION register(cmd: RegisterCmd) -> Result<User, RegError>
@@ -172,7 +164,6 @@ Coverage set: `B1.then`, `B1.else`, `B2.then`, `B2.else` + the spec's `ACn`.
 
 ---
 
-<a id="s9"></a>
 ## 9. SCoT must NOT contain
 - Concrete library/framework names (`Spring`, `Express`, `axios`…).
 - Language syntax (`@Annotations`, `public static`, decorators).

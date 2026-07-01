@@ -1,6 +1,6 @@
 <!--
-  TEMPLATE — shared UI component (COMP-*, kind: gui). Copy to .sdd/specs/<MOD>/ui-components/COMP-<lowerCamel>.spec.md (<MOD> = MOD-shared for a domain-agnostic primitive / design-system kit; the owning module for a domain component — by nature, conventions [§13](../conventions.md#s13)).
-  Authority: conventions [§2](../conventions.md#s2)/[§3](../conventions.md#s3)/[§5](../conventions.md#s5) + ui-schema [§6](../ui-schema.md#s6) (EXTRA sections a COMP-* adds) + [§7](../ui-schema.md#s7) (layers) + scot.md (non-trivial handler only).
+  TEMPLATE — shared UI component (COMP-*, kind: gui). Copy to .sdd/specs/<MOD>/ui-components/COMP-<lowerCamel>.spec.md (<MOD> = MOD-shared for a domain-agnostic primitive / design-system kit; the owning module for a domain component — by nature, conventions [§13](../conventions.md#13-traceability)).
+  Authority: conventions [§2](../conventions.md#2-identifier-scheme)/[§3](../conventions.md#3-spec-front-matter)/[§5](../conventions.md#5-status-lifecycle-and-separation-of-duties) + ui-schema [§6](../ui-schema.md#6-extra-sections-for-components) (EXTRA sections a COMP-* adds) + [§7](../ui-schema.md#7-atomic-design-layering) (layers) + scot.md (non-trivial handler only).
   Discover before create: read MOD-shared.index.md first; higher layer composes lower layers BY ID, never re-described.
   No framework code, no CSS/colors/pixels — design-token names only. Markdown = source of truth; reuse over repetition (DRY).
   Delete the "## Filled example".
@@ -21,13 +21,13 @@ variants: [<variantA>, <variantB>]   # optional — named visual variants
 <One paragraph: single reusable responsibility. No HOW, no styling detail.>
 
 # Wireframe
-<ASCII per ui-schema [§2](../ui-schema.md#s2) (indicative). Bind dynamic text via {propName}.>
+<ASCII per ui-schema [§2](../ui-schema.md#2-wireframe-notation) (indicative). Bind dynamic text via {propName}.>
 ```
 <ascii of the default visual state>
 ```
 
 # Composition / slots
-<Tree per ui-schema [§3](../ui-schema.md#s3): compose lower-layer COMP-* BY ID; atom usually has none. Name any slots.>
+<Tree per ui-schema [§3](../ui-schema.md#3-component-tree): compose lower-layer COMP-* BY ID; atom usually has none. Name any slots.>
 ```
 COMP-<lowerCamel>
 └─ <COMP-childId>  props: { … }     # or: (atom — no child components)

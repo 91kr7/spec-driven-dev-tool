@@ -1,8 +1,8 @@
 <!--
-  TEMPLATE — index files. TWO kinds (conventions [§4](../conventions.md#s4)):
+  TEMPLATE — index files. TWO kinds (conventions [§4](../conventions.md#4-index-rows)):
     1. GLOBAL      .sdd/specs/modules.index.md          — one row per MODULE (the skeleton).
     2. PER-MODULE  .sdd/specs/<MOD>/<MOD>.index.md       — one row per entity in that module, ALL levels (lazy).
-  Authority: conventions [§1](../conventions.md#s1) (layout), [§4](../conventions.md#s4) (row schema), [§2](../conventions.md#s2) (ids), [§3](../conventions.md#s3) (front-matter — `source` DERIVED), [§5](../conventions.md#s5) (status lives HERE).
+  Authority: conventions [§1](../conventions.md#1-file-and-folder-layout) (layout), [§4](../conventions.md#4-index-rows) (row schema), [§2](../conventions.md#2-identifier-scheme) (ids), [§3](../conventions.md#3-spec-front-matter) (front-matter — `source` DERIVED), [§5](../conventions.md#5-status-lifecycle-and-separation-of-duties) (status lives HERE).
   Markdown = source of truth (authority); reuse over repetition (DRY).
   Delete "## Filled example" when authoring a real index.
 -->
@@ -12,7 +12,7 @@
 > Architectural skeleton: list **every** `MOD-*` with its `depends_on` and `status`. Agents read this
 > first to map the module graph, then open only the per-module index they need (lazy loading).
 
-**Columns (conventions [§4](../conventions.md#s4)):** `id` (`MOD-*`) · `name` · `description` (WHAT, one line) · `depends_on` (comma-separated `MOD-*`, deps first, `—` if none) · `spec` (`.sdd/specs/<MOD>/<MOD>.spec.md`) · `source` (derived, `—` when `source: []`) · `status` (draft|reviewed|implemented|approved).
+**Columns (conventions [§4](../conventions.md#4-index-rows)):** `id` (`MOD-*`) · `name` · `description` (WHAT, one line) · `depends_on` (comma-separated `MOD-*`, deps first, `—` if none) · `spec` (`.sdd/specs/<MOD>/<MOD>.spec.md`) · `source` (derived, `—` when `source: []`) · `status` (draft|reviewed|implemented|approved).
 
 | id | name | description (WHAT, one line) | depends_on | spec | source | status |
 |----|------|------------------------------|------------|------|--------|--------|
@@ -27,7 +27,7 @@
 > **append** `layer` + `variants` after `level`. `status` = canonical lifecycle home (only the
 > command advances it); `source` **derived** from each spec's `source:`. Fill **every** column.
 
-**Columns:** `id` ([§2](../conventions.md#s2) prefix) · `name` · `description` (WHAT, one line) · `level` (feature|class|entity|ui-component|shared) · `depends_on` (ids, deps first, `—` if none) · `spec` (path) · `source` (derived, `—` when `source: []`) · `status`.
+**Columns:** `id` ([§2](../conventions.md#2-identifier-scheme) prefix) · `name` · `description` (WHAT, one line) · `level` (feature|class|entity|ui-component|shared) · `depends_on` (ids, deps first, `—` if none) · `spec` (path) · `source` (derived, `—` when `source: []`) · `status`.
 
 | id | name | description (WHAT, one line) | level | depends_on | spec | source | status |
 |----|------|------------------------------|-------|------------|------|--------|--------|
