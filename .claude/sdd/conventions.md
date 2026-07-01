@@ -48,7 +48,7 @@ tests/                       # GENERATED test files (unit←classes, integration
 - Level subfolders and the per-module `<MOD>.index.md` are created **lazily** (only when populated).
 - The single global `modules.index.md` is the architectural skeleton.
 - A single-module project still uses `specs/<MOD>/…` (no flattening).
-- **Library placement — by nature, not count ([§13](#s13)):** a domain-agnostic **primitive** (generic `COMP-*`/`SHR-*`) is homed in **`MOD-shared`** from its **first** use, whatever its consumer count. A **domain** node (names/encodes a domain concept, or depends on a feature module) is **never** homed there: it stays in its module, reused across modules by a `depends_on` **edge** ([§13](#s13)).
+- **Library placement — by nature, not count:** domain-agnostic primitives (generic `COMP-*`/`SHR-*`) live in **`MOD-shared`**; a **domain** node stays in its own module (reused by a `depends_on` **edge**). The full rule — sink · primitives-only · first-use · re-home — is [§13](#s13).
 
 ---
 
@@ -81,11 +81,10 @@ tests/                       # GENERATED test files (unit←classes, integration
   - Its `depends_on` reaches the persistence module + the `ENT-*` it evolves, so it is ordered **after** the entities.
   - Unlike `MOD-build`, it is **not requirement-exempt**: its `requirements` = the union of the `REQ-*` of the `ENT-*` whose schema it materializes (the DB exists for those persistence requirements).
   - A non-DB project has no `MOD-schema`.
-- **`MOD-shared` is the LIBRARY** — the single module owning every **domain-agnostic primitive**: the generic `COMP-*` design-system kit (Button, Panel, Form, Header, Footer, …) + generic `SHR-*` utils/types (Money, formatDate, Result, validators, …). **Admission is by nature, not count** ([§13](#s13)): a primitive is homed here from its **first** use — one consumer, even within one module, is enough. This builds the design-system **deliberately** instead of letting it emerge by accident from duplication.
-  - A dependency **SINK**: `depends_on: [MOD-build]`, **never** a feature module (a gate REJECTs an upward edge) — the mechanical half of the test: a node needing a domain dependency is not a primitive.
-  - It admits **only** primitives. A node that **names or encodes a domain concept** (even with agnostic deps) belongs in its domain module, not here ([§13](#s13)).
-  - Declared as the library home as soon as any primitive is foreseen; its members are **materialized at first use** (by nature, not count) — each primitive rides in the `depends_on` closure of the first slice that composes it, so the module is never empty/orphaned. `requirements` = the union of its members' `REQ-*`.
-  - Like `MOD-build`/`MOD-schema`, the id `MOD-shared` is reserved.
+- **`MOD-shared` is the LIBRARY** — the reserved-id module owning every **domain-agnostic primitive** (the generic `COMP-*` design-system kit + `SHR-*` utils/types). Its **placement rule** — by nature not count · dependency sink · admits only primitives · re-home — is [§13](#s13); here, only its id-scheme facts:
+  - the id `MOD-shared` is **reserved** (like `MOD-build`/`MOD-schema`);
+  - members are **materialized at first use** — each rides in the `depends_on` closure of the first slice that composes it, so the module is never empty/orphaned;
+  - `requirements` = the union of its members' `REQ-*`.
 
 ---
 
