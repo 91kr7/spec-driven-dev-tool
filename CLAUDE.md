@@ -17,8 +17,8 @@ disk — `.sdd/`, `src/`, `tests/`, field-test dirs — is generated/throwaway, 
 
 ## Where each kind of rule lives (the doc architecture)
 
-Know the home for a fact before you write it. (Authoritative file list: [conventions §1](.claude/sdd/conventions.md#s1);
-agent roster: [§9](.claude/sdd/conventions.md#s9) — this table is the *maintenance* view, not a second copy of those.)
+Know the home for a fact before you write it. (Authoritative file list: [conventions §1](.claude/sdd/conventions.md#1-file-and-folder-layout);
+agent roster: [§9](.claude/sdd/conventions.md#9-agent-roster-and-isolation-matrix) — this table is the *maintenance* view, not a second copy of those.)
 
 | File(s) | Holds | Role when writing |
 |---|---|---|
@@ -35,26 +35,34 @@ agent roster: [§9](.claude/sdd/conventions.md#s9) — this table is the *mainte
 The tool's first value is *"Reuse over repetition (DRY)"*. Its own construction MUST obey it.
 
 > **Every rule / standard / format / vocabulary has exactly ONE canonical home.**
-> **Everywhere else, link to it (`[§N](path#sN)`) — never restate it.**
+> **Everywhere else, link to it (e.g. `[§6](../sdd/conventions.md#6-verdict-records)`) — never restate it.**
 
 Before writing any normative sentence (a "must/never", a format, an id scheme, a lifecycle, a
 routing/verdict/resume rule) in ANY file, ask:
 
-1. Does this concept already have a home? → **link it** (`[§N](path#sN)`), do not re-describe it.
+1. Does this concept already have a home? → **link it** (e.g. `[§6](../sdd/conventions.md#6-verdict-records)`), do not re-describe it.
 2. No home yet? → put it in the right home **first**, then link from the point of use.
 
 A restated rule is not documentation — it is a **desync bug waiting to happen**: a later change
 updates one copy and the others silently drift. (Most state-machine bugs this tool has fought came
 from exactly that.) The clause *"on conflict this file wins"* is a symptom, not a licence to copy.
 
-**Pointer format.** A pointer is a real link, not bare text: `[§N](relative/path#sN)`. Every numbered
-section of `conventions.md` / `scot.md` / `ui-schema.md` carries a stable `<a id="sN"></a>` anchor
-(decoupled from the title, so a link survives a section rename). Do **not** rely on heading-text
-auto-anchors — they break silently on any title edit (a fresh desync). Relative path is from the
-*linking* file: `../sdd/conventions.md#s6` from an agent, `../conventions.md#s6` from a template.
+**Pointer format.** A pointer is a real link to the target section's **own heading anchor** — the
+slug the renderer auto-generates from the title — never a hand-written `<a id>` (those resolve only
+on GitHub web; IntelliJ, VS Code, and the GitHub mobile app ignore them, so the jump silently dies).
+A real one: `[§6](../sdd/conventions.md#6-verdict-records)` — general shape
+`[§<n>](<relative-path>#<n>-<lowercased-title-with-hyphens>)`, where the slug is the section
+**number + lowercased title, spaces → hyphens** (`<…>` = fill-in, not literal text). For the slug to resolve
+**identically across renderers, keep section titles short and symbol-free**: no `&` (write "and"),
+no em-dashes, `()` subtitles, or `` `code` `` inside a heading — each of those slugs differently per
+tool. Renaming a title changes its slug, so update the links pointing to it (the leading **number**
+is stable; run the link-checker after any title edit). Relative path is from the *linking* file:
+`../sdd/conventions.md#…` from an agent, `../conventions.md#…` from a template. (The GitHub mobile
+app may not scroll to any in-page anchor — a client limit no format fixes; the link still opens the
+right file, and `§N` names the section.)
 
 ### The ONLY permitted duplication
-1. The `MINDSET` two-values line that **[conventions §11](.claude/sdd/conventions.md#s11) explicitly mandates** in every agent file.
+1. The `MINDSET` two-values line that **[conventions §11](.claude/sdd/conventions.md#11-role-header) explicitly mandates** in every agent file.
 2. At most a **one-line inline echo** of a *safety-critical* rule inside an agent/command prompt,
    when subagent reliability genuinely needs the rule in its own context — and then only if it is
    **marked `(canonical: §N)`**, is never the full rule, and never drifts from its home.
@@ -67,7 +75,7 @@ Every file here is loaded **as an agent's operating prompt**, usually run by a *
 acting on its own file. Write for that reader — it also draws the line for the echo above:
 
 - A **pointer carries the authority + the full rule**: the agent has `conventions.md` in context and
-  follows `[§N](path#sN)` for the complete statement. That is why re-narrating a rule is pure waste.
+  follows the link (e.g. `[§6](../sdd/conventions.md#6-verdict-records)`) for the complete statement. That is why re-narrating a rule is pure waste.
 - Where an agent must **act on** a rule (a gatekeeper's accept/reject test, an author's
   what-to-produce), keep the **one-line discriminating criterion inline** (marked `(canonical: §N)`).
   `orphan = empty requirements:` beats *"verify requirements match §13"* — a gate told only to
@@ -83,13 +91,6 @@ acting on its own file. Write for that reader — it also draws the line for the
 
 1. Edit the **canonical home only**.
 2. **`rg "<key phrase>" .claude/` first** — find every echo. Update the home; convert stray copies
-   to `[§N](path#sN)` links (or delete them). Leave only the two permitted echoes above.
+   to real section links (or delete them). Leave only the two permitted echoes above.
 3. **Smell test:** a single-concept change that forces edits in **>2 files** means you're editing
    *copies*, not the source. Stop and collapse to a pointer first, then make the change once.
-
-## When you change status / routing / resume (the state machine)
-
-Simulate a **crash-resume for every backward route** before committing. Keep the two concerns
-separate — **WHERE** to re-enter = own-member `status` (kept truthful by the demote) · **WHICH**
-reasons = the **latest verdict** (by `current_ts` timestamp; [conventions §6](.claude/sdd/conventions.md#s6)/[§7](.claude/sdd/conventions.md#s7)). Express recovery
-as a mechanical rule over file fields, never as prose a human must interpret.
