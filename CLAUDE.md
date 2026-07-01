@@ -5,6 +5,14 @@ orchestrator built entirely from Markdown. There is no application code — the 
 ARE the deliverable. Edit and commit **only** under `.claude/` (and this file). Anything else on
 disk — `.sdd/`, `src/`, `tests/`, field-test dirs — is generated/throwaway, never the product.
 
+## Language
+
+- **Replies to the user: clear, natural Italian.** Write as a native speaker would — never a
+  word-for-word calque of an English sentence. Plain, idiomatic phrasing; if a literal translation
+  reads awkwardly, rephrase it the way an Italian would actually say it.
+- **All repository content stays in English** — every `.md` (conventions, agents, templates, this
+  file), source code, and commit message. Only the chat replies to the user are in Italian.
+
 ---
 
 ## Where each kind of rule lives (the doc architecture)
