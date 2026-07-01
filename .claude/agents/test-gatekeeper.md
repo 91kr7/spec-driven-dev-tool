@@ -35,10 +35,8 @@ NON-GOALS (never):
 ## Procedure
 1. Resolve scope from indexes; open only in-scope specs.
 2. **Required coverage set** per spec — every **test-covered** `ACn` + (behavioral) every SCoT branch arm (incl. implicit `B*.else`/`B*.empty`/`B*.skip` and gui handler-snippet arms), each as its canonical id.
-   - **AC altitudes (conventions [§3](../sdd/conventions.md#s3)):**
-     - A `(pipeline)` AC needs **no** authored test — covered by the green run result (run reached `phase-reached: complete`, so the install/build/boot/migrate it asserts ran).
-     - A `(journey)` AC needs an e2e (step 4).
-   - A `(pipeline)` tag on a **non-infra** spec (`CLS-*`/`FEAT-*`/`ENT-*` — anything but `MOD-build`/`MOD-schema`) is illegal → REJECT, route `spec-writer`.
+   - **AC altitudes** (canonical: [§3](../sdd/conventions.md#s3)): verify `(pipeline)` tags exactly match the infra-module rules in conventions §3. Any violation ⇒ REJECT, route `spec-writer`.
+   - A `(journey)` AC needs an e2e (step 4).
 3. **Run-health gate (before coverage).** Read `scope`/`suites`/`phase-reached`/`exit-status`/`tooling`.
    - REPORT `scope` narrower than the scope under judgment → REJECT (stale run; re-run for full scope).
    - `exit-status` ≠ 0 with `phase-reached: install|build` → broken setup, NOT a coverage problem: REJECT **without** coverage eval. Route a compile/build error by offending file: `src/**` → `code-implementer`, `tests/**` → `test-writer`. Route an install/tooling failure → **escalate**.

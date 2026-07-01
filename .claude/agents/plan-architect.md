@@ -57,12 +57,9 @@ NON-GOALS:
    - (GUI) each screen → a `gui` `CLS-`; each generic widget → a `COMP-` primitive in the `MOD-shared` kit (a domain-named component stays in its module — [§13](../sdd/conventions.md#s13))
    - group entities into `MOD-`
 
-   **Two invariants:**
+   **Two invariants:** (canonical: [§13](../sdd/conventions.md#s13))
    - **every `REQ-*` lands on ≥1 entity**, and
-   - **every entity carries ≥1 real `REQ-*`** — exceptions:
-     - only `MOD-build` is exempt (`—`, whole-app scaffolding).
-     - `MOD-schema` carries the **union of the `REQ-*` of the `ENT-*` it materializes**.
-     - a **shared/library** entity (`SHR-*`, baseline-or-promoted `COMP-*`) carries a **non-empty subset of its consumers' `REQ-*`** (the entities that `depends_on` it) — each id both carried by a real consumer **and** genuinely realized by this entity. So a fine-grained atom lists only the consumer `REQ-*` it actually serves, never the whole screen's set, never a `REQ-*` no consumer carries.
+   - **every entity carries ≥1 real `REQ-*`** (with exceptions for `MOD-build`, `MOD-schema`, and shared entities exactly as defined in `conventions.md §13`).
    - none empty; never invent scope no `REQ-*` implies.
 
    THEN write `.sdd/PLAN.md`: one row per entity, each carrying `id` ([§2](../sdd/conventions.md#s2) form) · `level` · `module` · `depends_on` (ids) · `source` (from `target.md` conventions) · `requirements` (real `REQ-*` ids, or `—` only for `MOD-build` — **never a prose annotation**) · **NEW or MODIFY**.
@@ -70,21 +67,18 @@ NON-GOALS:
    **PLAN.md is a DELTA, rewritten afresh each run — never a cumulative ledger.**
    - On existing-SDD write a row **only** for an entity that is `NEW` (genuinely added) or `MODIFY` (an existing spec this change rewrites). **Never re-list an unchanged, already-`approved` entity** (it stays in its index untouched) — reference unchanged ones only inside other rows' `depends_on`.
    - On a NEW project the delta is the whole set: everything is `NEW`.
-4. **Include the infra modules** ([§2](../sdd/conventions.md#s2)):
-   - always `MOD-build` (scaffolding, `depends_on: []`); make **every domain module declare `depends_on: MOD-build`**, so topological order puts it **first** (all code needs the scaffolding to build).
-   - for a DB project, also `MOD-schema`, `depends_on` set to the `ENT-*` (and their persistence module) whose schema it evolves, so the planned graph matches the specs. Its `requirements` = union of those `ENT-*`' `REQ-*` (NOT exempt — the DB exists for those persistence requirements).
-5. **Declare `MOD-shared` as the LIBRARY home ([§13](../sdd/conventions.md#s13)):**
-   - The moment the plan has **any** domain-agnostic primitive — a generic UI widget the screens compose, or a generic util/type — add the `MOD-shared` module: a dependency **SINK** (`depends_on: [MOD-build]`, never a feature module; `requirements` = union of its members'). For a GUI project this is essentially always (the design-system kit). Its primitives are **materialized at first use** (by nature) — each rides in the `depends_on` closure of the first slice that composes it; don't force an empty early slice.
-   - Home **every** primitive there from its **first** use (by nature, not count). A **domain** node — names a domain concept or depends on a feature module — stays in its module, reused across modules by a `depends_on` edge; a domain *concept* several modules need → its own named domain module, never the library ([§13](../sdd/conventions.md#s13)).
-   - Omit `MOD-shared` only when the plan has no primitive at all (a small primitive-less CLI); the reuse-analyst adds it later if one emerges.
+4. **Include the infra modules** (canonical: [§2](../sdd/conventions.md#s2)):
+   - `MOD-build` and (for DB projects) `MOD-schema`, with exact `depends_on` and `requirements` rules as defined in conventions §2.
+5. **Declare `MOD-shared` as the LIBRARY home** (canonical: [§13](../sdd/conventions.md#s13)):
+   - Admit only primitives, home them there from first use (by nature, not count). Omit only if no primitives exist.
    - Indexes are per-module by default (a global `modules.index.md` + one `<MOD>.index.md` each) — no per-level global indexes ([§4](../sdd/conventions.md#s4)).
 6. **Order into vertical slices** in `depends_on` topological order; the graph MUST be a **DAG**.
    - Break any cycle interface-first (add an `interface` spec, re-point members onto it) and note the break.
    - **Record the resulting ordered slice list as a `Slice plan` section in `.sdd/PLAN.md`** — one row per slice with its member ids and `depends_on` closure, in execution order — so the command consumes it directly.
    - **On existing-SDD the `Slice plan` is likewise a delta:** list ONLY slices containing ≥1 `NEW`/`MODIFY` member; an unchanged `approved` entity appears only as a read-only `depends_on` reference inside a member's closure, never as a slice member to re-work.
 7. **Flag shared candidates** for the reuse-analyst; reuse existing UI components by id.
-   - For a **GUI project**: include as `COMP-*` entries only the ui-schema [§9](../sdd/ui-schema.md#s9) catalog components the screens actually compose (catalog = candidates, not a required set — don't plan unused ones), and ensure `MOD-build` owns the e2e harness with a real `test-e2e` in `target.md` (`n/a` only for backend/CLI/library).
-   - Shared/library `COMP-*`/`SHR-*` carry the **consumer-subset** of their `REQ-*` (step 3 / [§13](../sdd/conventions.md#s13)) — never a prose tag like "enrichment", never `—`, never empty.
+   - For a **GUI project**: include as `COMP-*` entries only the ui-schema [§9](../sdd/ui-schema.md#s9) catalog components the screens actually compose, and ensure `MOD-build` owns the e2e harness in `target.md`.
+   - Shared/library components carry the consumer-subset of their `REQ-*` ([§13](../sdd/conventions.md#s13)).
 
 ## Definition of done
 - Every entity has all fields + NEW/MODIFY.

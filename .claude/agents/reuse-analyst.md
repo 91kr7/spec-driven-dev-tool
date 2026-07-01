@@ -30,8 +30,8 @@ NON-GOALS (never):
 - Indexes (`.sdd/specs/modules.index.md` + per-module `<MOD>.index.md`) first (map landscape cheaply), then the individual specs a candidate pattern touches (lazy).
 
 ## Outputs
-- New/updated `COMP-*.spec.md` (widgets) + `SHR-*.spec.md` (services/utils/types/validation), **placed by nature ([§1](../sdd/conventions.md#s1), [§13](../sdd/conventions.md#s13))** — a domain-agnostic primitive under `MOD-shared/{ui-components,shared}/`; a domain abstraction reused within one module under that module's `ui-components/`/`shared/`. Each must have:
-  - `requirements:` = a **non-empty subset of the `REQ-*` of the consumer(s) you rewrote to use it** — only the REQ this abstraction genuinely realizes, each carried by ≥1 of those consumers. A factored abstraction owns no `REQ-*` of its own but carries those of its consumers ([§13](../sdd/conventions.md#s13)). It has ≥1 consumer (a primitive needs only one), so the set is non-empty — never an orphan. Never list a `REQ-*` no consumer carries — that is excess.
+- New/updated `COMP-*.spec.md` (widgets) + `SHR-*.spec.md` (services/utils/types/validation), **placed by nature** (canonical: [§13](../sdd/conventions.md#s13)). Each must have:
+  - `requirements:` set exactly as defined in conventions §13 (consumer-subset rules).
   - `source:` authored from `target.md`.
   - A complete body.
 - Updated owning module's `<MOD>.index.md` (primitives → `MOD-shared.index.md`) — one fully-filled row per promotion, `source` derived from the spec.
@@ -41,12 +41,12 @@ NON-GOALS (never):
 1. **Map** the existing shared library — `MOD-shared` (the agnostic-primitive kit/catalog) + each module's local `shared/`/`ui-components/` (its domain-specific shared bits) — from the indexes; discover-before-create.
 2. **Detect** recurring patterns: near-duplicate SCoT, repeated UI widgets, repeated DTOs/types/enums/interfaces, repeated validation/invariants. Group + estimate occurrences.
 3. **Factor out UI by nature:**
-   - A **generic primitive** (Button, Panel, Form, Header, Footer — agnostic to the domain): create `COMP-<lowerCamel>` (`kind: gui`, correct `layer:`, full Props/Variants/Visual-states/Events/Accessibility) in **`MOD-shared/ui-components/`** the **first** time a screen composes it — count-irrelevant; this is the design-system kit. Create `MOD-shared/MOD-shared.spec.md` (a SINK: `depends_on: [MOD-build]`, never a feature module) + its `modules.index.md` row on first use.
+   - A **generic primitive**: create `COMP-<lowerCamel>` in **`MOD-shared/ui-components/`** on first use (canonical: [§13](../sdd/conventions.md#s13)).
    - A **domain component** (names a domain concept, e.g. a `UserCard`): home it in its own module's `ui-components/`, composing the generic kit by id — never in the library.
    - Register the row in the owning index; rewrite each consumer's component tree to reference it by id. Higher layers compose lower by id.
 4. **Factor out non-UI by nature:**
-   - A **generic util/type** (no domain knowledge — Money, formatDate, Result, a validator): create `SHR-<lowerCamel>` (service/util → SCoT; dto/enum/interface/config → declarative) in **`MOD-shared/shared/`**, the first time it is used.
-   - **Domain logic** duplicated **within one module** → extract a domain `SHR-*` in that module's `shared/`. Duplicated **across modules** → do **not** relocate it to the library: pick the module that owns the capability and re-point the other consumers' `depends_on` onto it (preserve the edge `B → A`); if no module clearly owns it (a foundational concept), record a finding for `plan-architect` to extract its own named module ([§13](../sdd/conventions.md#s13)).
+   - A **generic util/type**: create `SHR-<lowerCamel>` in **`MOD-shared/shared/`** on first use.
+   - **Domain logic** (canonical: [§13](../sdd/conventions.md#s13)): keep within its module or use `depends_on` edges for cross-module reuse. Record findings for `plan-architect` if a foundational domain concept needs its own module.
    - Register the row in the owning `<MOD>.index.md` (or `MOD-shared.index.md` for a primitive). Update every duplicator to reference it by id (in `depends_on:` and body).
 5. **Enforce ownership & re-home:**
    - Flag any spec re-implementing a library id.

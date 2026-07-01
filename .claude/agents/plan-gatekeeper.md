@@ -35,11 +35,9 @@ NON-GOALS:
 1. **target.md resolved** — `.sdd/target.md` exists; no `<…>` placeholder in its §1 stack / §2 source-paths / §3 commands (target.md's own sections; unused fields read `n/a`).
 
 2. **Per-entity completeness** — each entity declares `id` (valid [§2](../sdd/conventions.md#s2) form) · `level` · `module` · `depends_on` · `source` · `requirements`, and is marked NEW/MODIFY.
-   - Only `MOD-build` may carry `requirements: —`.
-   - `MOD-schema` must carry the **union of the `REQ-*` of the `ENT-*` it materializes** (≥1).
-   - A **shared/library** spec (`SHR-*`, baseline-or-promoted `COMP-*`) must carry a **non-empty subset of its consumers' `REQ-*`** (≥1) — each listed id carried by ≥1 real consumer **and** genuinely realized by this entity.
-   - Empty ⇒ orphan ⇒ REJECT. A listed `REQ-*` no consumer carries ⇒ excess ⇒ REJECT.
-   - A **prose annotation** (anything that is neither real `REQ-*` ids nor `—`, e.g. "enrichment") is itself a defect → REJECT.
+   - Verify exceptions for `MOD-build`, `MOD-schema`, and shared entities (canonical: [§13](../sdd/conventions.md#s13)).
+   - Empty `requirements` (orphan) or an id no consumer carries (excess) ⇒ REJECT.
+   - A **prose annotation** (anything that is neither real `REQ-*` ids nor `—` for MOD-build) is a defect → REJECT.
    - **Id stability (existing project, against `.sdd/specs/`):** every `MODIFY` id resolves to a spec already present; every `NEW` id is genuinely unused; no existing id renumbered/renamed ([§2](../sdd/conventions.md#s2)).
 
 3. **DAG (whole-project)** — the `depends_on` graph is acyclic.
@@ -59,10 +57,8 @@ NON-GOALS:
 
 7. **Reuse flagging** — shared/cross-cutting duplication is flagged for the reuse-analyst, not silently duplicated.
 
-8. **`MOD-shared` is the LIBRARY — primitives only ([§13](../sdd/conventions.md#s13))**
-   - If `MOD-shared` present, its `depends_on` is **only** `MOD-build` (never a feature module) — any upward `MOD-shared → feature-module` edge ⇒ REJECT (the mechanical half: a node needing a domain dependency is not a primitive).
-   - Every `MOD-shared` member must be a **domain-agnostic primitive** (a generic widget or util/type). A member that **names or encodes a domain concept** ⇒ REJECT, route `plan-architect`/`reuse-analyst` to home it in its domain module (the nature half).
-   - Conversely a **domain** `SHR-*`/`COMP-*` belongs in its module; cross-module domain reuse is a `depends_on` **edge**, not a `MOD-shared` entry — a domain capability relocated into the library ⇒ REJECT.
+8. **`MOD-shared` is the LIBRARY — primitives only** (canonical: [§13](../sdd/conventions.md#s13))
+   - Verify `MOD-shared` is a pure sink admitting only domain-agnostic primitives, and domain capabilities remain in their modules (reused via `depends_on` edges). Any violation ⇒ REJECT.
 
 9. **Infra modules present & ordered**
    - `MOD-build` always, with **every domain module declaring `depends_on: MOD-build`** so it is the first slice (a GUI project: it also owns the e2e harness).
