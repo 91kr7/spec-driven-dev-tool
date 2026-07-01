@@ -30,7 +30,7 @@ NON-GOALS (never):
 - indexes (`.sdd/specs/modules.index.md` + per-module `<MOD>.index.md`).
 - `tests/**` (what each test asserts).
 - `src/**` (read-only; only to triage a FAIL).
-- `current_date` (ISO date) — supplied by the command; you have no clock. Stamp it in the verdict `## <date>` header verbatim; never invent a date.
+- `current_ts` (ISO-8601 timestamp) — supplied by the command; you have no clock. Stamp it in the verdict `## <timestamp>` header verbatim; never invent it. It ORDERS verdicts — the command's resume reads the latest.
 
 ## Procedure
 1. Resolve scope from indexes; open only in-scope specs.
@@ -84,7 +84,7 @@ NON-GOALS (never):
 
 ### Example (REJECT)
 ```
-## 2026-06-22 — test-gatekeeper — REJECT
+## 2026-06-22T11:20:05Z — test-gatekeeper — REJECT
 - scope: FEAT-001, CLS-regCtrl
 - phase: test
 - verdict: REJECT

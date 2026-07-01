@@ -61,7 +61,8 @@ HAVE     read-only contracts shipped with the tool: conventions.md, scot.md, ui-
 | token | type / structure | origin / note |
 |-------|------------------|---------------|
 | requirement_text | string | raw $ARGUMENTS |
-| current_date | ISO-8601 date | orchestrator supplies to every dated artifact (requirement-analyst + each GATE); subagents have no clock — never invent it |
+| current_date | ISO-8601 date | orchestrator supplies to requirement-analyst (dated changelog); subagents have no clock — never invent it |
+| current_ts | ISO-8601 timestamp (date+time) | orchestrator obtains a FRESH one (it has the clock) and passes it to each GATE for the verdict header; ORDERS verdicts so resume reads the LATEST; subagents never invent it |
 | stack_decision | { lang, framework, … } | resolved target stack — held in memory until step 3 |
 | REQUIREMENT.md | file { raw, refined, req_ids: REQ-* } | authored by requirement-analyst — refined list is a dated changelog |
 | PLAN.md | file { entities, Slice plan } | plan + ordered slice list; rewritten per run — on existing-SDD a delta (only NEW/MODIFY + their slices) |
@@ -117,7 +118,7 @@ OUT  target.md ; PLAN.md { entities, ordered Slice plan } — rewritten afresh; 
 ### Step 4 — Gate the plan
 ```
 ▶▶ GATE plan-gatekeeper
-IN   conventions ; target.md ; REQUIREMENT.md ; PLAN.md ; .sdd/specs/ indexes (existing — ids + depends_on) ; current_date
+IN   conventions ; target.md ; REQUIREMENT.md ; PLAN.md ; .sdd/specs/ indexes (existing — ids + depends_on) ; current_ts
 OUT  verdict_record { phase: analysis, scope: PLAN }
  PASS                  → enter the per-slice loop (step 5) over slice_list.
  REJECT                → by routing:
@@ -153,7 +154,7 @@ OUT  verdict_record { phase: analysis, scope: PLAN }
      (2) for each id in demote_ids → set index_rows.status: draft
 
 5d ▶▶ GATE analysis-gatekeeper   (the only spec-phase blocker)
-     IN  conventions ; scot ; ui-schema ; target.md ; REQUIREMENT.md ; the indexes (full depends_on graph) + in-scope spec_paths ; REUSE-REPORT.md ; current_date
+     IN  conventions ; scot ; ui-schema ; target.md ; REQUIREMENT.md ; the indexes (full depends_on graph) + in-scope spec_paths ; REUSE-REPORT.md ; current_ts
      OUT verdict_record { phase: analysis, scope: slice_id }
       PASS         → YOU set slice spec index_rows.status: draft → reviewed; step 6.
       REJECT       → by routing (each re-invoke carries the verdict reasons[]):
@@ -170,7 +171,7 @@ OUT  verdict_record { phase: analysis, scope: PLAN }
 
 6b ··  YOU   run canonical `install` → install_result
    ▶▶ GATE code-gatekeeper
-     IN  conventions ; scot ; ui-schema (gui) ; target.md (build/lint) ; the gated spec(s) + impl_note + src_paths + the indexes ; install_result ; current_date
+     IN  conventions ; scot ; ui-schema (gui) ; target.md (build/lint) ; the gated spec(s) + impl_note + src_paths + the indexes ; install_result ; current_ts
      OUT verdict_record { phase: code, scope: slice_id }
       PASS         → YOU set slice index_rows.status: reviewed → implemented; step 7.
       REJECT       → by routing (each re-invoke carries the verdict reasons[]):
@@ -192,12 +193,12 @@ OUT  verdict_record { phase: analysis, scope: PLAN }
      OUT `.sdd/verdicts/<slice>/_test-report.md` (unit + integration + component, + e2e for GUI)
 
 7c ▶▶ GATE test-gatekeeper
-     IN  conventions ; scot ; ui-schema (gui) ; target.md ; `.sdd/verdicts/<slice>/_test-report.md` ; the indexes + in-scope spec_paths (coverage) ; tests/** ; src/** (read-only, triage only) ; current_date
+     IN  conventions ; scot ; ui-schema (gui) ; target.md ; `.sdd/verdicts/<slice>/_test-report.md` ; the indexes + in-scope spec_paths (coverage) ; tests/** ; src/** (read-only, triage only) ; current_ts
      OUT verdict_record { phase: test, scope: slice_id, coverage, routing }
       PASS (green + full coverage) → YOU set slice index_rows.status: implemented → approved; step 8.
       REJECT → route per triage (§7); each loop returns to the sub-step that re-gates the fix:
         spec bug → spec-writer (5b)      : re-INVOKE with verdict reasons[]; demote status → draft, loop step 5, then step 6 regenerates code.
-        code bug → code-implementer (6a) : re-INVOKE with verdict reasons[]; loop step 6 (re-pass the code gate before re-testing).
+        code bug → code-implementer (6a) : re-INVOKE with verdict reasons[]; demote the flagged member(s) implemented → reviewed, loop step 6 (re-pass the code gate before re-testing).
         test bug → test-writer (7a)      : re-INVOKE with verdict reasons[] + the offending test_paths (minimal edit); loop step 7a.
       routing: escalate (suite never ran / app won't boot / e2e skipped) → ESCALATE immediately.
 ```
@@ -218,9 +219,9 @@ OUT  next_target :
 ```
 ▶▶ INVOKE test-runner   (whole suite, NO scope)
 ▶▶ GATE   test-gatekeeper (whole project)
-IN   conventions ; target.md (test command, NO scope) ; whole approved project (indexes + all spec_paths + tests/** + src/**) ; current_date
+IN   conventions ; target.md (test command, NO scope) ; whole approved project (indexes + all spec_paths + tests/** + src/**) ; current_ts
 OUT  `.sdd/verdicts/PROJECT/_test-report.md` (whole suite) ; verdict_record { phase: test, scope: PROJECT }
-      regression → route per §7 to the owning slice, re-run its step 7.
+      regression → route per §7 to the owning slice; demote its flagged member(s) to the routed fix's phase (spec→draft · code→reviewed · test→implemented) so step 8's remaining set re-includes the slice; re-run from that phase.
       green      → project done.
 ```
 
@@ -240,13 +241,15 @@ NO iteration cap: a gate↔author oscillation does NOT auto-escalate — the att
 
 ## Resume   `from files only`
 ```
-Loop state is reconstructable from index_rows.status alone (no cursor):
+Loop state is reconstructed from index_rows.status + the slice's phase verdicts (no cursor — both are durable files a gate already wrote):
   - approved slices are done — skip them.
-  - the first non-approved slice's PHASE = its LEAST-ADVANCED OWN-member status (exclude read-only closure deps): draft→analysis (step 5) · reviewed→code (step 6) · implemented→test (step 7).
-  - the last gate's reasons[] (if mid-REJECT) are in `.sdd/verdicts/<scope>/<phase>.md`.
+  - find the first non-approved slice, then read its LATEST verdict — the max header timestamp among its ≤3 known-named phase files (analysis|code|test), the resume ordering key (§6):
+      · REJECT → re-invoke the author its `routing:` names, feeding its `reasons[]`. This is the live fix wherever it sits — a test-found code bug's REJECT is in `test.md` (routing: code-implementer) while the older `code.md` is a stale PASS; the timestamp picks the right one.
+      · PASS / none → enter the phase the OWN-member `status` implies (draft→step 5 · reviewed→step 6 · implemented→step 7) FRESH, no reasons.
+  - the demote (§5) keeps `status` truthful (a test-found code bug is `reviewed`, not `implemented`), so "skip approved" and the FRESH-phase choice stay correct; the LATEST verdict drives the pending fix.
 TO RESUME re-run /sdd-auto:
   - skip every approved slice;
-  - re-enter the first non-approved slice at the phase its status implies, and continue the loop.
+  - re-enter the first non-approved slice per its latest verdict (REJECT → its routing + reasons · PASS/none → the status-implied phase, fresh), and continue the loop.
 The per-slice loop performs this SAME file-only reconstruction at every slice boundary (the STATE law),
 not only after an interruption — so a long run never depends on accumulated conversation history.
 ```
@@ -257,7 +260,10 @@ step 5d      analysis PASS             → slice spec index_rows.status: draft �
 step 6b      code PASS                 → reviewed → implemented.
 step 7c      test PASS (green + full   → implemented → approved.
              coverage)
-any REJECT                             → status unchanged (never regresses).
+REJECT — status regresses ONLY to match where the fix re-enters, never below it:
+  · routed to spec (spec bug · feature-evo · reuse promotion) → demote to draft (§5).
+  · 7c code bug                          → demote flagged member(s) implemented → reviewed (re-pass the code gate before re-testing).
+  · 6b code bug · 7c test bug · escalate → unchanged (status already names the re-entry phase).
 ```
 
 ## Outputs

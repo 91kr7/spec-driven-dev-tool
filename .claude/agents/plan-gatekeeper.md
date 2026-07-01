@@ -28,7 +28,7 @@ NON-GOALS:
 ## Inputs
 - `.claude/sdd/conventions.md` (rules), `.sdd/target.md`, `.sdd/REQUIREMENT.md`, `.sdd/PLAN.md`.
 - `.sdd/specs/` indexes — existing project only (empty/ignored on a NEW project). Read the rows' **ids + `depends_on`** lazily, for: id-stability (step 2), whole-project DAG (step 3), consumer sets (step 6).
-- `current_date` (ISO date) — supplied by the command; you have no clock. Stamp it in the verdict `## <date>` header verbatim. Never invent a date.
+- `current_ts` (ISO-8601 timestamp) — supplied by the command; you have no clock. Stamp it in the verdict `## <timestamp>` header verbatim. Never invent it. It ORDERS verdicts — the command's resume reads the latest.
 
 ## Procedure → REJECT on any failed check
 

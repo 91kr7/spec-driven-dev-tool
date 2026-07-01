@@ -25,7 +25,7 @@ NON-GOALS:
 ## Inputs
 - `.claude/sdd/conventions.md` (front-matter, status, verdict §6, change policy §8, headers §13), `scot.md` (the SCoT contract), `ui-schema.md` (for `kind: gui`), `.sdd/target.md` (stack, read-only build/lint commands, header comment syntax).
 - Gated spec(s) (`source:`, `depends_on`, body), `.sdd/impl-notes/<MOD-id>/<level>/<id>.impl-notes.md`, the `src/` files the specs map to, indexes (`.sdd/specs/modules.index.md` + per-module `<MOD>.index.md`).
-- `current_date` (ISO date) — supplied by the command; you have no clock. Stamp it in the verdict `## <date>` header verbatim. Never invent a date.
+- `current_ts` (ISO-8601 timestamp) — supplied by the command; you have no clock. Stamp it in the verdict `## <timestamp>` header verbatim. Never invent it. It ORDERS verdicts — the command's resume reads the latest.
 
 ## Procedure → REJECT on any veto
 1. **Resolve scope** — resolve scope ids in `depends_on` topological order. Per id record `source:`, `owns_sections:`, `error_style`, `depends_on`, index `status`.

@@ -183,7 +183,14 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
 - `implemented` — passed the **code** gate (code matches spec, compiles); tests pending.
 - `approved` — passed the **test** gate (suite green + full coverage).
 
-**Backward transition (spec change after `reviewed`).** Code is only generated from a `reviewed` spec. So whenever a spec changes after `reviewed`/`implemented`/`approved` — a gate routing a **spec bug**, a **feature evolution**, or a **reuse-analyst promotion** that rewrites a gated spec — the sequence is: the **command demotes** it `→ draft`, `spec-writer` fixes it, then it re-flows the forward path. A **code** or **test** bug never demotes the spec.
+**Backward transition (spec change after `reviewed`).** Code is only generated from a `reviewed` spec. So whenever a spec changes after `reviewed`/`implemented`/`approved` — a gate routing a **spec bug**, a **feature evolution**, or a **reuse-analyst promotion** that rewrites a gated spec — the sequence is: the **command demotes** it `→ draft`, `spec-writer` fixes it, then it re-flows the forward path. A **code** or **test** bug never demotes the spec **to draft** (the spec stays `reviewed`; the code-status demotion below is a separate transition).
+
+**Status regresses to match where the fix re-enters (never below it).** A REJECT demotes the affected member(s) to the status whose forward phase the routed fix re-enters, so the resume invariant (§7 — `phase` = least-advanced own-member `status`) stays **exact** and an interrupted run never re-enters *past* the outstanding work:
+- routed to **spec** (spec bug / feature-evo / promotion, from any gate) → **draft** (re-flows analysis → code → test);
+- `test`-gate **code bug** → the flagged member(s) `implemented → reviewed` — the **spec is untouched**; only the code re-passes its gate before re-testing. This is the **sole** non-spec demotion, and the one case where `status` would otherwise outrun the real work: the test gate has cleared the code phase (`implemented`), then sends work *back* to it, so `status` must step back to `reviewed` or a resume would wrongly re-enter at the test phase;
+- routed to **code** at the code gate (`status` already `reviewed`) or to **test** at the test gate (`status` `implemented`) → **no demotion**: the status already names the re-entry phase.
+
+A step-9 regression on an `approved` slice follows the same rule — demote the flagged member(s) to the routed fix's phase (`draft`/`reviewed`/`implemented`) so step 8's remaining set re-includes the slice.
 
 **Separation of duties (strict):**
 - **Gatekeepers JUDGE only** — write one verdict **file** to `.sdd/verdicts/` (§6); never edit specs/code/tests/`status`.
@@ -194,7 +201,7 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
 
 ## 6. `.sdd/verdicts/` verdict records
 
-**One file per (scope, phase), OVERWRITTEN each gate.** Each gate writes a single file `.sdd/verdicts/<scope>/<phase>.md` holding only its latest outcome; the command reads it by **known path** (no scan, no ordinal). A re-gate of the same phase overwrites it (the prior reasons[] were already consumed by the routed author).
+**One file per (scope, phase), OVERWRITTEN each gate.** Each gate writes a single file `.sdd/verdicts/<scope>/<phase>.md` holding only its latest outcome; in the loop the command reads it by **known path** (no scan, no ordinal). A re-gate of the same phase overwrites it (the prior reasons[] were already consumed by the routed author). **On resume** the command reads the slice's ≤3 known-named phase files and takes the one with the latest header timestamp (§7) — still known paths: no directory scan, no counter, no accumulation.
 
 - **Path:** `.sdd/verdicts/<scope>/<phase>.md`
   - `<scope>` = the short scope key (folder): the `slice_id` (e.g. `FEAT-login`, `MOD-build`), `PLAN`, or `PROJECT`. The full member-id list goes in the body's `scope:` field.
@@ -203,7 +210,7 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
 - **One record per file:**
 
 ```
-## <ISO-8601> — <gate-agent> — <PASS|REJECT>   # <ISO-8601> = the current_date the command passes the gate (agents have no clock); stamp it verbatim, never invent a date or a time.
+## <ISO-8601 timestamp> — <gate-agent> — <PASS|REJECT>   # = current_ts, a FRESH date+time the command obtains (it has the clock) and passes per gate; stamp it verbatim, never invent it. This timestamp ORDERS verdicts — resume reads the LATEST (§7).
 - scope: <ids reviewed, e.g. FEAT-001, CLS-regCtrl>
 - phase: <analysis|code|test>
 - verdict: PASS | REJECT
@@ -216,11 +223,11 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
   - **PASS** → one terse line per check group: the conclusion + the minimal rebuilt datum where the check is a forcing-function (a traceability **consumer set**, an **orphan-scan** result). NEVER a paragraph re-narrating what held, never the whole front-matter/SCoT/AC list echoed back.
   - **REJECT** → one line per *blocking* defect: the offending `id`/path + what is wrong + the **resolution** (what the routed author consumes) + `routing:`. Do not also transcribe the checks that passed.
 - `routing: escalate` = a REJECT no author can fix (missing dependency, unresolved `<…>` placeholder, e2e-setup app-won't-boot) — the command surfaces it to the human.
-- **Why overwrite-per-phase:** the loop reads/writes one fixed file per (scope, phase) — O(1), no ordinal, no directory scan, no accumulation. (The earlier monolithic `status.md` forced Read-whole + Write-whole on every gate → O(N²); per-phase files plus dropping the iteration budget removed the need for any cross-file counting.)
+- **Why overwrite-per-phase:** the loop reads/writes one fixed file per (scope, phase) — O(1), no ordinal, no directory scan, no accumulation. (The earlier monolithic `status.md` forced Read-whole + Write-whole on every gate → O(N²); per-phase files plus dropping the iteration budget removed the need for any cross-file counting.) Resume orders verdicts by their **self-assigned header timestamp**, NOT a cross-file index — so "latest wins" needs no counter and no `NNN-` filenames (which would reintroduce the very scan + accumulation this avoids).
 
 **Example — compact PASS** (full rebuilt evidence collapses to conclusions):
 ```
-## 2026-06-26 — analysis-gatekeeper — PASS
+## 2026-06-26T14:03:20Z — analysis-gatekeeper — PASS
 - scope: FEAT-login (MOD-auth, ENT-credential, SHR-passwordHasher, CLS-credentialRepo, CLS-loginRequest, CLS-loginResponse, CLS-authService, CLS-authController, FEAT-login)
 - phase: analysis
 - verdict: PASS
@@ -234,7 +241,7 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
 ```
 **Example — compact REJECT** (one actionable line per defect):
 ```
-## 2026-06-26 — code-gatekeeper — REJECT
+## 2026-06-26T15:41:07Z — code-gatekeeper — REJECT
 - scope: MOD-build
 - phase: code
 - verdict: REJECT
@@ -247,7 +254,7 @@ Per-entity status lives in the **index row**: `draft → reviewed → implemente
 
 ## 7. Failure routing
 
-**No iteration budget.** A gate loops `REJECT → fix → re-gate` until PASS. `/sdd-auto` is run **attended**: a gate↔author oscillation does NOT auto-stop — the human watching the run halts it by hand. The only automatic stop is `routing: escalate` (a block no author can fix). Resume needs no counter — `phase` is the least-advanced own-member `status` (§5).
+**No iteration budget.** A gate loops `REJECT → fix → re-gate` until PASS. `/sdd-auto` is run **attended**: a gate↔author oscillation does NOT auto-stop — the human watching the run halts it by hand. The only automatic stop is `routing: escalate` (a block no author can fix). Resume needs no counter — the first non-approved slice's **LATEST verdict wins** (max header timestamp among its ≤3 phase files): a **REJECT** → re-invoke the author its `routing:` names, feeding its `reasons[]` (the live fix, wherever that file sits); a **PASS**/none → enter the phase the own-member `status` implies (§5) FRESH, no reasons. The demote (§5) keeps `status` truthful, so "skip approved" and the fresh-phase choice stay right; the latest verdict drives the pending fix.
 
 **test-gatekeeper triage routing** (MD is authority — a red test never patches code arbitrarily):
 - **spec bug** → `spec-writer` (fix spec, regenerate code).

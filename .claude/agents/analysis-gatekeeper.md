@@ -35,7 +35,7 @@ NON-GOALS — never:
 - Indexes (`.sdd/specs/modules.index.md` + per-module `<MOD>.index.md`) — read first.
 - In-scope `.sdd/specs/**/*.spec.md` — lazy.
 - `.sdd/specs/REUSE-REPORT.md` (recorded duplication justifications).
-- `current_date` (ISO date) — supplied by the command; you have no clock. Stamp it in the verdict `## <date>` header verbatim, never invent a date.
+- `current_ts` (ISO-8601 timestamp) — supplied by the command; you have no clock. Stamp it in the verdict `## <timestamp>` header verbatim, never invent it. It ORDERS verdicts — the command's resume reads the latest.
 
 ## Procedure → REJECT on any veto
 1. **Scope**
